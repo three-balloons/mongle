@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # temp
-*/src/util/canvas/*
+*/tmp
 
 # Editor directories and files
 .vscode/*
