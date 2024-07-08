@@ -1,5 +1,5 @@
 // return rectagle that surrounds the curve
-export const curve2Rect = (points: Curve, offset: number = 0): Rect | undefined => {
+export const curve2Rect = (points: Curve2D, offset: number = 0): Rect | undefined => {
     if (points.length == 0) return undefined;
     let top = points[0].y;
     let bottom = points[0].y;

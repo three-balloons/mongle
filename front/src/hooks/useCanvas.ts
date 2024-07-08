@@ -37,7 +37,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         useViewStore.subscribe(({ canvasView }) => {
-            console.log(canvasView.pos);
             canvasViewRef.current = canvasView;
             reDrawAllCurve(getCurve());
         });
@@ -187,11 +186,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
         const canvas: HTMLCanvasElement = canvasRef.current;
         const context = canvas.getContext('2d');
-        console.log('reDrawAllCurve', canvasViewRef.current);
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
-                console.log(curve);
                 let splineCnt = 0;
 
                 applyConfig(context, curve.config);

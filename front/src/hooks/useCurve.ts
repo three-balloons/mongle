@@ -28,7 +28,6 @@ export const useCurve = ({ sensitivity = 0 }: UseCurveProps = {}) => {
     };
 
     const addNewLine = () => {
-        console.log(penConfig.color);
         lines.current = [...lines.current, { position: newLine.current, path: currentPath.current, config: penConfig }];
         newLine.current = [];
     };
