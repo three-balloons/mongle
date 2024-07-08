@@ -40,8 +40,8 @@ export const Workspace = ({ width, height }: WorkspaceProps) => {
         };
     }, [startPaint, paint, exitPaint]);
     return (
-        <div>
+        <>
             <canvas ref={canvasRef} className={cn(style.workspaceContent)} width={width} height={height}></canvas>
-        </div>
+        </>
     );
 };

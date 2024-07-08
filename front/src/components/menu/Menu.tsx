@@ -6,11 +6,36 @@ import { useConfigStore } from '@/store/configStore';
 export const Menu = () => {
     const { canvasView, setCanvasView } = useViewStore((state) => state);
     const { setPenColor, setPenThickness } = useConfigStore((state) => state);
+
+    const resizeView = (intensity: number) => {
+        setCanvasView({
+            ...canvasView,
+            pos: {
+                left: canvasView.pos.left + (canvasView.pos.width * intensity) / 200,
+                top: canvasView.pos.top + (canvasView.pos.height * intensity) / 200,
+                width: (canvasView.pos.width * (100 - intensity)) / 100,
+                height: (canvasView.pos.height * (100 - intensity)) / 100,
+            },
+        });
+    };
+    const moveView = (intensityX: number, intensityY: number) => {
+        setCanvasView({
+            ...canvasView,
+            pos: {
+                ...canvasView.pos,
+                left: canvasView.pos.left + (canvasView.pos.width * intensityX) / 100,
+                top: canvasView.pos.top + (canvasView.pos.height * intensityY) / 100,
+            },
+        });
+    };
     return (
         <div className={cn(style.default)}>
             <div className={cn(style.config)}>
                 <button className={cn(style.yellow)} onClick={() => setPenColor('yellow')}>
                     노란색
+                </button>
+                <button className={cn(style.red)} onClick={() => setPenColor('red')}>
+                    붉은색
                 </button>
                 <button className={cn(style.black)} onClick={() => setPenColor('black')}>
                     검정색
@@ -26,33 +51,23 @@ export const Menu = () => {
                 </button>
             </div>
             <div className={cn(style.config)}>
-                <button
-                    className={cn(style.green)}
-                    onClick={() =>
-                        setCanvasView({
-                            ...canvasView,
-                            pos: {
-                                ...canvasView.pos,
-                                left: canvasView.pos.left + 10,
-                            },
-                        })
-                    }
-                >
+                <button className={cn(style.green)} onClick={() => moveView(-10, 0)}>
                     왼쪽 이동
                 </button>
-                <button
-                    className={cn(style.green)}
-                    onClick={() =>
-                        setCanvasView({
-                            ...canvasView,
-                            pos: {
-                                ...canvasView.pos,
-                                left: canvasView.pos.left - 10,
-                            },
-                        })
-                    }
-                >
+                <button className={cn(style.green)} onClick={() => moveView(10, 0)}>
                     오른쪽 이동
+                </button>
+                <button className={cn(style.green)} onClick={() => moveView(0, -10)}>
+                    위쪽 이동
+                </button>
+                <button className={cn(style.green)} onClick={() => moveView(0, 10)}>
+                    아래쪽 이동
+                </button>
+                <button className={cn(style.green)} onClick={() => resizeView(-20)}>
+                    축소
+                </button>
+                <button className={cn(style.green)} onClick={() => resizeView(20)}>
+                    확대
                 </button>
             </div>
         </div>
