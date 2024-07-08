@@ -15,6 +15,17 @@ export const isCollisionWithRect = (rectA: Rect, rectB: Rect): boolean => {
     return false;
 };
 
+export const isCollisionPointWithRect = (point: Point, rect: Rect): boolean => {
+    if (
+        rect.left < point.x &&
+        point.x < rect.left + rect.width &&
+        rect.top < point.y &&
+        point.y < rect.top + rect.height
+    )
+        return true;
+    return false;
+};
+
 export const isCollisionWithCircle = (circleA: Circle, circleB: Circle): boolean => {
     return true;
 };

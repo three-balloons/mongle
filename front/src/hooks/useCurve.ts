@@ -1,11 +1,15 @@
 import { useRef } from 'react';
+import { useConfigStore } from '@/store/configStore';
 
 type UseCurveProps = {
     sensitivity?: number;
 };
 
 export const useCurve = ({ sensitivity = 0 }: UseCurveProps = {}) => {
-    const newLine = useRef<Curve>([]);
+    const newLine = useRef<Curve2D>([]);
+    const currentPath = useRef<string>('/');
+    // const currentConfig = useRef<PenConfig | undefined>(undefined);
+    const { penConfig } = useConfigStore((state) => state);
     const lines = useRef<Array<Curve>>([]);
     const coolTime = useRef(sensitivity);
     const addControlPoint = (pos: Point, force: boolean = false) => {
@@ -19,20 +23,27 @@ export const useCurve = ({ sensitivity = 0 }: UseCurveProps = {}) => {
         }
     };
 
+    const setPath = (path: string) => {
+        currentPath.current = path;
+    };
+
     const addNewLine = () => {
-        lines.current = [...lines.current, newLine.current];
+        console.log(penConfig.color);
+        lines.current = [...lines.current, { position: newLine.current, path: currentPath.current, config: penConfig }];
         newLine.current = [];
     };
 
-    const getDrawingCurve = (): Curve => {
+    const getDrawingCurve = (): Curve2D => {
         return [...newLine.current];
     };
 
     const getCurve = (): Array<Curve> => {
-        return [...lines.current, newLine.current];
+        return [...lines.current, { position: newLine.current, path: currentPath.current, config: penConfig }];
     };
 
     return {
+        currentPath: currentPath.current,
+        setPath,
         getCurve,
         getDrawingCurve,
         addControlPoint,

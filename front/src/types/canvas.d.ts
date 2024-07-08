@@ -9,12 +9,15 @@ type PenConfig = {
     color: Color;
     thickness: number;
     alpha: number;
-    font: 'serif';
+    font: Font;
+};
+
+type TextConfig = {
     fontSize: number;
     fontWeight: 'normal' | 'bold' | number;
 };
 
-type Font = 'Arial' | 'Courier New' | 'Georgia' | 'Times New Roman' | 'Trebuchet MS' | 'Verdana';
+type Font = 'serif' | 'Arial' | 'Courier New' | 'Georgia' | 'Times New Roman' | 'Trebuchet MS' | 'Verdana';
 
 type Color =
     | 'black'
@@ -37,15 +40,30 @@ type Color =
     | 'pink'
     | Vector3D;
 
-// coordinate
-type HierarchyCoord = {
+// Coordinate systems
+
+// (canvas) View coordinate system
+// path: canvas path
+// pos: relative position
+// size: canvas size in screen
+type ViewCoordSys = {
+    pos: Rect;
     path: string;
+    size: Vector2D;
 };
-type PolarCoord = {
+
+// Poloar coordinate system
+// angle: [0, 360), radius: (0, 100] except for root
+type PolarCoordSys = {
+    path: string;
     radius: number;
     angle: number;
 };
-type RectCoord = {
-    top: number;
-    left: number;
+
+// Cartesian coordinate system
+// x: [-100, 100], y: [-100, 100] except for root
+type RectCoordSys = {
+    path: string;
+    x: number;
+    y: number;
 };

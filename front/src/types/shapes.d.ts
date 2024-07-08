@@ -13,7 +13,9 @@ type Point = Vector2D;
 // curve
 type Curve2D = Array<Point>;
 type Curve3D = Array<Vector3D>;
-type Curve = Curve2D;
+
+// TODO: penConfig 추가할 것
+type Curve = { position: Curve2D; path: string; config: PenConfig };
 
 // rectangle
 interface Rect {
