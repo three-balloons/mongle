@@ -1,0 +1,35 @@
+.default {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+}
+
+.circle {
+    border-radius: 100%;
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    height: 100px;
+    justify-content: space-between;
+}
+
+.black {
+    background-color: black;
+}
+
+.red {
+    background-color: red;
+}
+
+.yellow {
+    background-color: yellow;
+}

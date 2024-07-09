@@ -1,15 +1,22 @@
 import { useConfigStore } from '@/store/configStore';
+import { useRef, useEffect } from 'react';
 
 export const usePenConfig = () => {
-    const { penConfig } = useConfigStore((state) => state);
-    // const [config, setConfig] = useState<PenConfig>({
-    //     color: 'green',
-    //     thickness: 3,
-    //     alpha: 1,
-    //     font: 'serif',
-    // });
+    const penConfigRef = useRef<PenConfig>({
+        color: 'black',
+        thickness: 3,
+        alpha: 1,
+        font: 'serif',
+    });
 
-    const applyConfig = (context: CanvasRenderingContext2D, options: PenConfig = penConfig) => {
+    useEffect(() => {
+        useConfigStore.subscribe(({ penConfig }) => {
+            penConfigRef.current = penConfig;
+        });
+    }, []);
+
+    const applyConfig = (context: CanvasRenderingContext2D, options?: PenConfig) => {
+        if (!options) options = penConfigRef.current;
         context.strokeStyle = options.color as string;
         context.fillStyle = options.color as string;
         context.lineJoin = 'round';

@@ -37,8 +37,7 @@ type Color =
     | 'teal'
     | 'aqua'
     | 'orange'
-    | 'pink'
-    | Vector3D;
+    | 'pink';
 
 // Coordinate systems
 

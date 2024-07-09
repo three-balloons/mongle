@@ -2,10 +2,12 @@ import { cn } from '@/util/cn';
 import style from '@/components/menu/menu.module.css';
 import { useViewStore } from '@/store/viewStore';
 import { useConfigStore } from '@/store/configStore';
+import { PenColorSelect } from '@/components/select/PenColorSelect';
+import { ThicknessSelect } from '@/components/select/ThicknessSelect';
 
 export const Menu = () => {
     const { canvasView, setCanvasView } = useViewStore((state) => state);
-    const { setPenColor, setPenThickness } = useConfigStore((state) => state);
+    const { setPenThickness } = useConfigStore((state) => state);
 
     const resizeView = (intensity: number) => {
         setCanvasView({
@@ -31,24 +33,8 @@ export const Menu = () => {
     return (
         <div className={cn(style.default)}>
             <div className={cn(style.config)}>
-                <button className={cn(style.yellow)} onClick={() => setPenColor('yellow')}>
-                    노란색
-                </button>
-                <button className={cn(style.red)} onClick={() => setPenColor('red')}>
-                    붉은색
-                </button>
-                <button className={cn(style.black)} onClick={() => setPenColor('black')}>
-                    검정색
-                </button>
-                <button className={cn(style.blue)} onClick={() => setPenThickness(7)}>
-                    굵게
-                </button>
-                <button className={cn(style.blue)} onClick={() => setPenThickness(3)}>
-                    중간 굵기
-                </button>
-                <button className={cn(style.blue)} onClick={() => setPenThickness(1)}>
-                    얇게
-                </button>
+                <PenColorSelect />
+                <ThicknessSelect />
             </div>
             <div className={cn(style.config)}>
                 <button className={cn(style.green)} onClick={() => moveView(-10, 0)}>
