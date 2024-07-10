@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useCurve } from './useCurve';
-import { usePenConfig } from './usePenConfig';
+import { useCurve } from '@/objects/useCurve';
 import { getViewCoordinate } from '@/util/canvas/canvas';
-import { curve2View, view2Point } from '@/util/coordSys/conversion';
+import { curve2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
+import { useDrawer } from '@/hooks/useDrawer';
 
 type UseCanvasProps = {
     width?: number;
     height?: number;
 };
+
+/**
+ * store canvas infromation and command functions
+ */
 export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { setCanvasView } = useViewStore((state) => state);
@@ -25,15 +29,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         },
         path: '/',
     });
-    const positionRef = useRef<Point | undefined>();
     const isPaintingRef = useRef(false);
     const canvasImageRef = useRef<ImageData | null>(null);
-    const splineCountRef = useRef(0); // n번째 이후부터 spline 반영 안한 점들
-    const { viewPath, setViewPath, getCurves, getDrawingCurve, addControlPoint, addNewLine } = useCurve({
-        sensitivity: 1,
-    });
-    const { applyPenConfig } = usePenConfig();
-
+    const { viewPath, getCurves, applyPenConfig } = useCurve();
+    const { startDrawing, draw, finishDrawing } = useDrawer();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -41,6 +40,36 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             canvasViewRef.current = canvasView;
             renderer(getCurves());
         });
+    }, []);
+
+    const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
+        if (canvasRef.current == undefined) return;
+        const currentPosition = getViewCoordinate(event, canvasRef.current);
+        if (currentPosition) {
+            if (isPaintingRef.current == false) {
+                isPaintingRef.current = true;
+                startDrawing(currentPosition, canvasViewRef.current);
+            }
+        }
+    }, []);
+
+    const touch = useCallback((event: MouseEvent | TouchEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (canvasRef.current == undefined) return;
+        const currentPosition = getViewCoordinate(event, canvasRef.current);
+        if (currentPosition) {
+            if (isPaintingRef.current) {
+                draw(currentPosition, canvasViewRef.current, lineRenderer, curveRenderer);
+            }
+        }
+    }, []);
+
+    const touchUp = useCallback(() => {
+        if (isPaintingRef.current) {
+            finishDrawing(canvasViewRef.current, curveRenderer);
+            isPaintingRef.current = false;
+        }
     }, []);
 
     // bezier curve 적용 전 - 픽셀 단위로 그리기
@@ -59,78 +88,12 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    const startDrawing = useCallback((event: MouseEvent | TouchEvent) => {
-        if (canvasRef.current == undefined) return;
-        const currentPosition = getViewCoordinate(event, canvasRef.current);
-        if (currentPosition) {
-            isPaintingRef.current = true;
-            positionRef.current = currentPosition;
-            setViewPath(canvasViewRef.current.path);
-            const point = view2Point(
-                {
-                    path: canvasViewRef.current.path,
-                    x: currentPosition.x,
-                    y: currentPosition.y,
-                },
-                canvasViewRef.current,
-            );
-            if (point != undefined) addControlPoint(point, true);
-        }
-    }, []);
-
-    const draw = useCallback(
-        (event: MouseEvent | TouchEvent) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (canvasRef.current == undefined) return;
-            if (isPaintingRef.current) {
-                const currentPosition = getViewCoordinate(event, canvasRef.current);
-                if (
-                    positionRef.current &&
-                    currentPosition &&
-                    (positionRef.current.x != currentPosition.x || positionRef.current.y != currentPosition.y)
-                ) {
-                    // DOTO::draw 정책 설정 - 화면에 나타난 bubble안에도 생성 가능 여부(현재는 불가)
-                    const currentPoint = view2Point(
-                        {
-                            path: canvasViewRef.current.path,
-                            x: currentPosition.x,
-                            y: currentPosition.y,
-                        },
-                        canvasViewRef.current,
-                    );
-                    if (currentPoint != undefined && addControlPoint(currentPoint)) {
-                        curveRenderer(getDrawingCurve());
-                    }
-                    if (!positionRef.current) return;
-                    lineRenderer(positionRef.current, currentPosition);
-                    positionRef.current = currentPosition;
-                }
-            }
-        },
-        [isPaintingRef.current, positionRef.current],
-    );
-
-    const finishDrawing = useCallback(() => {
-        if (positionRef.current) {
-            const point = view2Point(
-                { path: canvasViewRef.current.path, x: positionRef.current.x, y: positionRef.current.y },
-                canvasViewRef.current,
-            );
-            if (point) addControlPoint(point, true);
-        }
-        curveRenderer(getDrawingCurve(), true);
-        splineCountRef.current = 0;
-        addNewLine();
-        isPaintingRef.current = false;
-    }, [addNewLine]);
-
     // addControlPoint가 true일 때 실행
-    const curveRenderer = (curve: Curve2D, isForce: boolean = false) => {
+    const curveRenderer = (curve: Curve2D, splineCount: number, isForce: boolean = false): number | undefined => {
         if (!canvasRef.current) {
             return;
         }
-        let splineCnt = splineCountRef.current;
+        let splineCnt = splineCount;
         if (!isForce && splineCnt + 3 > Math.floor((curve.length - 1) / 3) * 3) return;
         const canvas: HTMLCanvasElement = canvasRef.current;
         const context = canvas.getContext('2d');
@@ -174,9 +137,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 }
             }
             context.stroke();
-            splineCountRef.current = splineCnt;
             const data = context.getImageData(0, 0, canvas.width, canvas.height);
             canvasImageRef.current = data;
+            return splineCnt;
         }
     };
 
@@ -229,5 +192,5 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    return { canvasRef, startDrawing, draw, finishDrawing };
+    return { canvasRef, touchDown, touch, touchUp };
 };
