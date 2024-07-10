@@ -1,13 +1,11 @@
 import { cn } from '@/util/cn';
 import style from '@/components/menu/menu.module.css';
 import { useViewStore } from '@/store/viewStore';
-import { useConfigStore } from '@/store/configStore';
 import { PenColorSelect } from '@/components/select/PenColorSelect';
 import { ThicknessSelect } from '@/components/select/ThicknessSelect';
 
 export const Menu = () => {
     const { canvasView, setCanvasView } = useViewStore((state) => state);
-    const { setPenThickness } = useConfigStore((state) => state);
 
     const resizeView = (intensity: number) => {
         setCanvasView({

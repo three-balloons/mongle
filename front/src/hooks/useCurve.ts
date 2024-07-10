@@ -6,15 +6,14 @@ type UseCurveProps = {
 };
 
 export const useCurve = ({ sensitivity = 0 }: UseCurveProps = {}) => {
-    const newLine = useRef<Curve2D>([]);
-    const currentPath = useRef<string>('/');
-    // const currentConfig = useRef<PenConfig | undefined>(undefined);
+    const newCurveRef = useRef<Curve2D>([]);
+    const viewPathRef = useRef<string>('/');
     const { penConfig } = useConfigStore((state) => state);
-    const lines = useRef<Array<Curve>>([]);
+    const CurvesRef = useRef<Array<Curve>>([]);
     const coolTime = useRef(sensitivity);
     const addControlPoint = (pos: Point, force: boolean = false) => {
         if (force || coolTime.current >= sensitivity) {
-            newLine.current = [...newLine.current, pos];
+            newCurveRef.current = [...newCurveRef.current, pos];
             coolTime.current = 0;
             return true;
         } else {
@@ -23,27 +22,30 @@ export const useCurve = ({ sensitivity = 0 }: UseCurveProps = {}) => {
         }
     };
 
-    const setPath = (path: string) => {
-        currentPath.current = path;
+    const setViewPath = (path: string) => {
+        viewPathRef.current = path;
     };
 
     const addNewLine = () => {
-        lines.current = [...lines.current, { position: newLine.current, path: currentPath.current, config: penConfig }];
-        newLine.current = [];
+        CurvesRef.current = [
+            ...CurvesRef.current,
+            { position: newCurveRef.current, path: viewPathRef.current, config: penConfig },
+        ];
+        newCurveRef.current = [];
     };
 
     const getDrawingCurve = (): Curve2D => {
-        return [...newLine.current];
+        return [...newCurveRef.current];
     };
 
-    const getCurve = (): Array<Curve> => {
-        return [...lines.current, { position: newLine.current, path: currentPath.current, config: penConfig }];
+    const getCurves = (): Array<Curve> => {
+        return [...CurvesRef.current, { position: newCurveRef.current, path: viewPathRef.current, config: penConfig }];
     };
 
     return {
-        currentPath: currentPath.current,
-        setPath,
-        getCurve,
+        viewPath: viewPathRef.current,
+        setViewPath,
+        getCurves,
         getDrawingCurve,
         addControlPoint,
         addNewLine,

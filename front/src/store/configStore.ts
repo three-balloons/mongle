@@ -19,11 +19,11 @@ export const useConfigStore = createStore<Store, State>(
             color: 'black',
             thickness: 5,
             alpha: 1,
-            font: 'serif',
         },
         textConfig: {
             fontSize: 48,
             fontWeight: 'normal',
+            font: 'serif',
         },
         setPenColor: (color) =>
             set((state) => ({

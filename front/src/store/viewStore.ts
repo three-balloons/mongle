@@ -1,11 +1,11 @@
 import { createStore } from '@/store/store';
 
 type State = {
-    canvasView: ViewCoordSys;
+    canvasView: ViewCoord;
 };
 
 type Action = {
-    setCanvasView: (canvasView: ViewCoordSys) => void;
+    setCanvasView: (canvasView: ViewCoord) => void;
 };
 type Store = State & Action;
 

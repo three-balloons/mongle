@@ -1,20 +1,13 @@
-type Paint = {
-    newCurve: Curve;
-    curves: Array<Curve>;
-    coolTime: number;
-    sensitivity: number;
-};
-
 type PenConfig = {
     color: Color;
     thickness: number;
     alpha: number;
-    font: Font;
 };
 
 type TextConfig = {
     fontSize: number;
     fontWeight: 'normal' | 'bold' | number;
+    font: Font;
 };
 
 type Font = 'serif' | 'Arial' | 'Courier New' | 'Georgia' | 'Times New Roman' | 'Trebuchet MS' | 'Verdana';
@@ -45,7 +38,7 @@ type Color =
 // path: canvas path
 // pos: relative position
 // size: canvas size in screen
-type ViewCoordSys = {
+type ViewCoord = {
     pos: Rect;
     path: string;
     size: Vector2D;
@@ -53,7 +46,7 @@ type ViewCoordSys = {
 
 // Poloar coordinate system
 // angle: [0, 360), radius: (0, 100] except for root
-type PolarCoordSys = {
+type PolarCoord = {
     path: string;
     radius: number;
     angle: number;
@@ -61,7 +54,7 @@ type PolarCoordSys = {
 
 // Cartesian coordinate system
 // x: [-100, 100], y: [-100, 100] except for root
-type RectCoordSys = {
+type RectCoord = {
     path: string;
     x: number;
     y: number;

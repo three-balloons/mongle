@@ -4,7 +4,7 @@ import { isCollisionPointWithRect } from '@/util/shapes/collision';
 
 // TODO canvasPath와 canvasView 합치기
 // return undefined value when point can't be seen
-export const point2View = (point: RectCoordSys, canvasView: ViewCoordSys): Point | undefined => {
+export const point2View = (point: RectCoord, canvasView: ViewCoord): Point | undefined => {
     const depth = getPathDepth(canvasView.path, point.path);
     if (depth == -1) return undefined;
     if (depth == 0) {
@@ -24,7 +24,7 @@ export const point2View = (point: RectCoordSys, canvasView: ViewCoordSys): Point
 };
 
 // return undefined value when point can't be seen
-export const view2Point = (point: RectCoordSys, canvasView: ViewCoordSys): Point | undefined => {
+export const view2Point = (point: RectCoord, canvasView: ViewCoord): Point | undefined => {
     const depth = getPathDepth(canvasView.path, point.path);
     if (depth == -1) return undefined;
     if (depth == 0) {
@@ -44,7 +44,7 @@ export const view2Point = (point: RectCoordSys, canvasView: ViewCoordSys): Point
     };
 };
 
-export const curve2View = (curve: Curve2D, curvePath: string, canvasView: ViewCoordSys): Curve2D => {
+export const curve2View = (curve: Curve2D, curvePath: string, canvasView: ViewCoord): Curve2D => {
     const depth = getPathDepth(canvasView.path, curvePath);
     if (depth == undefined) return [];
     if (depth == 0) {
