@@ -1,42 +1,42 @@
 import Select from '@/headless/select/Select';
-import style from '@/components/select/pen-color-select.module.css';
+import style from '@/components/select/thicknessSelect/thickness-select.module.css';
 import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
 
-export const PenColorSelect = () => {
-    const { setPenColor, penConfig } = useConfigStore((state) => state);
+export const ThicknessSelect = () => {
+    const { setPenThickness, penConfig } = useConfigStore((state) => state);
     return (
         <Select className={style.default}>
             <Select.Trigger>
-                <div className={cn(style.circle)} style={penConfig.color && { backgroundColor: penConfig.color }}></div>
+                <div className={cn(style.circle, style.black)}>{penConfig.thickness}</div>
             </Select.Trigger>
             <Select.Content className={style.content}>
                 <Select.Option
                     className={style.option}
-                    value={<div className={cn(style.circle, style.yellow)}></div>}
+                    value={<div className={cn(style.circle, style.black)}>7</div>}
                     onSelect={() => {
-                        setPenColor('yellow');
+                        setPenThickness(7);
                     }}
                 >
-                    <div className={cn(style.circle, style.yellow)}></div>
+                    <div className={cn(style.circle, style.black)}>7</div>
                 </Select.Option>
                 <Select.Option
                     className={style.option}
-                    value={<div className={cn(style.circle, style.red)} />}
+                    value={<div className={cn(style.circle, style.black)}>3</div>}
                     onSelect={() => {
-                        setPenColor('red');
+                        setPenThickness(3);
                     }}
                 >
-                    <div className={cn(style.circle, style.red)} />
+                    <div className={cn(style.circle, style.black)}>3</div>
                 </Select.Option>
                 <Select.Option
                     className={style.option}
-                    value={<div className={cn(style.circle, style.black)}></div>}
+                    value={<div className={cn(style.circle, style.black)}>1</div>}
                     onSelect={() => {
-                        setPenColor('black');
+                        setPenThickness(1);
                     }}
                 >
-                    <div className={cn(style.circle, style.black)}></div>
+                    <div className={cn(style.circle, style.black)}>1</div>
                 </Select.Option>
             </Select.Content>
         </Select>

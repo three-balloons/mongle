@@ -1,12 +1,14 @@
 import { cn } from '@/util/cn';
 import style from '@/components/menu/menu.module.css';
 import { useViewStore } from '@/store/viewStore';
-import { PenColorSelect } from '@/components/select/PenColorSelect';
-import { ThicknessSelect } from '@/components/select/ThicknessSelect';
+import { PenColorSelect } from '@/components/select/penColorSelect/PenColorSelect';
+import { ThicknessSelect } from '@/components/select/thicknessSelect/ThicknessSelect';
+import { ToolSelect } from '@/components/select/toolSelect/ToolSelect';
 
 export const Menu = () => {
     const { canvasView, setCanvasView } = useViewStore((state) => state);
 
+    // TODO: 투터치 인터페이스 구현(줌/아웃 가능)
     const resizeView = (intensity: number) => {
         setCanvasView({
             ...canvasView,
@@ -18,6 +20,8 @@ export const Menu = () => {
             },
         });
     };
+
+    // TODO: 투터치 인터페이스 구현(이동 가능)
     const moveView = (intensityX: number, intensityY: number) => {
         setCanvasView({
             ...canvasView,
@@ -33,8 +37,9 @@ export const Menu = () => {
             <div className={cn(style.config)}>
                 <PenColorSelect />
                 <ThicknessSelect />
+                <ToolSelect />
             </div>
-            <div className={cn(style.config)}>
+            <div className={cn(style.command)}>
                 <button className={cn(style.green)} onClick={() => moveView(-10, 0)}>
                     왼쪽 이동
                 </button>

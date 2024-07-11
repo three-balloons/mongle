@@ -4,7 +4,6 @@
     height: 100px;
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
     align-items: center;
 }
 
@@ -13,11 +12,19 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    width: 90%;
+    width: 100%;
+    flex: 1;
     margin: 0 20px;
+}
+
+.command {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
 
     button {
-        width: 100px;
+        width: 75px;
         height: 80%;
         font-size: 12px;
         line-height: 12px;

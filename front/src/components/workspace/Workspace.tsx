@@ -1,7 +1,10 @@
 import { useCanvas } from '@/hooks/useCanvas';
 import { cn } from '@/util/cn';
 import style from '@/components/workspace/workspace.module.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { isCollisionPointWithRect } from '@/util/shapes/collision';
+import { getViewCoordinate } from '@/util/canvas/canvas';
+import { addPoint } from '@/util/shapes/operator';
 
 type WorkspaceProps = {
     width: number;
@@ -11,7 +14,46 @@ type WorkspaceProps = {
 export const Workspace = ({ width, height }: WorkspaceProps) => {
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
 
-    const { canvasRef, touchDown, touch, touchUp } = useCanvas({ width, height });
+    const { mode, canvasRef, touchDown, touch, touchUp } = useCanvas({ width, height });
+
+    const [position, setPosition] = useState<Point>({ x: 0, y: 0 });
+    const [isInsideCanvas, setIsInsideCanvas] = useState(false);
+    useEffect(() => {
+        if (!canvasRef.current) return;
+        const canvas: HTMLCanvasElement = canvasRef.current;
+        const CanvasOffset: Point = {
+            x: canvas.offsetLeft,
+            y: canvas.offsetTop,
+        };
+        const handleMouseMove = (event: MouseEvent | TouchEvent) => {
+            if (!canvasRef.current) return;
+            const pos: Point = getViewCoordinate(event, canvasRef.current);
+            if (
+                pos &&
+                mode == 'remove' &&
+                isCollisionPointWithRect(pos, {
+                    top: 0,
+                    left: 0,
+                    width: width,
+                    height: height,
+                })
+            ) {
+                setIsInsideCanvas(true);
+                if (isInsideCanvas) {
+                    setPosition(addPoint(pos, CanvasOffset));
+                }
+            }
+        };
+
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('touchmove', handleMouseMove);
+
+        return () => {
+            canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('touchmove', handleMouseMove);
+        };
+    }, []);
+
     useEffect(() => {
         if (!canvasRef.current) {
             return;
@@ -39,8 +81,17 @@ export const Workspace = ({ width, height }: WorkspaceProps) => {
         };
     }, [touchDown, touch, touchUp]);
     return (
-        <>
+        <div>
             <canvas ref={canvasRef} className={cn(style.workspaceContent)} width={width} height={height}></canvas>
-        </>
+            {isInsideCanvas && (
+                <div
+                    className={style.eraser}
+                    style={{
+                        left: position.x,
+                        top: position.y,
+                    }}
+                ></div>
+            )}
+        </div>
     );
 };
