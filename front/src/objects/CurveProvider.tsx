@@ -4,10 +4,12 @@ import { createContext, useEffect, useRef } from 'react';
 export type CurveContextProps = {
     viewPath: string;
     setViewPath: (path: string) => void;
-    getCurves: () => Curve[];
+    getCurves: () => Array<Curve>;
     getDrawingCurve: () => Curve2D;
     addControlPoint: (pos: Point, force?: boolean) => boolean;
     addNewLine: () => void;
+    addCurves: (curves: Array<Curve>) => void;
+    removeCurve: (curve: Curve) => void;
     applyPenConfig: (context: CanvasRenderingContext2D, options?: PenConfig) => void;
 };
 
@@ -59,6 +61,14 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         newCurveRef.current = [];
     };
 
+    const addCurves = (curves: Array<Curve>) => {
+        CurvesRef.current = [...CurvesRef.current, ...curves];
+    };
+
+    const removeCurve = (curveToRemove: Curve) => {
+        CurvesRef.current = [...CurvesRef.current.filter((curve) => curve !== curveToRemove)];
+    };
+
     const getDrawingCurve = (): Curve2D => {
         return [...newCurveRef.current];
     };
@@ -89,6 +99,8 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
                 getDrawingCurve,
                 addControlPoint,
                 addNewLine,
+                addCurves,
+                removeCurve,
                 applyPenConfig,
             }}
         >

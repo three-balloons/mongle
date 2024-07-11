@@ -29,12 +29,12 @@ export const ToolSelect = () => {
                 </Select.Option>
                 <Select.Option
                     className={style.option}
-                    value="remove"
+                    value="erase"
                     onSelect={() => {
-                        setMode('remove');
+                        setMode('erase');
                     }}
                 >
-                    remove
+                    erase
                 </Select.Option>
             </Select.Content>
         </Select>

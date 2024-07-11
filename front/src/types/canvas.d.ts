@@ -32,7 +32,7 @@ type Color =
     | 'orange'
     | 'pink';
 
-type ControlMode = 'move' | 'draw' | 'remove';
+type ControlMode = 'move' | 'draw' | 'erase';
 
 // Coordinate systems
 

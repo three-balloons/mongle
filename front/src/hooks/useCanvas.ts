@@ -19,6 +19,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { setCanvasView } = useViewStore((state) => state);
     const modeRef = useRef<ControlMode>('move');
+    const isEraseRef = useRef<boolean>(false);
     // const { mode } = useConfigStore((state) => state);
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
@@ -39,7 +40,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
-    const { removeArea } = useEraser();
+    const { eraseArea } = useEraser();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -60,6 +61,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 isPaintingRef.current = true;
                 startDrawing(currentPosition, canvasViewRef.current);
+            } else if (isEraseRef.current == false && modeRef.current == 'erase') {
+                event.preventDefault();
+                event.stopPropagation();
+                isEraseRef.current = true;
             }
         }
     }, []);
@@ -72,8 +77,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (currentPosition) {
             if (isPaintingRef.current && modeRef.current == 'draw') {
                 draw(currentPosition, canvasViewRef.current, lineRenderer, curveRenderer);
-            } else if (modeRef.current == 'remove') {
-                removeArea(currentPosition, canvasViewRef.current);
+            } else if (isEraseRef.current && modeRef.current == 'erase') {
+                eraseArea(currentPosition, canvasViewRef.current);
+                renderer(getCurves());
             }
         }
     }, []);
@@ -82,7 +88,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (isPaintingRef.current && modeRef.current == 'draw') {
             finishDrawing(canvasViewRef.current, curveRenderer);
             isPaintingRef.current = false;
-        }
+        } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
     }, []);
 
     //renders
@@ -206,5 +212,5 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    return { mode: modeRef.current, canvasRef, touchDown, touch, touchUp };
+    return { isEraseRef, modeRef, canvasRef, touchDown, touch, touchUp };
 };

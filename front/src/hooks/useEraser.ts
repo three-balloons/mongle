@@ -9,19 +9,28 @@ import { isCollisionRectWithCircle } from '@/util/shapes/collision';
  */
 export const useEraser = () => {
     const positionRef = useRef<Point | undefined>();
-    const { getCurves } = useCurve();
+    const { getCurves, addCurves, removeCurve } = useCurve();
 
     // 임의의 상수값 지우개 크기 => 추후 config에서 받아오기
     const removeRadius = 5;
 
-    const removeArea = useCallback((currentPosition: Point, canvasView: ViewCoord) => {
+    const eraseArea = useCallback((currentPosition: Point, canvasView: ViewCoord) => {
         positionRef.current = currentPosition;
-        const circle: Circle = {
+        const eraser: Circle = {
             center: currentPosition,
             radius: removeRadius,
         };
 
-        findIntersectCurves(circle, getCurves(), canvasView);
+        const curves = findIntersectCurves(eraser, getCurves(), canvasView);
+        curves.forEach((curve) => {
+            console.log('original', curve);
+            const temp = seperateCurveWithEraser(eraser, curve, canvasView);
+            console.log('temp', temp);
+            if (temp.length > 0) {
+                removeCurve(curve);
+                addCurves(temp);
+            }
+        });
     }, []);
 
     const findIntersectCurves = (circle: Circle, curves: Array<Curve>, canvasView: ViewCoord): Array<Curve> => {
@@ -32,5 +41,36 @@ export const useEraser = () => {
         });
     };
 
-    return { removeArea };
+    const seperateCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): Array<Curve> => {
+        const { path, config } = curve;
+        const points = curve2View(curve.position, curve.path, canvasView);
+        const ret: Array<Curve> = [];
+        let continNum = 0;
+        for (let i = 0; i < points.length - 1; i++) {
+            const rect = curve2Rect([points[i], points[i + 1]]);
+            if (rect && isCollisionRectWithCircle(rect, circle)) {
+                const insertedPoints: Curve2D = curve.position.slice(continNum, i + 1);
+                if (insertedPoints.length > 0) {
+                    ret.push({
+                        path: path,
+                        config: config,
+                        position: insertedPoints,
+                    });
+                    console.log(i, continNum, 'i');
+                }
+
+                continNum = i + 1;
+            }
+        }
+        const insertedPoints: Curve2D = curve.position.slice(continNum);
+        if (insertedPoints.length > 0)
+            ret.push({
+                path: path,
+                config: config,
+                position: insertedPoints,
+            });
+        return ret;
+    };
+
+    return { eraseArea };
 };
