@@ -6,6 +6,7 @@ import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
+import { catmullRom2Bezier } from '@/util/shapes/conversion';
 
 type UseCanvasProps = {
     width?: number;
@@ -109,12 +110,11 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     };
 
     // addControlPoint가 true일 때 실행
-    const curveRenderer = (curve: Curve2D, splineCount: number, isForce: boolean = false): number | undefined => {
+    const curveRenderer = (curve: Curve2D, splineCount: number): number | undefined => {
         if (!canvasRef.current) {
             return;
         }
         let splineCnt = splineCount;
-        if (!isForce && splineCnt + 3 > Math.floor((curve.length - 1) / 3) * 3) return;
         const canvas: HTMLCanvasElement = canvasRef.current;
         const context = canvas.getContext('2d');
 
@@ -122,38 +122,22 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             if (canvasImageRef.current) context.putImageData(canvasImageRef.current, 0, 0);
             else context.clearRect(0, 0, canvas.width, canvas.height);
             applyPenConfig(context);
-            const points = curve2View(curve, viewPath, canvasViewRef.current);
+            const beziers = catmullRom2Bezier(curve2View(curve, viewPath, canvasViewRef.current));
             context.beginPath();
             // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-            if (points.length > 0) {
-                for (let i = 1; i < points.length; i += 3) {
-                    context.moveTo(points[i - 1].x, points[i - 1].y);
-                    if (points.length - i == 1) {
-                        if (isForce) {
-                            context.lineTo(points[i].x, points[i].y);
-                            context.moveTo(points[i].x, points[i].y);
-                            splineCnt = i;
-                        }
-                        break;
-                    } else if (points.length - i == 2) {
-                        if (isForce) {
-                            context.quadraticCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
-                            context.moveTo(points[i + 1].x, points[i + 1].y);
-                            splineCnt = i + 1;
-                        }
-                        break;
-                    } else if (splineCnt < i) {
-                        context.bezierCurveTo(
-                            points[i].x,
-                            points[i].y,
-                            points[i + 1].x,
-                            points[i + 1].y,
-                            points[i + 2].x,
-                            points[i + 2].y,
-                        );
-                        context.moveTo(points[i + 2].x, points[i + 2].y);
-                        splineCnt = i + 2;
-                    }
+            if (beziers.length > 0) {
+                for (let i = 0; i < beziers.length; i++) {
+                    if (splineCnt >= i) continue;
+                    context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                    context.bezierCurveTo(
+                        beziers[i].cp1.x,
+                        beziers[i].cp1.y,
+                        beziers[i].cp2.x,
+                        beziers[i].cp2.y,
+                        beziers[i].end.x,
+                        beziers[i].end.y,
+                    );
+                    splineCnt = i;
                 }
             }
             context.stroke();
@@ -172,37 +156,21 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
-                let splineCnt = 0;
-
                 applyPenConfig(context, curve.config);
-                const points = curve2View(curve.position, curve.path, canvasViewRef.current);
+                const beziers = catmullRom2Bezier(curve2View(curve.position, curve.path, canvasViewRef.current));
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-                if (points.length > 0) {
-                    for (let i = 1; i < points.length; i += 3) {
-                        context.moveTo(points[i - 1].x, points[i - 1].y);
-                        if (points.length - i == 1) {
-                            context.lineTo(points[i].x, points[i].y);
-                            context.moveTo(points[i].x, points[i].y);
-                            splineCnt = i;
-                            break;
-                        } else if (points.length - i == 2) {
-                            context.quadraticCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
-                            context.moveTo(points[i + 1].x, points[i + 1].y);
-                            splineCnt = i + 1;
-                            break;
-                        } else if (splineCnt < i) {
-                            context.bezierCurveTo(
-                                points[i].x,
-                                points[i].y,
-                                points[i + 1].x,
-                                points[i + 1].y,
-                                points[i + 2].x,
-                                points[i + 2].y,
-                            );
-                            context.moveTo(points[i + 2].x, points[i + 2].y);
-                            splineCnt = i + 2;
-                        }
+                if (beziers.length > 0) {
+                    for (let i = 0; i < beziers.length; i++) {
+                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                        context.bezierCurveTo(
+                            beziers[i].cp1.x,
+                            beziers[i].cp1.y,
+                            beziers[i].cp2.x,
+                            beziers[i].cp2.y,
+                            beziers[i].end.x,
+                            beziers[i].end.y,
+                        );
                     }
                 }
                 context.stroke();
