@@ -32,6 +32,8 @@ type Color =
     | 'orange'
     | 'pink';
 
+type ControlMode = 'move' | 'draw' | 'remove';
+
 // Coordinate systems
 
 // (canvas) View coordinate system

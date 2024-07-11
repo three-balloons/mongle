@@ -1,8 +1,8 @@
-export const getViewCoordinate = (event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement): Point | undefined => {
+export const getViewCoordinate = (event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement): Point => {
     if (event instanceof MouseEvent) {
         return {
-            x: Math.round(event.offsetX),
-            y: Math.round(event.offsetY),
+            x: Math.round(event.clientX) - canvas.offsetLeft,
+            y: Math.round(event.clientY) - canvas.offsetTop,
         };
     } else {
         return {

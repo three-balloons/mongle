@@ -4,6 +4,8 @@ import { getViewCoordinate } from '@/util/canvas/canvas';
 import { curve2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
+import { useConfigStore } from '@/store/configStore';
+import { useEraser } from '@/hooks/useEraser';
 
 type UseCanvasProps = {
     width?: number;
@@ -16,6 +18,8 @@ type UseCanvasProps = {
 export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { setCanvasView } = useViewStore((state) => state);
+    const modeRef = useRef<ControlMode>('move');
+    // const { mode } = useConfigStore((state) => state);
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
             top: -height / 2,
@@ -32,7 +36,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const isPaintingRef = useRef(false);
     const canvasImageRef = useRef<ImageData | null>(null);
     const { viewPath, getCurves, applyPenConfig } = useCurve();
+
+    // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
+    const { removeArea } = useEraser();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -40,13 +47,17 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             canvasViewRef.current = canvasView;
             renderer(getCurves());
         });
+
+        useConfigStore.subscribe(({ mode }) => {
+            modeRef.current = mode;
+        });
     }, []);
 
     const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
         if (canvasRef.current == undefined) return;
         const currentPosition = getViewCoordinate(event, canvasRef.current);
         if (currentPosition) {
-            if (isPaintingRef.current == false) {
+            if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 isPaintingRef.current = true;
                 startDrawing(currentPosition, canvasViewRef.current);
             }
@@ -59,19 +70,22 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (canvasRef.current == undefined) return;
         const currentPosition = getViewCoordinate(event, canvasRef.current);
         if (currentPosition) {
-            if (isPaintingRef.current) {
+            if (isPaintingRef.current && modeRef.current == 'draw') {
                 draw(currentPosition, canvasViewRef.current, lineRenderer, curveRenderer);
+            } else if (modeRef.current == 'remove') {
+                removeArea(currentPosition, canvasViewRef.current);
             }
         }
     }, []);
 
     const touchUp = useCallback(() => {
-        if (isPaintingRef.current) {
+        if (isPaintingRef.current && modeRef.current == 'draw') {
             finishDrawing(canvasViewRef.current, curveRenderer);
             isPaintingRef.current = false;
         }
     }, []);
 
+    //renders
     // bezier curve 적용 전 - 픽셀 단위로 그리기
     const lineRenderer = (startPoint: Point, endPoint: Point) => {
         if (!canvasRef.current) {
@@ -192,5 +206,5 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    return { canvasRef, touchDown, touch, touchUp };
+    return { mode: modeRef.current, canvasRef, touchDown, touch, touchUp };
 };

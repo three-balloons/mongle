@@ -12,7 +12,7 @@ export const MainLayout = () => {
     return (
         <div className={cn(style.default)}>
             <CurveProvider sensitivity={1}>
-                <Menu></Menu>
+                <Menu />
                 <div className={cn(style.workspace)}>
                     <Explorer />
                     <Workspace width={canvasSize.width} height={canvasSize.height} />

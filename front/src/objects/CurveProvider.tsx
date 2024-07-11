@@ -60,7 +60,6 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     };
 
     const getDrawingCurve = (): Curve2D => {
-        console.log(newCurveRef.current);
         return [...newCurveRef.current];
     };
 

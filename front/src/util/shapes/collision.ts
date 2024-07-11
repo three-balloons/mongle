@@ -1,7 +1,15 @@
 import { isRect, isCircle } from '@/util/shapes/typeGuard';
 
 export const isCollisionRectWithCircle = (rect: Rect, circle: Circle): boolean => {
-    return true;
+    const { x: circleX, y: circleY } = circle.center;
+    const { top, left, width, height } = rect;
+    const closestX = Math.max(left, Math.min(circleX, left + width));
+    const closestY = Math.max(top, Math.min(circleY, top + height));
+    const distanceX = circleX - closestX;
+    const distanceY = circleY - closestY;
+    const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+    return distanceSquared <= circle.radius * circle.radius;
 };
 
 export const isCollisionWithRect = (rectA: Rect, rectB: Rect): boolean => {

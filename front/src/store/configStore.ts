@@ -3,6 +3,7 @@ import { createStore } from '@/store/store';
 type State = {
     penConfig: PenConfig;
     textConfig: TextConfig;
+    mode: ControlMode;
 };
 
 type Action = {
@@ -10,6 +11,7 @@ type Action = {
     setPenThickness: (thickness: number) => void;
     setPenAlpha: (alpha: number) => void;
     setPenFont: (font: Font) => void;
+    setMode: (mode: ControlMode) => void;
 };
 type Store = State & Action;
 
@@ -25,6 +27,7 @@ export const useConfigStore = createStore<Store, State>(
             fontWeight: 'normal',
             font: 'serif',
         },
+        mode: 'move',
         setPenColor: (color) =>
             set((state) => ({
                 penConfig: {
@@ -53,9 +56,13 @@ export const useConfigStore = createStore<Store, State>(
                     font,
                 },
             })),
+        setMode: (mode) =>
+            set({
+                mode: mode,
+            }),
     }),
     {
         name: 'configStorage',
-        partialize: (state) => ({ penConfig: state.penConfig, textConfig: state.textConfig }),
+        partialize: (state) => ({ penConfig: state.penConfig, textConfig: state.textConfig, mode: state.mode }),
     },
 );

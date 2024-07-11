@@ -7,9 +7,9 @@ export const curve2Rect = (points: Curve2D, offset: number = 0): Rect | undefine
     let right = points[0].x;
     points.forEach((point) => {
         top = Math.min(top, point.y);
-        bottom = Math.max(top, point.y);
-        left = Math.min(top, point.y);
-        right = Math.max(top, point.y);
+        bottom = Math.max(bottom, point.y);
+        left = Math.min(left, point.x);
+        right = Math.max(right, point.x);
     });
     return {
         top: top - offset,
