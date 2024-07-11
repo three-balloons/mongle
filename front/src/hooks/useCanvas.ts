@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
 import { getViewCoordinate } from '@/util/canvas/canvas';
-import { curve2View } from '@/util/coordSys/conversion';
+import { curve2View, getThicknessRatio } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
@@ -37,7 +37,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     });
     const isPaintingRef = useRef(false);
     const canvasImageRef = useRef<ImageData | null>(null);
-    const { viewPath, getCurves, applyPenConfig } = useCurve();
+    const { viewPath, getCurves, applyPenConfig, setThicknessWithRatio } = useCurve();
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
@@ -102,6 +102,8 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         const context = canvas.getContext('2d');
         if (context) {
             applyPenConfig(context);
+            console.log(getThicknessRatio(canvasViewRef.current));
+            setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
             context.beginPath();
             context.moveTo(startPoint.x, startPoint.y);
             context.lineTo(endPoint.x, endPoint.y);
@@ -157,6 +159,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
                 applyPenConfig(context, curve.config);
+                setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
                 const beziers = catmullRom2Bezier(curve2View(curve.position, curve.path, canvasViewRef.current));
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것

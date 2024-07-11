@@ -61,3 +61,7 @@ export const curve2View = (curve: Curve2D, curvePath: string, canvasView: ViewCo
     // TODO: depth가 깊어지는 경우도 해결
     return [];
 };
+
+export const getThicknessRatio = (canvasView: ViewCoord) => {
+    return canvasView.size.x / canvasView.pos.width;
+};

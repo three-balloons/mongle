@@ -43,6 +43,8 @@ export const useEraser = () => {
 
     const seperateCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): Array<Curve> => {
         const { path, config } = curve;
+
+        // 두께 고려하기 & 타원충돌 고려하기
         const points = curve2View(curve.position, curve.path, canvasView);
         const ret: Array<Curve> = [];
         let continNum = 0;

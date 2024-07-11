@@ -27,11 +27,11 @@ export const catmullRom2Bezier = (points: Curve2D) => {
         const p2 = points[i + 1];
         const p3 = points[Math.min(i + 2, points.length - 1)];
 
-        const cp1x = p1.x + (p2.x - p0.x) / 6;
-        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp1x = Math.round(p1.x + (p2.x - p0.x) / 6);
+        const cp1y = Math.round(p1.y + (p2.y - p0.y) / 6);
 
-        const cp2x = p2.x - (p3.x - p1.x) / 6;
-        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        const cp2x = Math.round(p2.x - (p3.x - p1.x) / 6);
+        const cp2y = Math.round(p2.y - (p3.y - p1.y) / 6);
 
         result.push({
             start: p1,

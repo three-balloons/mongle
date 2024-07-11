@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
-import { view2Point } from '@/util/coordSys/conversion';
+import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
 
 /**
  * store canvas infromation and command functions
@@ -65,7 +65,7 @@ export const useDrawer = () => {
             }
             curveRenderer(getDrawingCurve(), splineCountRef.current);
             splineCountRef.current = -1;
-            addNewLine();
+            addNewLine(getThicknessRatio(canvasView));
         },
         [addNewLine],
     );
