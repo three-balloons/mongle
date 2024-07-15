@@ -8,3 +8,9 @@ export const getPathDepth = (parentPath: string, childPath: string): number | un
     }
     return child.length - parent.length;
 };
+
+export const getParentPath = (path: string): string | undefined => {
+    if (path == '/') return undefined;
+    const paths = path.split('/');
+    return paths.slice(0, -1).join('/');
+};

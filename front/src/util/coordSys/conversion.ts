@@ -2,6 +2,19 @@
 import { getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 
+// idea: forward kinematics
+/** 좌표 변환 과정(obj의 로컬 좌표 -> view 좌표(canvas에 보이는 좌표))
+ * 1. obj2bubble
+ *    bubble내의 obj의 로컬 좌표계를 한 단계 올림(bubble과 같은 path)
+ *
+ * 2. hierarchy
+ *    canvas view의 path와 bubble의 path가 다를 경우 canvas view의 좌표계로 맞춤
+ *    anti-aliasing 필요(ex. 2 depth 이상 차이 나는 경우 undifined)
+ *
+ * 3. canvasView
+ *    canvasView와 보정한
+ */
+
 // TODO canvasPath와 canvasView 합치기
 // return undefined value when point can't be seen
 export const point2View = (point: RectCoord, canvasView: ViewCoord): Point | undefined => {
@@ -44,22 +57,15 @@ export const view2Point = (point: RectCoord, canvasView: ViewCoord): Point | und
     };
 };
 
-export const curve2View = (curve: Curve2D, curvePath: string, canvasView: ViewCoord): Curve2D => {
-    const depth = getPathDepth(canvasView.path, curvePath);
-    if (depth == undefined) return [];
-    if (depth == 0) {
-        const ret: Curve2D = curve.map((point) => {
-            const { left, top, width, height } = canvasView.pos;
-            const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+export const getCurvesPosInBubble = (bubble: Bubble): Array<Curve2D> => {
+    return bubble.curves.map((curve) => {
+        return curve.position.map((point) => {
             return {
-                x: ((point.x - left) * canvasWidth) / width,
-                y: ((point.y - top) * canvasHeight) / height,
+                x: (bubble.width * point.x) / 200 + bubble.left,
+                y: (bubble.height * point.y) / 200 + bubble.top,
             };
         });
-        return ret;
-    }
-    // TODO: depth가 깊어지는 경우도 해결
-    return [];
+    });
 };
 
 export const getThicknessRatio = (canvasView: ViewCoord) => {
