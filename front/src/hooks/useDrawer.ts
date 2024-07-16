@@ -15,7 +15,6 @@ export const useDrawer = () => {
         setViewPath(canvasView.path);
         const point = view2Point(
             {
-                path: canvasView.path,
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
@@ -38,7 +37,6 @@ export const useDrawer = () => {
                 // DOTO::draw 정책 설정 - 화면에 나타난 bubble안에도 생성 가능 여부(현재는 불가)
                 const currentPoint = view2Point(
                     {
-                        path: canvasView.path,
                         x: currentPosition.x,
                         y: currentPosition.y,
                     },
@@ -57,10 +55,7 @@ export const useDrawer = () => {
     const finishDrawing = useCallback(
         (canvasView: ViewCoord, curveRenderer: (curve: Curve2D, splineCount: number) => number | undefined) => {
             if (positionRef.current) {
-                const point = view2Point(
-                    { path: canvasView.path, x: positionRef.current.x, y: positionRef.current.y },
-                    canvasView,
-                );
+                const point = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, canvasView);
                 if (point) addControlPoint(point, true);
             }
             curveRenderer(getDrawingCurve(), splineCountRef.current);

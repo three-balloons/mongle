@@ -1,7 +1,7 @@
 // TODO: path를 고려할 것
 import { getParentPath, getPathDepth } from '@/util/path/path';
 // import { isCollisionPointWithRect } from '@/util/shapes/collision';
-import { findBubble } from '@/util/bubble/bubble';
+import { findBubble, findParentBubble } from '@/util/bubble/bubble';
 
 // idea: forward kinematics
 /** 좌표 변환 과정(obj의 로컬 좌표 -> view 좌표(canvas에 보이는 좌표))
@@ -78,22 +78,24 @@ export const view2Point = (point: Point, canvasView: ViewCoord): Point | undefin
 // 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
 // TODO: 최적화
 
-export const descendant2child = (descendant: Bubble, parent: Bubble): Bubble | undefined => {
-    const depth = getPathDepth(parent.path, descendant.path);
+export const descendant2child = (descendant: Bubble, ancestorPath: string): Bubble | undefined => {
+    const depth = getPathDepth(ancestorPath, descendant.path);
+    // const depth = getPathDepth('/', descendant.path);
     if (depth == undefined) return undefined;
     if (depth == 0) return descendant; // depth가 0인 경우 자체가 존재하지 않음
     if (depth == 1)
         return descendant; // descendant is child
     else if (depth > 1) {
         const ret: Bubble = { ...descendant };
+        let parent: Bubble | undefined = ret;
         for (let i = 1; i < depth; i++) {
             const path = getParentPath(ret.path);
             if (path == undefined) return undefined;
-            const parent = findBubble(path);
+            parent = findParentBubble(parent);
             if (parent == undefined) return undefined;
-            ret.path = path;
-            ret.top = (parent.height * ret.top) / 200 + parent.top;
-            ret.left = (parent.width * ret.left) / 200 + parent.left;
+            ret.path = parent.path;
+            ret.top = (parent.height * (100 + ret.top)) / 200 + parent.top;
+            ret.left = (parent.width * (100 + ret.left)) / 200 + parent.left;
             ret.height = (parent.height * ret.height) / 200;
             ret.width = (parent.width * ret.width) / 200;
         }
@@ -106,30 +108,28 @@ export const point2bubble = (point: Point, path: string) => {
     if (bubble == undefined) return point;
     else
         return {
-            y: (bubble.height * point.y) / 200 + bubble.top,
-            x: (bubble.width * point.x) / 200 + bubble.left,
+            y: (bubble.height * (100 + point.y)) / 200 + bubble.top,
+            x: (bubble.width * (100 + point.x)) / 200 + bubble.left,
         };
 };
 
-export const curve2bubble = (curve: Curve2D, path: string): Curve2D => {
-    const bubble = findBubble(path);
+export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
     if (bubble == undefined) return curve;
     else
         return curve.map((point) => {
             return {
-                x: (bubble.width * point.x) / 200 + bubble.left,
-                y: (bubble.height * point.y) / 200 + bubble.top,
+                x: (bubble.width * (100 + point.x)) / 200 + bubble.left,
+                y: (bubble.height * (100 + point.y)) / 200 + bubble.top,
             };
         });
 };
 
-export const rect2bubble = (rect: Rect, path: string): Rect => {
-    const bubble = findBubble(path);
+export const rect2bubble = (rect: Rect, bubble: Bubble | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
         return {
-            top: (bubble.height * rect.top) / 200 + bubble.top,
-            left: (bubble.width * rect.left) / 200 + bubble.left,
+            top: (bubble.height * (100 + rect.top)) / 200 + bubble.top,
+            left: (bubble.width * (100 + rect.left)) / 200 + bubble.left,
             height: (bubble.height * rect.height) / 200,
             width: (bubble.width * rect.width) / 200,
         };

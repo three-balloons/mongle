@@ -23,9 +23,7 @@ export const useEraser = () => {
 
         const curves = findIntersectCurves(eraser, getCurves(), canvasView);
         curves.forEach((curve) => {
-            console.log('original', curve);
             const temp = seperateCurveWithEraser(eraser, curve, canvasView);
-            console.log('temp', temp);
             if (temp.length > 0) {
                 removeCurve(curve);
                 addCurves(temp);
@@ -35,7 +33,7 @@ export const useEraser = () => {
 
     const findIntersectCurves = (circle: Circle, curves: Array<Curve>, canvasView: ViewCoord): Array<Curve> => {
         return curves.filter((curve) => {
-            const rect = curve2Rect(curve2View(curve.position, curve.path, canvasView));
+            const rect = curve2Rect(curve2View(curve.position, canvasView));
             if (rect) return isCollisionRectWithCircle(rect, circle);
             return false;
         });
@@ -45,7 +43,7 @@ export const useEraser = () => {
         const { path, config } = curve;
 
         // 두께 고려하기 & 타원충돌 고려하기
-        const points = curve2View(curve.position, curve.path, canvasView);
+        const points = curve2View(curve.position, canvasView);
         const ret: Array<Curve> = [];
         let continNum = 0;
         for (let i = 0; i < points.length - 1; i++) {
@@ -58,7 +56,6 @@ export const useEraser = () => {
                         config: config,
                         position: insertedPoints,
                     });
-                    console.log(i, continNum, 'i');
                 }
 
                 continNum = i + 1;

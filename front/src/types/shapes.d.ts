@@ -35,4 +35,5 @@ interface Bubble extends Rect {
     path: string;
     curves: Array<Curve>;
     children: Array<Bubble>;
+    parent: Bubble | undefined;
 }

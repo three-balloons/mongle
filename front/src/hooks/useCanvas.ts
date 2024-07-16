@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
 import { getViewCoordinate } from '@/util/canvas/canvas';
-import { curve2View, getThicknessRatio } from '@/util/coordSys/conversion';
+import { curve2bubble, curve2View, descendant2child, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
+import { bubbles } from '@/mock/bubble';
 
 type UseCanvasProps = {
     width?: number;
@@ -124,7 +125,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             if (canvasImageRef.current) context.putImageData(canvasImageRef.current, 0, 0);
             else context.clearRect(0, 0, canvas.width, canvas.height);
             applyPenConfig(context);
-            const beziers = catmullRom2Bezier(curve2View(curve, viewPath, canvasViewRef.current));
+            const beziers = catmullRom2Bezier(curve2View(curve, canvasViewRef.current));
             context.beginPath();
             // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
             if (beziers.length > 0) {
@@ -160,7 +161,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             curves.forEach((curve) => {
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
-                const beziers = catmullRom2Bezier(curve2View(curve.position, curve.path, canvasViewRef.current));
+                const beziers = catmullRom2Bezier(curve2View(curve.position, canvasViewRef.current));
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
                 if (beziers.length > 0) {
@@ -183,5 +184,58 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    return { isEraseRef, modeRef, canvasRef, touchDown, touch, touchUp };
+    // bubble과 그 내부의 요소를 렌더링함
+    const bubbleRender = (bubble: Bubble) => {
+        if (!canvasRef.current) {
+            return;
+        }
+        const canvas: HTMLCanvasElement = canvasRef.current;
+        const context = canvas.getContext('2d');
+        const bubbleView = descendant2child(bubble, canvasViewRef.current.path);
+        if (bubbleView == undefined) return;
+        const rect: Rect = rect2View(
+            {
+                height: bubbleView.height,
+                width: bubbleView.width,
+                top: bubbleView.top,
+                left: bubbleView.left,
+            },
+            canvasViewRef.current,
+        );
+        if (context) {
+            context.beginPath(); // Start a new path
+            context.strokeStyle = 'lightblue';
+            context.setLineDash([10, 10]);
+            context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
+            context.setLineDash([]);
+            bubble.curves.forEach((curve) => {
+                const c = curve2bubble(curve.position, bubbleView);
+                const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
+                applyPenConfig(context, curve.config);
+                context.beginPath();
+                // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
+                if (beziers.length > 0) {
+                    for (let i = 0; i < beziers.length; i++) {
+                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                        context.bezierCurveTo(
+                            beziers[i].cp1.x,
+                            beziers[i].cp1.y,
+                            beziers[i].cp2.x,
+                            beziers[i].cp2.y,
+                            beziers[i].end.x,
+                            beziers[i].end.y,
+                        );
+                    }
+                }
+                context.stroke();
+            });
+        }
+    };
+
+    // 테스트를 위한 렌더링
+    const mockRender = () => {
+        bubbleRender(bubbles[1]);
+    };
+
+    return { isEraseRef, modeRef, canvasRef, touchDown, touch, touchUp, mockRender };
 };
