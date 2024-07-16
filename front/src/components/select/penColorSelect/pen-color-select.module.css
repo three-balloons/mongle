@@ -2,9 +2,8 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     align-items: center;
 }
 
@@ -14,21 +13,46 @@
     height: 20px;
 }
 
+.big-circle {
+    border-radius: 100%;
+    width: 30px;
+    height: 30px;
+}
+
 .content {
-    display: flex;
-    flex-direction: row;
-    height: 100px;
-    justify-content: space-between;
+    position: fixed;
+    top: 100px;
+    left: 100px;
+    margin-top: 10px;
+    margin-left: 10px;
+
+    background-color: var(--color-neutral-100);
+    box-shadow: 5px 5px 5px var(--color-transparent);
+    border-radius: 10px;
+    padding: 0 15px 15px 15px;
 }
 
-.black {
-    background-color: black;
+.preview {
+    cursor: pointer;
 }
 
-.red {
-    background-color: red;
+.option {
+    cursor: pointer;
 }
 
-.yellow {
-    background-color: yellow;
+.title {
+    color: var(--color-black);
+    margin: 1rem;
+}
+
+.option-wrapper {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-auto-flow: column;
+    justify-items: center;
+    align-items: center;
+    grid-template-rows: repeat(7, 1fr);
+    row-gap: 10px;
+    column-gap: 10px;
 }

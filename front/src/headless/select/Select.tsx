@@ -5,11 +5,16 @@ import { cn } from '@/util/cn';
 type SelectProps = {
     children: React.ReactNode;
     className?: string;
+    initialOpen?: boolean;
+    disableClose?: boolean;
 };
 
-const Select = ({ children, className }: SelectProps) => {
+const Select = ({ children, className, initialOpen = undefined, disableClose = undefined }: SelectProps) => {
     return (
-        <SelectProvider>
+        <SelectProvider
+            initialIsOpen={initialOpen === undefined ? false : true}
+            disableClose={disableClose === undefined ? false : true}
+        >
             <div className={cn(className)}>{children}</div>
         </SelectProvider>
     );
@@ -20,7 +25,7 @@ type SelectTriggerProps = {
     className?: string;
 };
 
-const SelectTrigger: React.FC<SelectTriggerProps> = ({ children, className }) => {
+const SelectTrigger = ({ children, className }: SelectTriggerProps) => {
     const { selectedValue, toggleOpen } = useSelect();
 
     return (
@@ -35,7 +40,7 @@ type SelectContentProps = {
     className?: string;
 };
 
-const SelectContent: React.FC<SelectContentProps> = ({ children, className }) => {
+const SelectContent = ({ children, className }: SelectContentProps) => {
     const { isOpen } = useSelect();
     if (!isOpen) return null;
     return <div className={cn(className)}>{children}</div>;
@@ -43,16 +48,21 @@ const SelectContent: React.FC<SelectContentProps> = ({ children, className }) =>
 
 type SelectOptionProps = {
     value: React.ReactNode;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     className?: string;
     onSelect?: () => void;
 };
 
-const SelectOption: React.FC<SelectOptionProps> = ({ value, children, className, onSelect }) => {
+const SelectOption = ({ value, children, className, onSelect }: SelectOptionProps) => {
     const { selectOption } = useSelect();
 
     return (
-        <div className={cn(className)} onClick={() => selectOption(value, onSelect)}>
+        <div
+            className={cn(className)}
+            onClick={() => {
+                selectOption(value, onSelect);
+            }}
+        >
             {children}
         </div>
     );

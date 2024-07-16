@@ -1,5 +1,5 @@
 .default {
-    background-color: lightblue;
+    background-color: var(--color-neutral-75);
     width: 100%;
     height: 100px;
     display: flex;
@@ -10,11 +10,13 @@
 .config {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
-    flex: 1;
+    height: 100%;
+    flex: 1 auto;
     margin: 0 20px;
+    gap: 20px;
 }
 
 .command {
@@ -36,29 +38,4 @@
         font-weight: bold;
         border: none;
     }
-}
-
-.yellow {
-    background-color: yellow;
-    color: black;
-}
-
-.black {
-    background-color: black;
-    color: white;
-}
-
-.blue {
-    background-color: lightskyblue;
-    color: black;
-}
-
-.red {
-    background-color: red;
-    color: white;
-}
-
-.green {
-    background-color: lightgreen;
-    color: black;
 }

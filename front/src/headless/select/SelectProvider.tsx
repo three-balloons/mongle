@@ -11,18 +11,20 @@ const SelectContext = createContext<SelectContextType | undefined>(undefined);
 
 interface SelectProviderProps {
     children: React.ReactNode;
+    initialIsOpen: boolean;
+    disableClose: boolean;
 }
 
-const SelectProvider: React.FC<SelectProviderProps> = ({ children }) => {
+const SelectProvider: React.FC<SelectProviderProps> = ({ children, initialIsOpen, disableClose }) => {
     const [selectedValue, setSelectedValue] = useState<React.ReactNode>();
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(initialIsOpen);
 
     const toggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
     const closeSelect = useCallback(() => setIsOpen(false), []);
     const selectOption = useCallback(
         (value: React.ReactNode, onSelectHandler?: () => void) => {
             setSelectedValue(value);
-            closeSelect();
+            if (!disableClose) closeSelect();
             if (onSelectHandler) onSelectHandler();
         },
         [closeSelect],
