@@ -7,7 +7,7 @@ import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
-import { bubbles } from '@/mock/bubble';
+import { mockedBubbles } from '@/mock/bubble';
 
 type UseCanvasProps = {
     width?: number;
@@ -234,7 +234,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     // 테스트를 위한 렌더링
     const mockRender = () => {
-        bubbleRender(bubbles[1]);
+        bubbleRender(mockedBubbles[1]);
     };
 
     return { isEraseRef, modeRef, canvasRef, touchDown, touch, touchUp, mockRender };

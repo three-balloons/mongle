@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { CurveProvider } from '@/objects/CurveProvider';
 
 export const MainLayout = () => {
-    const [canvasSize] = useState({ width: window.innerWidth - 100, height: window.innerHeight - 100 });
+    const [canvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
     return (
         <div className={cn(style.default)}>

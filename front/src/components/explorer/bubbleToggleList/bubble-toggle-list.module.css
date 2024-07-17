@@ -1,0 +1,33 @@
+.default {
+    overflow: hidden;
+    width: 100%;
+}
+
+.toggle-button {
+    width: 16px;
+    height: 16px;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.title-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+}
+
+.rotated {
+    transform: rotate(90deg);
+    transition-duration: 300ms;
+}
+
+.idle {
+    transform: rotate(0);
+    transition-duration: 300ms;
+}

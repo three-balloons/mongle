@@ -1,3 +1,5 @@
+export const isFunction = (value: unknown) => typeof value === 'function';
+
 export const isPoint = (obj: unknown): obj is Point => {
     if (obj && typeof (obj as Point).x === 'number' && typeof (obj as Point).y === 'number') return true;
     return false;
