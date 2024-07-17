@@ -1,0 +1,27 @@
+:root {
+    /* semantic color */
+    --color-primary-100: #44e7ff;
+    --color-primary-75: #77f1ff;
+    --color-primary-50: #aff5ff;
+    --color-primary-25: #e8ffff;
+
+    --color-gray-100: #343434;
+    --color-gray-75: #656565;
+    --color-gray-50: #979797;
+    --color-gray-25: #c8c8c8;
+
+    --color-neutral-100: #f9fcfc;
+    --color-neutral-75: #c9dcdc;
+
+    --color-transparent: rgba(0, 0, 0, 0.12);
+    --color-error: #dc3545;
+    --color-warning: #ffc107;
+
+    --color-white: #ffffff;
+    --color-black: #000000;
+
+    /* contextual naming */
+    --color-background: var(--color-neutral-100);
+    --color-text-white: var(--color-white);
+    --color-text-black: var(--color-black);
+}

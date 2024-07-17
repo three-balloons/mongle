@@ -1,5 +1,6 @@
 .default {
-    background-color: lightyellow;
+    background-color: var(--color-primary-75);
     height: 100%;
-    width: 70px;
+    width: 100px;
+    color: var(--color-black);
 }

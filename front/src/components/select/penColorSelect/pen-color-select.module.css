@@ -1,0 +1,58 @@
+.default {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+}
+
+.circle {
+    border-radius: 100%;
+    width: 20px;
+    height: 20px;
+}
+
+.big-circle {
+    border-radius: 100%;
+    width: 30px;
+    height: 30px;
+}
+
+.content {
+    position: fixed;
+    top: 100px;
+    left: 100px;
+    margin-top: 10px;
+    margin-left: 10px;
+
+    background-color: var(--color-neutral-100);
+    box-shadow: 5px 5px 5px var(--color-transparent);
+    border-radius: 10px;
+    padding: 0 15px 15px 15px;
+}
+
+.preview {
+    cursor: pointer;
+}
+
+.option {
+    cursor: pointer;
+}
+
+.title {
+    color: var(--color-black);
+    margin: 1rem;
+}
+
+.option-wrapper {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-auto-flow: column;
+    justify-items: center;
+    align-items: center;
+    grid-template-rows: repeat(7, 1fr);
+    row-gap: 10px;
+    column-gap: 10px;
+}

@@ -1,18 +1,29 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useCurve } from './useCurve';
-import { usePenConfig } from './usePenConfig';
+import { useCurve } from '@/objects/useCurve';
 import { getViewCoordinate } from '@/util/canvas/canvas';
-import { curve2View, view2Point } from '@/util/coordSys/conversion';
+import { curve2bubble, curve2View, descendant2child, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
+import { useDrawer } from '@/hooks/useDrawer';
+import { useConfigStore } from '@/store/configStore';
+import { useEraser } from '@/hooks/useEraser';
+import { catmullRom2Bezier } from '@/util/shapes/conversion';
+import { bubbles } from '@/mock/bubble';
 
 type UseCanvasProps = {
     width?: number;
     height?: number;
 };
+
+/**
+ * store canvas infromation and command functions
+ */
 export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { setCanvasView } = useViewStore((state) => state);
-    const canvasViewRef = useRef<ViewCoordSys>({
+    const modeRef = useRef<ControlMode>('move');
+    const isEraseRef = useRef<boolean>(false);
+    // const { mode } = useConfigStore((state) => state);
+    const canvasViewRef = useRef<ViewCoord>({
         pos: {
             top: -height / 2,
             left: -width / 2,
@@ -25,212 +36,206 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         },
         path: '/',
     });
-    const position = useRef<Point | undefined>();
-    const isPainting = useRef(false);
-    const canvasImage = useRef<ImageData | null>(null);
-    const splineCount = useRef(0); // n번째 이후부터 spline 반영 안한 점들
-    const { currentPath, setPath, getCurve, getDrawingCurve, addControlPoint, addNewLine } = useCurve({
-        sensitivity: 1,
-    });
-    const { applyConfig } = usePenConfig();
+    const isPaintingRef = useRef(false);
+    const canvasImageRef = useRef<ImageData | null>(null);
+    const { viewPath, getCurves, applyPenConfig, setThicknessWithRatio } = useCurve();
 
+    // tools
+    const { startDrawing, draw, finishDrawing } = useDrawer();
+    const { eraseArea } = useEraser();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
+        // Rerenders when canvas view changes
         useViewStore.subscribe(({ canvasView }) => {
-            console.log(canvasView.pos);
             canvasViewRef.current = canvasView;
-            reDrawAllCurve(getCurve());
+            renderer(getCurves());
+        });
+
+        useConfigStore.subscribe(({ mode }) => {
+            modeRef.current = mode;
         });
     }, []);
 
-    // bezier curve 적용 전 - 픽셀 단위로 그리기
-    const drawLine = (originalPosition: Point, newPosition: Point) => {
-        if (!canvasRef.current) {
-            return;
-        }
-        const canvas: HTMLCanvasElement = canvasRef.current;
-        const context = canvas.getContext('2d');
-        if (context) {
-            applyConfig(context);
-            context.beginPath();
-            context.moveTo(originalPosition.x, originalPosition.y);
-            context.lineTo(newPosition.x, newPosition.y);
-            context.stroke();
-        }
-    };
-
-    const startPaint = useCallback((event: MouseEvent | TouchEvent) => {
+    const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
         if (canvasRef.current == undefined) return;
-        const coordinates = getViewCoordinate(event, canvasRef.current);
-        if (coordinates) {
-            isPainting.current = true;
-            position.current = coordinates;
-            setPath(canvasViewRef.current.path);
-            const point = view2Point(
-                {
-                    path: canvasViewRef.current.path,
-                    x: coordinates.x,
-                    y: coordinates.y,
-                },
-                canvasViewRef.current,
-            );
-            if (point != undefined) addControlPoint(point, true);
+        const currentPosition = getViewCoordinate(event, canvasRef.current);
+        if (currentPosition) {
+            if (isPaintingRef.current == false && modeRef.current == 'draw') {
+                isPaintingRef.current = true;
+                startDrawing(currentPosition, canvasViewRef.current);
+            } else if (isEraseRef.current == false && modeRef.current == 'erase') {
+                event.preventDefault();
+                event.stopPropagation();
+                isEraseRef.current = true;
+            }
         }
     }, []);
 
-    const paint = useCallback(
-        (event: MouseEvent | TouchEvent) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (canvasRef.current == undefined) return;
-            if (isPainting.current) {
-                const newPosition = getViewCoordinate(event, canvasRef.current);
-                if (
-                    position.current &&
-                    newPosition &&
-                    (position.current.x != newPosition.x || position.current.y != newPosition.y)
-                ) {
-                    // DOTO::renaming
-                    // draw 정책 설정 - 화면에 나타난 bubble안에도 생성 가능 여부(현재는 불가)
-                    const newPoint = view2Point(
-                        {
-                            path: canvasViewRef.current.path,
-                            x: newPosition.x,
-                            y: newPosition.y,
-                        },
-                        canvasViewRef.current,
-                    );
-                    if (newPoint != undefined && addControlPoint(newPoint)) {
-                        updateCanvas(getDrawingCurve());
-                    }
-                    if (!position.current) return;
-                    drawLine(position.current, newPosition);
-                    position.current = newPosition;
-                }
+    const touch = useCallback((event: MouseEvent | TouchEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (canvasRef.current == undefined) return;
+        const currentPosition = getViewCoordinate(event, canvasRef.current);
+        if (currentPosition) {
+            if (isPaintingRef.current && modeRef.current == 'draw') {
+                draw(currentPosition, canvasViewRef.current, lineRenderer, curveRenderer);
+            } else if (isEraseRef.current && modeRef.current == 'erase') {
+                eraseArea(currentPosition, canvasViewRef.current);
+                renderer(getCurves());
             }
-        },
-        [isPainting.current, position.current],
-    );
-
-    const exitPaint = useCallback(() => {
-        if (position.current) {
-            const point = view2Point(
-                { path: canvasViewRef.current.path, x: position.current.x, y: position.current.y },
-                canvasViewRef.current,
-            );
-            if (point) addControlPoint(point, true);
         }
-        updateCanvas(getDrawingCurve(), true);
-        splineCount.current = 0;
-        addNewLine();
-        isPainting.current = false;
-    }, [addNewLine]);
+    }, []);
 
-    // addControlPoint가 true일 때 실행
-    const updateCanvas = (curve: Curve2D, isForce: boolean = false) => {
+    const touchUp = useCallback(() => {
+        if (isPaintingRef.current && modeRef.current == 'draw') {
+            finishDrawing(canvasViewRef.current, curveRenderer);
+            isPaintingRef.current = false;
+        } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
+    }, []);
+
+    //renders
+    // bezier curve 적용 전 - 픽셀 단위로 그리기
+    const lineRenderer = (startPoint: Point, endPoint: Point) => {
         if (!canvasRef.current) {
             return;
         }
-        let splineCnt = splineCount.current;
-        if (!isForce && splineCnt + 3 > Math.floor((curve.length - 1) / 3) * 3) return;
         const canvas: HTMLCanvasElement = canvasRef.current;
         const context = canvas.getContext('2d');
-
         if (context) {
-            if (canvasImage.current) context.putImageData(canvasImage.current, 0, 0);
-            else context.clearRect(0, 0, canvas.width, canvas.height);
-            applyConfig(context);
-            const line = curve2View(curve, currentPath, canvasViewRef.current);
+            applyPenConfig(context);
+            console.log(getThicknessRatio(canvasViewRef.current));
+            setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
             context.beginPath();
-            // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-            if (line.length > 0) {
-                for (let i = 1; i < line.length; i += 3) {
-                    context.moveTo(line[i - 1].x, line[i - 1].y);
-                    if (line.length - i == 1) {
-                        if (isForce) {
-                            context.lineTo(line[i].x, line[i].y);
-                            context.moveTo(line[i].x, line[i].y);
-                            splineCnt = i;
-                        }
-                        break;
-                    } else if (line.length - i == 2) {
-                        if (isForce) {
-                            context.quadraticCurveTo(line[i].x, line[i].y, line[i + 1].x, line[i + 1].y);
-                            context.moveTo(line[i + 1].x, line[i + 1].y);
-                            splineCnt = i + 1;
-                        }
-                        break;
-                    } else if (splineCnt < i) {
-                        context.bezierCurveTo(
-                            line[i].x,
-                            line[i].y,
-                            line[i + 1].x,
-                            line[i + 1].y,
-                            line[i + 2].x,
-                            line[i + 2].y,
-                        );
-                        context.moveTo(line[i + 2].x, line[i + 2].y);
-                        splineCnt = i + 2;
-                    }
-                }
-            }
+            context.moveTo(startPoint.x, startPoint.y);
+            context.lineTo(endPoint.x, endPoint.y);
             context.stroke();
-            splineCount.current = splineCnt;
-            const data = context.getImageData(0, 0, canvas.width, canvas.height);
-            canvasImage.current = data;
         }
     };
 
-    const reDrawAllCurve = (curves: Array<Curve>) => {
+    // addControlPoint가 true일 때 실행
+    const curveRenderer = (curve: Curve2D, splineCount: number): number | undefined => {
+        if (!canvasRef.current) {
+            return;
+        }
+        let splineCnt = splineCount;
+        const canvas: HTMLCanvasElement = canvasRef.current;
+        const context = canvas.getContext('2d');
+
+        if (context) {
+            if (canvasImageRef.current) context.putImageData(canvasImageRef.current, 0, 0);
+            else context.clearRect(0, 0, canvas.width, canvas.height);
+            applyPenConfig(context);
+            const beziers = catmullRom2Bezier(curve2View(curve, canvasViewRef.current));
+            context.beginPath();
+            // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
+            if (beziers.length > 0) {
+                for (let i = 0; i < beziers.length; i++) {
+                    if (splineCnt >= i) continue;
+                    context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                    context.bezierCurveTo(
+                        beziers[i].cp1.x,
+                        beziers[i].cp1.y,
+                        beziers[i].cp2.x,
+                        beziers[i].cp2.y,
+                        beziers[i].end.x,
+                        beziers[i].end.y,
+                    );
+                    splineCnt = i;
+                }
+            }
+            context.stroke();
+            const data = context.getImageData(0, 0, canvas.width, canvas.height);
+            canvasImageRef.current = data;
+            return splineCnt;
+        }
+    };
+
+    const renderer = (curves: Array<Curve>) => {
         if (!canvasRef.current) {
             return;
         }
         const canvas: HTMLCanvasElement = canvasRef.current;
         const context = canvas.getContext('2d');
-        console.log('reDrawAllCurve', canvasViewRef.current);
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
-                console.log(curve);
-                let splineCnt = 0;
-
-                applyConfig(context, curve.config);
-                const line = curve2View(curve.position, curve.path, canvasViewRef.current);
+                applyPenConfig(context, curve.config);
+                setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
+                const beziers = catmullRom2Bezier(curve2View(curve.position, canvasViewRef.current));
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-                if (line.length > 0) {
-                    for (let i = 1; i < line.length; i += 3) {
-                        context.moveTo(line[i - 1].x, line[i - 1].y);
-                        if (line.length - i == 1) {
-                            context.lineTo(line[i].x, line[i].y);
-                            context.moveTo(line[i].x, line[i].y);
-                            splineCnt = i;
-                            break;
-                        } else if (line.length - i == 2) {
-                            context.quadraticCurveTo(line[i].x, line[i].y, line[i + 1].x, line[i + 1].y);
-                            context.moveTo(line[i + 1].x, line[i + 1].y);
-                            splineCnt = i + 1;
-                            break;
-                        } else if (splineCnt < i) {
-                            context.bezierCurveTo(
-                                line[i].x,
-                                line[i].y,
-                                line[i + 1].x,
-                                line[i + 1].y,
-                                line[i + 2].x,
-                                line[i + 2].y,
-                            );
-                            context.moveTo(line[i + 2].x, line[i + 2].y);
-                            splineCnt = i + 2;
-                        }
+                if (beziers.length > 0) {
+                    for (let i = 0; i < beziers.length; i++) {
+                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                        context.bezierCurveTo(
+                            beziers[i].cp1.x,
+                            beziers[i].cp1.y,
+                            beziers[i].cp2.x,
+                            beziers[i].cp2.y,
+                            beziers[i].end.x,
+                            beziers[i].end.y,
+                        );
                     }
                 }
                 context.stroke();
             });
             const data = context.getImageData(0, 0, canvas.width, canvas.height);
-            canvasImage.current = data;
+            canvasImageRef.current = data;
         }
     };
 
-    return { canvasRef, startPaint, paint, exitPaint, updateCanvas };
+    // bubble과 그 내부의 요소를 렌더링함
+    const bubbleRender = (bubble: Bubble) => {
+        if (!canvasRef.current) {
+            return;
+        }
+        const canvas: HTMLCanvasElement = canvasRef.current;
+        const context = canvas.getContext('2d');
+        const bubbleView = descendant2child(bubble, canvasViewRef.current.path);
+        if (bubbleView == undefined) return;
+        const rect: Rect = rect2View(
+            {
+                height: bubbleView.height,
+                width: bubbleView.width,
+                top: bubbleView.top,
+                left: bubbleView.left,
+            },
+            canvasViewRef.current,
+        );
+        if (context) {
+            context.beginPath(); // Start a new path
+            context.strokeStyle = 'lightblue';
+            context.setLineDash([10, 10]);
+            context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
+            context.setLineDash([]);
+            bubble.curves.forEach((curve) => {
+                const c = curve2bubble(curve.position, bubbleView);
+                const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
+                applyPenConfig(context, curve.config);
+                context.beginPath();
+                // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
+                if (beziers.length > 0) {
+                    for (let i = 0; i < beziers.length; i++) {
+                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                        context.bezierCurveTo(
+                            beziers[i].cp1.x,
+                            beziers[i].cp1.y,
+                            beziers[i].cp2.x,
+                            beziers[i].cp2.y,
+                            beziers[i].end.x,
+                            beziers[i].end.y,
+                        );
+                    }
+                }
+                context.stroke();
+            });
+        }
+    };
+
+    // 테스트를 위한 렌더링
+    const mockRender = () => {
+        bubbleRender(bubbles[1]);
+    };
+
+    return { isEraseRef, modeRef, canvasRef, touchDown, touch, touchUp, mockRender };
 };

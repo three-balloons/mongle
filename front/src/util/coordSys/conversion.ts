@@ -1,63 +1,153 @@
 // TODO: path를 고려할 것
-import { getPathDepth } from '@/util/path/path';
-import { isCollisionPointWithRect } from '@/util/shapes/collision';
+import { getParentPath, getPathDepth } from '@/util/path/path';
+// import { isCollisionPointWithRect } from '@/util/shapes/collision';
+import { findBubble, findParentBubble } from '@/util/bubble/bubble';
+
+// idea: forward kinematics
+/** 좌표 변환 과정(obj의 로컬 좌표 -> view 좌표(canvas에 보이는 좌표))
+ * 1. bubble
+ *    bubble내의 obj의 로컬 좌표계를 한 단계 올림(bubble과 같은 path, bubble처럼 취급)
+ *
+ *    functions: point2bubble, curve2bubble
+ *
+ * 2. hierarchy
+ *    canvas view의 path와 bubble의 path가 다를 경우 canvas view의 좌표계로 맞춤
+ *    anti-aliasing 필요(ex. 3 depth 이상 차이 나는 경우 undifined)
+ *
+ *    functions: descendant2child
+ *
+ * 3. canvasView
+ *    canvasView를 통해 실제 canvas에 표시할 수 있는 좌표계 구하기
+ *    1, 2과정을 포함함
+ *
+ *    functions: point2View, curve2View, rect2View
+ *
+ */
 
 // TODO canvasPath와 canvasView 합치기
-// return undefined value when point can't be seen
-export const point2View = (point: RectCoordSys, canvasView: ViewCoordSys): Point | undefined => {
-    const depth = getPathDepth(canvasView.path, point.path);
-    if (depth == -1) return undefined;
-    if (depth == 0) {
-        if (!isCollisionPointWithRect(point, canvasView.pos)) return undefined;
+// return undefined value when point can't be seen(nope)
+export const point2View = (point: Point, canvasView: ViewCoord): Point => {
+    // if (!isCollisionPointWithRect(point, canvasView.pos)) return undefined;
+    const { left, top, width, height } = canvasView.pos;
+    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+    return {
+        x: ((point.x - left) * canvasWidth) / width,
+        y: ((point.y - top) * canvasHeight) / height,
+    };
+};
+
+export const curve2View = (curve: Curve2D, canvasView: ViewCoord): Curve2D => {
+    const ret: Curve2D = curve.map((point) => {
         const { left, top, width, height } = canvasView.pos;
         const { x: canvasWidth, y: canvasHeight } = canvasView.size;
         return {
             x: ((point.x - left) * canvasWidth) / width,
             y: ((point.y - top) * canvasHeight) / height,
         };
-    }
-    // TODO: depth가 깊어지는 경우도 해결
+    });
+    return ret;
+};
+
+export const rect2View = (rect: Rect, canvasView: ViewCoord): Rect => {
+    const { left, top, width, height } = canvasView.pos;
+    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+    const rectTop = ((rect.top - top) * canvasHeight) / height;
+    const rectLeft = ((rect.left - left) * canvasWidth) / width;
+    const ret: Rect = {
+        top: rectTop,
+        left: rectLeft,
+        height: ((rect.top + rect.height - top) * canvasHeight) / height - rectTop,
+        width: ((rect.left + rect.width - left) * canvasWidth) / width - rectLeft,
+    };
+    return ret;
+};
+
+// return undefined value when point can't be seen(nope)
+export const view2Point = (point: Point, canvasView: ViewCoord): Point | undefined => {
+    // if (!isCollisionPointWithRect(point, { top: 0, left: 0, width: canvasView.size.x, height: canvasView.size.y }))
+    //     return undefined;
+    const { left, top, width, height } = canvasView.pos;
+    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
     return {
-        x: 1,
-        y: 1,
+        x: (point.x * width) / canvasWidth + left,
+        y: (point.y * height) / canvasHeight + top,
     };
 };
 
-// return undefined value when point can't be seen
-export const view2Point = (point: RectCoordSys, canvasView: ViewCoordSys): Point | undefined => {
-    const depth = getPathDepth(canvasView.path, point.path);
-    if (depth == -1) return undefined;
-    if (depth == 0) {
-        if (!isCollisionPointWithRect(point, { top: 0, left: 0, width: canvasView.size.x, height: canvasView.size.y }))
-            return undefined;
-        const { left, top, width, height } = canvasView.pos;
-        const { x: canvasWidth, y: canvasHeight } = canvasView.size;
-        return {
-            x: (point.x * width) / canvasWidth + left,
-            y: (point.y * height) / canvasHeight + top,
-        };
-    }
-    // TODO: depth가 깊어지는 경우도 해결
-    return {
-        x: 1,
-        y: 1,
-    };
-};
+// 자손버블좌표계에서 자식버블좌표계로 변환
+// 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
+// TODO: 최적화
 
-export const curve2View = (curve: Curve2D, curvePath: string, canvasView: ViewCoordSys): Curve2D => {
-    const depth = getPathDepth(canvasView.path, curvePath);
-    if (depth == undefined) return [];
-    if (depth == 0) {
-        const ret: Curve2D = curve.map((point) => {
-            const { left, top, width, height } = canvasView.pos;
-            const { x: canvasWidth, y: canvasHeight } = canvasView.size;
-            return {
-                x: ((point.x - left) * canvasWidth) / width,
-                y: ((point.y - top) * canvasHeight) / height,
-            };
-        });
+export const descendant2child = (descendant: Bubble, ancestorPath: string): Bubble | undefined => {
+    const depth = getPathDepth(ancestorPath, descendant.path);
+    // const depth = getPathDepth('/', descendant.path);
+    if (depth == undefined) return undefined;
+    if (depth == 0) return descendant; // depth가 0인 경우 자체가 존재하지 않음
+    if (depth == 1)
+        return descendant; // descendant is child
+    else if (depth > 1) {
+        const ret: Bubble = { ...descendant };
+        let parent: Bubble | undefined = ret;
+        for (let i = 1; i < depth; i++) {
+            const path = getParentPath(ret.path);
+            if (path == undefined) return undefined;
+            parent = findParentBubble(parent);
+            if (parent == undefined) return undefined;
+            ret.path = parent.path;
+            ret.top = (parent.height * (100 + ret.top)) / 200 + parent.top;
+            ret.left = (parent.width * (100 + ret.left)) / 200 + parent.left;
+            ret.height = (parent.height * ret.height) / 200;
+            ret.width = (parent.width * ret.width) / 200;
+        }
         return ret;
     }
-    // TODO: depth가 깊어지는 경우도 해결
-    return [];
+};
+
+export const point2bubble = (point: Point, path: string) => {
+    const bubble = findBubble(path);
+    if (bubble == undefined) return point;
+    else
+        return {
+            y: (bubble.height * (100 + point.y)) / 200 + bubble.top,
+            x: (bubble.width * (100 + point.x)) / 200 + bubble.left,
+        };
+};
+
+export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
+    if (bubble == undefined) return curve;
+    else
+        return curve.map((point) => {
+            return {
+                x: (bubble.width * (100 + point.x)) / 200 + bubble.left,
+                y: (bubble.height * (100 + point.y)) / 200 + bubble.top,
+            };
+        });
+};
+
+export const rect2bubble = (rect: Rect, bubble: Bubble | undefined): Rect => {
+    if (bubble == undefined) return rect;
+    else
+        return {
+            top: (bubble.height * (100 + rect.top)) / 200 + bubble.top,
+            left: (bubble.width * (100 + rect.left)) / 200 + bubble.left,
+            height: (bubble.height * rect.height) / 200,
+            width: (bubble.width * rect.width) / 200,
+        };
+};
+
+// bubble 안의 curves를 밖으로 뺌
+// renaming
+export const getCurvesPosInBubble = (bubble: Bubble): Array<Curve2D> => {
+    return bubble.curves.map((curve) => {
+        return curve.position.map((point) => {
+            return {
+                x: (bubble.width * point.x) / 200 + bubble.left,
+                y: (bubble.height * point.y) / 200 + bubble.top,
+            };
+        });
+    });
+};
+
+export const getThicknessRatio = (canvasView: ViewCoord) => {
+    return canvasView.size.x / canvasView.pos.width;
 };
