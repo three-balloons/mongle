@@ -1,16 +1,16 @@
 import { useCallback, useRef } from 'react';
 import { useViewStore } from '@/store/viewStore';
-import { subPoint } from '@/util/shapes/operator';
+import { distanceSquare, subPoint } from '@/util/shapes/operator';
 
 export const useHand = () => {
     const startPositionRef = useRef<Point | undefined>();
     const startViewPositionRef = useRef<Point | undefined>();
     const moveIntensityRef = useRef<Vector2D>({ x: 0, y: 0 });
+    const startViewSizeRef = useRef<Vector2D>({ x: 0, y: 0 });
+    // const startDistance = useRef<number | undefined>();
     const { setCanvasView } = useViewStore((state) => state);
 
-    // 임의의 상수값 지우개 크기 => 추후 config에서 받아오기
-
-    const grab = useCallback((currentPosition: Point, canvasView: ViewCoord) => {
+    const grab = useCallback((canvasView: ViewCoord, currentPosition: Point) => {
         startPositionRef.current = { ...currentPosition };
         moveIntensityRef.current = {
             x: Math.round(canvasView.pos.width / canvasView.size.x),
@@ -20,13 +20,22 @@ export const useHand = () => {
             x: Math.round(canvasView.pos.left),
             y: Math.round(canvasView.pos.top),
         };
+        startViewSizeRef.current = {
+            x: Math.round(canvasView.pos.width),
+            y: Math.round(canvasView.pos.height),
+        };
     }, []);
+
+    // const secondGrab = useCallback((disSquare: number | undefined = undefined) => {
+    //     startDistance.current = disSquare;
+    // }, []);
 
     // action
     // change canvasView coordinate
-    const drag = useCallback((position: Point, canvasView: ViewCoord) => {
+    const drag = useCallback((canvasView: ViewCoord, position: Point, second: Point | undefined = undefined) => {
         if (startPositionRef.current == undefined || startViewPositionRef.current == undefined) return;
         const { x, y } = subPoint(startPositionRef.current, position);
+
         setCanvasView({
             ...canvasView,
             pos: {
@@ -35,7 +44,27 @@ export const useHand = () => {
                 top: startViewPositionRef.current.y + moveIntensityRef.current.y * y,
             },
         });
+        // if (second != undefined && startDistance.current != undefined && startDistance.current != 0) {
+        //     const intensity = Math.round((distanceSquare(position, second) * 100) / startDistance.current);
+        //     setCanvasView({
+        //         ...canvasView,
+        //         pos: {
+        //             left: startViewPositionRef.current.x + (startViewSizeRef.current.x * intensity) / 100,
+        //             top: startViewPositionRef.current.y + (startViewSizeRef.current.y * intensity) / 100,
+        //             width: (startViewSizeRef.current.x * intensity) / 100,
+        //             height: (startViewSizeRef.current.y * intensity) / 100,
+        //         },
+        //     });
+        // }
     }, []);
 
-    return { grab, drag };
+    const release = useCallback(() => {
+        startPositionRef.current = undefined;
+    }, []);
+
+    // const secondRelease = useCallback(() => {
+    //     startDistance.current = undefined;
+    // }, []);
+
+    return { grab, drag, release };
 };

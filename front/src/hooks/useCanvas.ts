@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
-import { getViewCoordinate } from '@/util/canvas/canvas';
+import { getSecondTouchCoordinate, getViewCoordinate } from '@/util/canvas/canvas';
 import { curve2bubble, curve2View, descendant2child, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
@@ -47,7 +47,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { eraseArea } = useEraser();
-    const { grab, drag } = useHand();
+    const { grab, drag, release } = useHand();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -68,21 +68,21 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     };
 
     const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
         if (canvasRef.current == undefined) return;
         const currentPosition = getViewCoordinate(event, canvasRef.current);
         if (currentPosition) {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 isPaintingRef.current = true;
-                startDrawing(currentPosition, canvasViewRef.current);
+                startDrawing(canvasViewRef.current, currentPosition);
             } else if (isEraseRef.current == false && modeRef.current == 'erase') {
-                event.preventDefault();
-                event.stopPropagation();
                 isEraseRef.current = true;
-            } else if (isMoveRef.current == false && modeRef.current == 'move') {
-                event.preventDefault();
-                event.stopPropagation();
-                grab(currentPosition, canvasViewRef.current);
-                isMoveRef.current = true;
+            } else if (modeRef.current == 'move') {
+                if (isMoveRef.current == false) {
+                    isMoveRef.current = true;
+                    grab(canvasViewRef.current, currentPosition);
+                }
             }
         }
     }, []);
@@ -93,25 +93,26 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (canvasRef.current == undefined) return;
         const currentPosition = getViewCoordinate(event, canvasRef.current);
         if (currentPosition) {
-            if (isPaintingRef.current && modeRef.current == 'draw') {
-                draw(currentPosition, canvasViewRef.current, lineRenderer, curveRenderer);
+            if (isMoveRef.current && modeRef.current == 'move') {
+                const secondPosition = getSecondTouchCoordinate(event, canvasRef.current);
+                drag(canvasViewRef.current, currentPosition, secondPosition);
+            } else if (isPaintingRef.current && modeRef.current == 'draw') {
+                draw(canvasViewRef.current, currentPosition, lineRenderer, curveRenderer);
             } else if (isEraseRef.current && modeRef.current == 'erase') {
-                eraseArea(currentPosition, canvasViewRef.current);
+                eraseArea(canvasViewRef.current, currentPosition);
                 renderer(getCurves());
-            } else if (isMoveRef.current && modeRef.current == 'move') {
-                drag(currentPosition, canvasViewRef.current);
             }
         }
     }, []);
 
     const touchUp = useCallback(() => {
-        if (isPaintingRef.current && modeRef.current == 'draw') {
+        if (isMoveRef.current && modeRef.current == 'move') {
+            isMoveRef.current = false;
+            release();
+        } else if (isPaintingRef.current && modeRef.current == 'draw') {
             finishDrawing(canvasViewRef.current, curveRenderer);
             isPaintingRef.current = false;
         } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
-        else if (isMoveRef.current && modeRef.current == 'move') {
-            isMoveRef.current = false;
-        }
     }, []);
 
     //renders

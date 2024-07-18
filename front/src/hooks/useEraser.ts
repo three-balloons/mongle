@@ -4,9 +4,6 @@ import { curve2View } from '@/util/coordSys/conversion';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { isCollisionRectWithCircle } from '@/util/shapes/collision';
 
-/**
- * store canvas infromation and command functions
- */
 export const useEraser = () => {
     const positionRef = useRef<Point | undefined>();
     const { getCurves, addCurves, removeCurve } = useCurve();
@@ -14,7 +11,7 @@ export const useEraser = () => {
     // 임의의 상수값 지우개 크기 => 추후 config에서 받아오기
     const removeRadius = 5;
 
-    const eraseArea = useCallback((currentPosition: Point, canvasView: ViewCoord) => {
+    const eraseArea = useCallback((canvasView: ViewCoord, currentPosition: Point) => {
         positionRef.current = currentPosition;
         const eraser: Circle = {
             center: currentPosition,

@@ -10,7 +10,7 @@ export const useDrawer = () => {
     const splineCountRef = useRef(-1); // n번째 이후부터 spline 반영 안한 점들
     const { setViewPath, getDrawingCurve, addControlPoint, addNewLine } = useCurve();
 
-    const startDrawing = useCallback((currentPosition: Point, canvasView: ViewCoord) => {
+    const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Point) => {
         positionRef.current = currentPosition;
         setViewPath(canvasView.path);
         const point = view2Point(
@@ -25,8 +25,8 @@ export const useDrawer = () => {
 
     const draw = useCallback(
         (
-            currentPosition: Point,
             canvasView: ViewCoord,
+            currentPosition: Point,
             lineRenderer: (startPoint: Point, endPoint: Point) => void,
             curveRenderer: (curve: Curve2D, splineCount: number) => number | undefined,
         ) => {
