@@ -28,7 +28,7 @@ export const Menu = ({ workSpaceResizeHandler }: MenuProps) => {
                 }}
                 className={style.explorerButton}
             >
-                {isOpen ? '탐색기 열기' : '탐색기 닫기'}
+                {isOpen ? '탐색기 닫기' : '탐색기 열기'}
             </div>
         </div>
     );

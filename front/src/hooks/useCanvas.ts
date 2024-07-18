@@ -8,6 +8,7 @@ import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { mockedBubbles } from '@/mock/bubble';
+import { useHand } from '@/hooks/useHand';
 
 type UseCanvasProps = {
     width?: number;
@@ -20,14 +21,16 @@ type UseCanvasProps = {
 export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { setCanvasView } = useViewStore((state) => state);
-    const modeRef = useRef<ControlMode>('move');
+    const { mode } = useConfigStore((state) => state);
+    const modeRef = useRef<ControlMode>(mode);
     const isEraseRef = useRef<boolean>(false);
-    // const { mode } = useConfigStore((state) => state);
+    const isPaintingRef = useRef(false);
+    const isMoveRef = useRef(false);
 
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
-            top: -height / 2,
-            left: -width / 2,
+            top: -Math.floor(height / 2),
+            left: -Math.floor(width / 2),
             width: width,
             height: height,
         },
@@ -37,19 +40,20 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         },
         path: '/',
     });
-    console.log(canvasViewRef.current.size);
-    const isPaintingRef = useRef(false);
+
     const canvasImageRef = useRef<ImageData | null>(null);
     const { viewPath, getCurves, applyPenConfig, setThicknessWithRatio } = useCurve();
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { eraseArea } = useEraser();
+    const { grab, drag } = useHand();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
         useViewStore.subscribe(({ canvasView }) => {
             canvasViewRef.current = canvasView;
+
             renderer(getCurves());
         });
 
@@ -74,6 +78,11 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 event.preventDefault();
                 event.stopPropagation();
                 isEraseRef.current = true;
+            } else if (isMoveRef.current == false && modeRef.current == 'move') {
+                event.preventDefault();
+                event.stopPropagation();
+                grab(currentPosition, canvasViewRef.current);
+                isMoveRef.current = true;
             }
         }
     }, []);
@@ -89,6 +98,8 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             } else if (isEraseRef.current && modeRef.current == 'erase') {
                 eraseArea(currentPosition, canvasViewRef.current);
                 renderer(getCurves());
+            } else if (isMoveRef.current && modeRef.current == 'move') {
+                drag(currentPosition, canvasViewRef.current);
             }
         }
     }, []);
@@ -98,6 +109,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             finishDrawing(canvasViewRef.current, curveRenderer);
             isPaintingRef.current = false;
         } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
+        else if (isMoveRef.current && modeRef.current == 'move') {
+            isMoveRef.current = false;
+        }
     }, []);
 
     //renders
@@ -110,7 +124,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         const context = canvas.getContext('2d');
         if (context) {
             applyPenConfig(context);
-            console.log(getThicknessRatio(canvasViewRef.current));
+
             setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
             context.beginPath();
             context.moveTo(startPoint.x, startPoint.y);

@@ -26,12 +26,9 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     const viewPathRef = useRef<string>('/');
     const CurvesRef = useRef<Curve[]>([]);
     const coolTime = useRef(sensitivity);
+    const { penConfig } = useConfigStore((state) => state);
 
-    const penConfigRef = useRef<PenConfig>({
-        color: 'black',
-        thickness: 3,
-        alpha: 1,
-    });
+    const penConfigRef = useRef<PenConfig>(penConfig);
 
     useEffect(() => {
         useConfigStore.subscribe(({ penConfig }) => {
