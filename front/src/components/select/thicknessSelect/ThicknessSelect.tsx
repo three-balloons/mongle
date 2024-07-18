@@ -15,6 +15,7 @@ export const ThicknessSelect = () => {
     const { setPenThickness, penConfig } = useConfigStore((state) => state);
     return (
         <Select className={style.default}>
+            <Select.Overlay />
             <Select.Trigger>
                 <LineOption className={style.preview} thickness={penConfig.thickness} />
             </Select.Trigger>

@@ -20,11 +20,28 @@ const Select = ({ children, className, initialOpen = undefined, disableClose = u
     );
 };
 
+type SelectOverlayProps = {
+    className?: string;
+};
+const SelectOverlay = ({ className }: SelectOverlayProps) => {
+    const { isOpen, toggleOpen } = useSelect();
+    return (
+        <>
+            {isOpen && (
+                <div
+                    style={{ position: 'absolute', inset: 0, cursor: 'default' }}
+                    className={cn(className)}
+                    onClick={toggleOpen}
+                />
+            )}
+        </>
+    );
+};
+
 type SelectTriggerProps = {
     children: React.ReactNode;
     className?: string;
 };
-
 const SelectTrigger = ({ children, className }: SelectTriggerProps) => {
     const { selectedValue, toggleOpen } = useSelect();
 
@@ -68,6 +85,7 @@ const SelectOption = ({ value, children, className, onSelect }: SelectOptionProp
     );
 };
 
+Select.Overlay = SelectOverlay;
 Select.Content = SelectContent;
 Select.Trigger = SelectTrigger;
 Select.Option = SelectOption;
