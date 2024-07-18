@@ -23,6 +23,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const modeRef = useRef<ControlMode>('move');
     const isEraseRef = useRef<boolean>(false);
     // const { mode } = useConfigStore((state) => state);
+
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
             top: -height / 2,
@@ -36,6 +37,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         },
         path: '/',
     });
+    console.log(canvasViewRef.current.size);
     const isPaintingRef = useRef(false);
     const canvasImageRef = useRef<ImageData | null>(null);
     const { viewPath, getCurves, applyPenConfig, setThicknessWithRatio } = useCurve();
@@ -55,6 +57,11 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             modeRef.current = mode;
         });
     }, []);
+
+    const reRender = () => {
+        // TODO 좌표 보정하기
+        renderer(getCurves());
+    };
 
     const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
         if (canvasRef.current == undefined) return;
@@ -237,5 +244,5 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         bubbleRender(mockedBubbles[1]);
     };
 
-    return { isEraseRef, modeRef, canvasRef, touchDown, touch, touchUp, mockRender };
+    return { isEraseRef, modeRef, canvasRef, reRender, touchDown, touch, touchUp, mockRender };
 };

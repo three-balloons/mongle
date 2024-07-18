@@ -12,9 +12,14 @@ type WorkspaceProps = {
 };
 
 export const Workspace = ({ width, height }: WorkspaceProps) => {
-    // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
+    const { isEraseRef, canvasRef, touchDown, touch, touchUp, mockRender, reRender } = useCanvas({
+        width,
+        height,
+    });
 
-    const { isEraseRef, canvasRef, touchDown, touch, touchUp, mockRender } = useCanvas({ width, height });
+    useEffect(() => {
+        reRender();
+    }, [width, height]);
 
     const [position, setPosition] = useState<Point>({ x: 0, y: 0 });
 
