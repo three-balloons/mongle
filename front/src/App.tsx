@@ -1,14 +1,8 @@
-import './App.css';
-import { MainLayout } from '@/pages/layout/mainLayout';
+import { RouterProvider } from 'react-router-dom';
+import { appRouter } from '@/appRouter';
 
 function App() {
-    return (
-        <div className="App">
-            {/* 스크롤이 안돼어야 정상동작 */}
-
-            <MainLayout />
-        </div>
-    );
+    return <RouterProvider router={appRouter} />;
 }
 
 export default App;

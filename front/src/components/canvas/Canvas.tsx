@@ -1,17 +1,17 @@
 import { useCanvas } from '@/hooks/useCanvas';
 import { cn } from '@/util/cn';
-import style from '@/components/workspace/workspace.module.css';
+import style from '@/components/canvas/canvas.module.css';
 import { useEffect, useState } from 'react';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { getViewCoordinate } from '@/util/canvas/canvas';
 import { addPoint } from '@/util/shapes/operator';
 
-type WorkspaceProps = {
+type CanvasProps = {
     width: number;
     height: number;
 };
 
-export const Workspace = ({ width, height }: WorkspaceProps) => {
+export const Canvas = ({ width, height }: CanvasProps) => {
     const { isEraseRef, canvasRef, touchDown, touch, touchUp, mockRender, reRender } = useCanvas({
         width,
         height,
