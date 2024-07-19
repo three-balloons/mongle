@@ -13,16 +13,16 @@ export const useHand = () => {
     const grab = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         startPositionRef.current = { ...currentPosition };
         moveIntensityRef.current = {
-            x: Math.round(canvasView.pos.width / canvasView.size.x),
-            y: Math.round(canvasView.pos.height / canvasView.size.y),
+            x: canvasView.pos.width / canvasView.size.x,
+            y: canvasView.pos.height / canvasView.size.y,
         };
         startViewPositionRef.current = {
-            x: Math.round(canvasView.pos.left),
-            y: Math.round(canvasView.pos.top),
+            x: canvasView.pos.left,
+            y: canvasView.pos.top,
         };
         startViewSizeRef.current = {
-            x: Math.round(canvasView.pos.width),
-            y: Math.round(canvasView.pos.height),
+            x: canvasView.pos.width,
+            y: canvasView.pos.height,
         };
     }, []);
 

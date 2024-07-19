@@ -8,7 +8,7 @@ import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
 export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const splineCountRef = useRef(-1); // n번째 이후부터 spline 반영 안한 점들
-    const { setViewPath, getDrawingCurve, addControlPoint, addNewLine } = useCurve();
+    const { setViewPath, getDrawingCurve, addControlPoint, addNewCurve } = useCurve();
 
     const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
@@ -62,9 +62,9 @@ export const useDrawer = () => {
             }
             curveRenderer(getDrawingCurve(), splineCountRef.current);
             splineCountRef.current = -1;
-            addNewLine(getThicknessRatio(canvasView));
+            addNewCurve(getThicknessRatio(canvasView));
         },
-        [addNewLine],
+        [addNewCurve],
     );
 
     return { startDrawing, draw, finishDrawing };

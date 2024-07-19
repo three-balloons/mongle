@@ -2,12 +2,13 @@ import { useConfigStore } from '@/store/configStore';
 import { createContext, useEffect, useRef } from 'react';
 
 export type CurveContextProps = {
+    // TODO viewPath, setViewPath, viewPathRef 제거하고 curve에서 path 받기
     viewPath: string;
     setViewPath: (path: string) => void;
     getCurves: () => Array<Curve>;
     getDrawingCurve: () => Curve2D;
     addControlPoint: (pos: Point, force?: boolean) => boolean;
-    addNewLine: (thicknessRatio?: number) => void;
+    addNewCurve: (thicknessRatio?: number) => void;
     addCurve: (curve: Curve) => void;
     removeCurve: (curve: Curve) => void;
     applyPenConfig: (context: CanvasRenderingContext2D, options?: PenConfig) => void;
@@ -51,7 +52,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         viewPathRef.current = path;
     };
 
-    const addNewLine = (thicknessRatio: number = 1) => {
+    const addNewCurve = (thicknessRatio: number = 1) => {
         CurvesRef.current = [
             ...CurvesRef.current,
             {
@@ -104,7 +105,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
                 getCurves,
                 getDrawingCurve,
                 addControlPoint,
-                addNewLine,
+                addNewCurve,
                 addCurve,
                 removeCurve,
                 applyPenConfig,

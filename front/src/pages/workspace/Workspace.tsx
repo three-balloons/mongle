@@ -7,6 +7,7 @@ import { Explorer } from '@/components/explorer/Explorer';
 import { CurveProvider } from '@/objects/CurveProvider';
 import { files } from '@/mock/files';
 import { getThemeStyle } from '@/util/getThemeStyle';
+import { BubbleProvider } from '@/objects/BubbleProvider';
 
 type WorkspaceProps = {
     workspaceID: string;
@@ -32,11 +33,13 @@ export const Workspace = ({ workspaceID }: WorkspaceProps) => {
     return (
         <div className={cn(style.default, getThemeStyle(theme))}>
             <CurveProvider sensitivity={2}>
-                <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                <div className={cn(style.workspace)}>
-                    {isShowExplorer && <Explorer />}
-                    <Canvas width={canvasSize.width} height={canvasSize.height} />
-                </div>
+                <BubbleProvider>
+                    <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                    <div className={cn(style.workspace)}>
+                        {isShowExplorer && <Explorer />}
+                        <Canvas width={canvasSize.width} height={canvasSize.height} />
+                    </div>
+                </BubbleProvider>
             </CurveProvider>
         </div>
     );

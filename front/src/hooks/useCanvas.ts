@@ -9,6 +9,8 @@ import { useEraser } from '@/hooks/useEraser';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { mockedBubbles } from '@/mock/bubble';
 import { useHand } from '@/hooks/useHand';
+import { useBubbleGun } from '@/hooks/useBubbleGun';
+import { useBubble } from '@/objects/useBubble';
 
 type UseCanvasProps = {
     width?: number;
@@ -26,6 +28,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const isEraseRef = useRef<boolean>(false);
     const isPaintingRef = useRef(false);
     const isMoveRef = useRef(false);
+    const isCreateBubbleRef = useRef(false);
 
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
@@ -42,12 +45,14 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     });
 
     const canvasImageRef = useRef<ImageData | null>(null);
-    const { viewPath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getCreatingBubble } = useBubble();
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { eraseArea } = useEraser();
     const { grab, drag, release } = useHand();
+    const { startCreateBubble, createBubble, finishCreateBubble } = useBubbleGun();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -64,6 +69,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     const reRender = () => {
         // TODO 좌표 보정하기
+        clearRender();
         renderer(getCurves());
     };
 
@@ -83,6 +89,11 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                     isMoveRef.current = true;
                     grab(canvasViewRef.current, currentPosition);
                 }
+            } else if (modeRef.current == 'bubble') {
+                if (isCreateBubbleRef.current == false) {
+                    isCreateBubbleRef.current = true;
+                    startCreateBubble(canvasViewRef.current, currentPosition);
+                }
             }
         }
     }, []);
@@ -100,7 +111,11 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 draw(canvasViewRef.current, currentPosition, lineRenderer, curveRenderer);
             } else if (isEraseRef.current && modeRef.current == 'erase') {
                 eraseArea(canvasViewRef.current, currentPosition);
+                clearRender();
                 renderer(getCurves());
+            } else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
+                createBubble(canvasViewRef.current, currentPosition);
+                rectRender(getCreatingBubble());
             }
         }
     }, []);
@@ -113,6 +128,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             finishDrawing(canvasViewRef.current, curveRenderer);
             isPaintingRef.current = false;
         } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
+        else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
+            isCreateBubbleRef.current = false;
+            finishCreateBubble();
+        }
     }, []);
 
     //renders
@@ -180,7 +199,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         const canvas: HTMLCanvasElement = canvasRef.current;
         const context = canvas.getContext('2d');
         if (context) {
-            context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
@@ -209,6 +227,35 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             });
             const data = context.getImageData(0, 0, canvas.width, canvas.height);
             canvasImageRef.current = data;
+        }
+    };
+
+    const clearRender = () => {
+        if (!canvasRef.current) {
+            return;
+        }
+        const canvas: HTMLCanvasElement = canvasRef.current;
+        const context = canvas.getContext('2d');
+        if (context) {
+            const data = context.getImageData(0, 0, canvas.width, canvas.height);
+            canvasImageRef.current = data;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    };
+
+    const rectRender = (rect: Rect) => {
+        if (!canvasRef.current) {
+            return;
+        }
+        const canvas: HTMLCanvasElement = canvasRef.current;
+        const context = canvas.getContext('2d');
+        const _rect: Rect = rect2View(rect, canvasViewRef.current);
+        if (context) {
+            context.beginPath(); // Start a new path
+            context.strokeStyle = 'lightblue';
+            context.setLineDash([10, 10]);
+            context.strokeRect(_rect.left, _rect.top, _rect.width, _rect.height); // Render the path
+            context.setLineDash([]);
         }
     };
 
