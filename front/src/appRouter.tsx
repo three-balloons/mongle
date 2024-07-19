@@ -1,6 +1,7 @@
 import { Files } from '@/pages/files/Files';
 import { MainLayout } from '@/pages/layout/MainLayout';
 import { Workspace } from '@/pages/workspace/Workspace';
+import { Routed } from '@/Routed';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 
 export const appRouter = createBrowserRouter([
@@ -13,8 +14,8 @@ export const appRouter = createBrowserRouter([
         ),
         children: [
             {
-                path: 'workspace',
-                element: <Workspace />,
+                path: 'workspace/:workspaceID',
+                element: <Routed>{({ params }) => <Workspace workspaceID={params.workspaceID ?? ''} />}</Routed>,
             },
             {
                 path: 'files',

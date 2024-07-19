@@ -6,7 +6,10 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { Explorer } from '@/components/explorer/Explorer';
 import { CurveProvider } from '@/objects/CurveProvider';
 
-export const Workspace = () => {
+type WorkspaceProps = {
+    workspaceID: string;
+};
+export const Workspace = ({ workspaceID }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함

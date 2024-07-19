@@ -9,18 +9,21 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden;
 }
 
 body {
     margin: 0;
-    display: flex;
     min-width: 320px;
     min-height: 100vh;
     -webkit-tap-highlight-color: transparent;
-
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
