@@ -1,5 +1,7 @@
 import Modal from '@/headless/modal/Modal';
 import style from '@/components/workspaceSettingModal/workspace-setting-modal.module.css';
+import colorStyle from '@/style/common/theme.module.css';
+import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
 import { useState } from 'react';
 import Select from '@/headless/select/Select';
@@ -32,7 +34,7 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                             placeholder="이름을 입력해주세요"
                             onChange={(e) => setName(e.target.value)}
                         />
-                        <button className={style.button} onClick={() => setIsNameChange(false)}>
+                        <button className={objectStyle.buttonSmall} onClick={() => setIsNameChange(false)}>
                             완료
                         </button>
                     </>
@@ -52,8 +54,8 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                                 setTheme('푸른하늘');
                             }}
                         >
-                            <div className={cn(style.themeBlue, style.themeOption)}>
-                                <div className={style.circle}></div>
+                            <div className={cn(colorStyle.themeBlue, style.themeOption)}>
+                                <div className={objectStyle.bubble}></div>
                                 <div className={cn(theme == '푸른하늘' && style.themeSelected)}>푸른하늘</div>
                             </div>
                         </Select.Option>
@@ -64,8 +66,8 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                                 setTheme('해질녘');
                             }}
                         >
-                            <div className={cn(style.themePink, style.themeOption)}>
-                                <div className={style.circle}></div>
+                            <div className={cn(colorStyle.themePink, style.themeOption)}>
+                                <div className={objectStyle.bubble}></div>
                                 <div className={cn(theme == '해질녘' && style.themeSelected)}>해질녘</div>
                             </div>
                         </Select.Option>
@@ -76,15 +78,15 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                                 setTheme('로즈마리');
                             }}
                         >
-                            <div className={cn(style.themeGreen, style.themeOption)}>
-                                <div className={style.circle}></div>
+                            <div className={cn(colorStyle.themeGreen, style.themeOption)}>
+                                <div className={objectStyle.bubble}></div>
                                 <div className={cn(theme == '로즈마리' && style.themeSelected)}>로즈마리</div>
                             </div>
                         </Select.Option>
                     </Select.Content>
                 </Select>
                 <Modal.Closer className={style.save}>
-                    <button className={style.button} onClick={saveHandler}>
+                    <button className={objectStyle.buttonBig} onClick={saveHandler}>
                         저장하기
                     </button>
                 </Modal.Closer>

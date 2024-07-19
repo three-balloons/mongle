@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { cn } from '@/util/cn';
 import style from '@/pages/workspace/workspace.module.css';
+import themeStyle from '@/style/common/theme.module.css';
 import { Menu } from '@/components/menu/Menu';
 import { Canvas } from '@/components/canvas/Canvas';
 import { Explorer } from '@/components/explorer/Explorer';
 import { CurveProvider } from '@/objects/CurveProvider';
+import { files } from '@/mock/files';
+import { getThemeStyle } from '@/util/getThemeStyle';
 
 type WorkspaceProps = {
     workspaceID: string;
 };
 export const Workspace = ({ workspaceID }: WorkspaceProps) => {
+    // TODO API로 대체
+    const theme = files.find((file) => {
+        return file.id == workspaceID;
+    })?.theme;
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
@@ -24,7 +31,7 @@ export const Workspace = ({ workspaceID }: WorkspaceProps) => {
         }
     };
     return (
-        <div className={cn(style.default)}>
+        <div className={cn(style.default, getThemeStyle(theme))}>
             <CurveProvider sensitivity={2}>
                 <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
                 <div className={cn(style.workspace)}>

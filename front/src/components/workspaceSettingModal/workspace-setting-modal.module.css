@@ -35,14 +35,6 @@
     margin-right: 10px;
 }
 
-.button {
-    background-color: var(--color-primary-50);
-    border: none;
-    padding: 4px;
-    font-size: 16px;
-    border-radius: 10px;
-}
-
 .theme {
     display: flex;
     flex-direction: row;
@@ -66,47 +58,6 @@
     button {
         width: 200px;
         height: 100px;
-        font-size: 26px;
         background-color: var(--color-gray-25);
     }
-}
-
-.theme-blue {
-    --color-primary-100: #44e7ff;
-    --color-primary-75: #77f1ff;
-    --color-primary-50: #aff5ff;
-    --color-primary-25: #e8ffff;
-}
-
-.theme-pink {
-    --color-primary-100: #f5b9a7;
-    --color-primary-75: #ffbebe;
-    --color-primary-50: #ffcece;
-    --color-primary-25: #ffeaea;
-}
-
-.theme-green {
-    --color-primary-100: #97c1a9;
-    --color-primary-75: #aedec2;
-    --color-primary-50: #baedd0;
-    --color-primary-25: #cff2e0;
-}
-
-.circle {
-    width: 90px;
-    height: 90px;
-    background-color: white;
-    border-radius: 50%;
-    box-shadow:
-        0 0 6px 0 white,
-        3px 3px 6px 3px var(--color-primary-75),
-        -3px -3px 6px 0 var(--color-primary-25),
-        /* inside */ inset 0 0 3px 0 white,
-        inset -12px -9px 18px 0 var(--color-primary-75),
-        inset -12px -9px 21px 0 var(--color-primary-50),
-        inset -12px -9px 42px 0 var(--color-primary-25),
-        inset -12px -9px 42px 0 var(--color-background);
-    animation:
-        glow 1s linear infinite alternate,
-        ball 1s ease-in infinite alternate;
 }

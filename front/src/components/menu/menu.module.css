@@ -1,5 +1,5 @@
 .default {
-    background-color: var(--color-neutral-75);
+    background-color: var(--color-neutral-50);
     width: 100%;
     height: 100px;
     display: flex;
