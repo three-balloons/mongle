@@ -1,16 +1,16 @@
 import { useCallback, useRef } from 'react';
 import { useViewStore } from '@/store/viewStore';
-import { distanceSquare, subPoint } from '@/util/shapes/operator';
+import { subVector2D } from '@/util/shapes/operator';
 
 export const useHand = () => {
-    const startPositionRef = useRef<Point | undefined>();
-    const startViewPositionRef = useRef<Point | undefined>();
+    const startPositionRef = useRef<Vector2D | undefined>();
+    const startViewPositionRef = useRef<Vector2D | undefined>();
     const moveIntensityRef = useRef<Vector2D>({ x: 0, y: 0 });
     const startViewSizeRef = useRef<Vector2D>({ x: 0, y: 0 });
     // const startDistance = useRef<number | undefined>();
     const { setCanvasView } = useViewStore((state) => state);
 
-    const grab = useCallback((canvasView: ViewCoord, currentPosition: Point) => {
+    const grab = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         startPositionRef.current = { ...currentPosition };
         moveIntensityRef.current = {
             x: Math.round(canvasView.pos.width / canvasView.size.x),
@@ -32,9 +32,9 @@ export const useHand = () => {
 
     // action
     // change canvasView coordinate
-    const drag = useCallback((canvasView: ViewCoord, position: Point, second: Point | undefined = undefined) => {
+    const drag = useCallback((canvasView: ViewCoord, position: Vector2D, second: Vector2D | undefined = undefined) => {
         if (startPositionRef.current == undefined || startViewPositionRef.current == undefined) return;
-        const { x, y } = subPoint(startPositionRef.current, position);
+        const { x, y } = subVector2D(startPositionRef.current, position);
 
         setCanvasView({
             ...canvasView,

@@ -6,28 +6,30 @@ import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
  * store canvas infromation and command functions
  */
 export const useDrawer = () => {
-    const positionRef = useRef<Point | undefined>();
+    const positionRef = useRef<Vector2D | undefined>();
     const splineCountRef = useRef(-1); // n번째 이후부터 spline 반영 안한 점들
     const { setViewPath, getDrawingCurve, addControlPoint, addNewLine } = useCurve();
 
-    const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Point) => {
+    const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
         setViewPath(canvasView.path);
-        const point = view2Point(
+        const pos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
             canvasView,
         );
-        if (point != undefined) addControlPoint(point, true);
+        if (pos != undefined) {
+            addControlPoint({ ...pos, isVisible: true }, true);
+        }
     }, []);
 
     const draw = useCallback(
         (
             canvasView: ViewCoord,
-            currentPosition: Point,
-            lineRenderer: (startPoint: Point, endPoint: Point) => void,
+            currentPosition: Vector2D,
+            lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void,
             curveRenderer: (curve: Curve2D, splineCount: number) => number | undefined,
         ) => {
             if (
@@ -35,14 +37,14 @@ export const useDrawer = () => {
                 (positionRef.current.x != currentPosition.x || positionRef.current.y != currentPosition.y)
             ) {
                 // DOTO::draw 정책 설정 - 화면에 나타난 bubble안에도 생성 가능 여부(현재는 불가)
-                const currentPoint = view2Point(
+                const currentPos = view2Point(
                     {
                         x: currentPosition.x,
                         y: currentPosition.y,
                     },
                     canvasView,
                 );
-                if (currentPoint != undefined && addControlPoint(currentPoint)) {
+                if (currentPos != undefined && addControlPoint({ ...currentPos, isVisible: true })) {
                     splineCountRef.current = curveRenderer(getDrawingCurve(), splineCountRef.current) ?? -1;
                 }
                 lineRenderer(positionRef.current, currentPosition);
@@ -55,8 +57,8 @@ export const useDrawer = () => {
     const finishDrawing = useCallback(
         (canvasView: ViewCoord, curveRenderer: (curve: Curve2D, splineCount: number) => number | undefined) => {
             if (positionRef.current) {
-                const point = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, canvasView);
-                if (point) addControlPoint(point, true);
+                const pos = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, canvasView);
+                if (pos) addControlPoint({ ...pos, isVisible: true }, true);
             }
             curveRenderer(getDrawingCurve(), splineCountRef.current);
             splineCountRef.current = -1;

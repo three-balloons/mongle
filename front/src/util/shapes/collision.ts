@@ -23,7 +23,7 @@ export const isCollisionWithRect = (rectA: Rect, rectB: Rect): boolean => {
     return false;
 };
 
-export const isCollisionPointWithRect = (point: Point, rect: Rect): boolean => {
+export const isCollisionPointWithRect = (point: Vector2D, rect: Rect): boolean => {
     if (
         rect.left < point.x &&
         point.x < rect.left + rect.width &&

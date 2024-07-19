@@ -42,7 +42,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     });
 
     const canvasImageRef = useRef<ImageData | null>(null);
-    const { viewPath, getCurves, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { viewPath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
@@ -117,7 +117,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     //renders
     // bezier curve 적용 전 - 픽셀 단위로 그리기
-    const lineRenderer = (startPoint: Point, endPoint: Point) => {
+    const lineRenderer = (startPoint: Vector2D, endPoint: Vector2D) => {
         if (!canvasRef.current) {
             return;
         }
@@ -154,14 +154,15 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 for (let i = 0; i < beziers.length; i++) {
                     if (splineCnt >= i) continue;
                     context.moveTo(beziers[i].start.x, beziers[i].start.y);
-                    context.bezierCurveTo(
-                        beziers[i].cp1.x,
-                        beziers[i].cp1.y,
-                        beziers[i].cp2.x,
-                        beziers[i].cp2.y,
-                        beziers[i].end.x,
-                        beziers[i].end.y,
-                    );
+                    if (beziers[i].start.isVisible)
+                        context.bezierCurveTo(
+                            beziers[i].cp1.x,
+                            beziers[i].cp1.y,
+                            beziers[i].cp2.x,
+                            beziers[i].cp2.y,
+                            beziers[i].end.x,
+                            beziers[i].end.y,
+                        );
                     splineCnt = i;
                 }
             }
@@ -187,17 +188,22 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
                 if (beziers.length > 0) {
+                    let isSweep = true;
                     for (let i = 0; i < beziers.length; i++) {
                         context.moveTo(beziers[i].start.x, beziers[i].start.y);
-                        context.bezierCurveTo(
-                            beziers[i].cp1.x,
-                            beziers[i].cp1.y,
-                            beziers[i].cp2.x,
-                            beziers[i].cp2.y,
-                            beziers[i].end.x,
-                            beziers[i].end.y,
-                        );
+                        if (beziers[i].start.isVisible) {
+                            context.bezierCurveTo(
+                                beziers[i].cp1.x,
+                                beziers[i].cp1.y,
+                                beziers[i].cp2.x,
+                                beziers[i].cp2.y,
+                                beziers[i].end.x,
+                                beziers[i].end.y,
+                            );
+                            isSweep = false;
+                        }
                     }
+                    if (isSweep) removeCurve(curve);
                 }
                 context.stroke();
             });

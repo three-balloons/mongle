@@ -4,7 +4,7 @@ import style from '@/components/canvas/canvas.module.css';
 import { useEffect, useState } from 'react';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { getViewCoordinate } from '@/util/canvas/canvas';
-import { addPoint } from '@/util/shapes/operator';
+import { addVector2D } from '@/util/shapes/operator';
 
 type CanvasProps = {
     width: number;
@@ -21,7 +21,7 @@ export const Canvas = ({ width, height }: CanvasProps) => {
         reRender();
     }, [width, height]);
 
-    const [position, setPosition] = useState<Point>({ x: 0, y: 0 });
+    const [position, setPosition] = useState<Vector2D>({ x: 0, y: 0 });
 
     useEffect(() => {
         if (!canvasRef.current) {
@@ -54,13 +54,13 @@ export const Canvas = ({ width, height }: CanvasProps) => {
     useEffect(() => {
         if (!canvasRef.current) return;
         const canvas: HTMLCanvasElement = canvasRef.current;
-        const CanvasOffset: Point = {
+        const CanvasOffset: Vector2D = {
             x: canvas.offsetLeft,
             y: canvas.offsetTop,
         };
         const handleMouseMove = (event: MouseEvent | TouchEvent) => {
             if (!canvasRef.current) return;
-            const pos: Point = getViewCoordinate(event, canvasRef.current);
+            const pos: Vector2D = getViewCoordinate(event, canvasRef.current);
             if (
                 pos &&
                 isEraseRef.current &&
@@ -71,7 +71,7 @@ export const Canvas = ({ width, height }: CanvasProps) => {
                     height: height,
                 })
             ) {
-                setPosition(addPoint(pos, CanvasOffset));
+                setPosition(addVector2D(pos, CanvasOffset));
             } else if (isEraseRef.current == false) {
                 // rerendering
                 setPosition({ x: 0, y: 0 });

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/util/cn';
 import style from '@/pages/workspace/workspace.module.css';
-import themeStyle from '@/style/common/theme.module.css';
 import { Menu } from '@/components/menu/Menu';
 import { Canvas } from '@/components/canvas/Canvas';
 import { Explorer } from '@/components/explorer/Explorer';

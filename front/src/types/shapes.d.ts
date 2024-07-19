@@ -8,7 +8,9 @@ interface Vector3D {
     y: number;
     z: number;
 }
-type Point = Vector2D;
+interface Point extends Vector2D {
+    isVisible: boolean;
+}
 
 // curve
 type Curve2D = Array<Point>;
@@ -27,7 +29,7 @@ interface Rect {
 
 // circle
 interface Circle {
-    center: Point;
+    center: Vector2D;
     radius: number;
 }
 

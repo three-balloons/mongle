@@ -1,5 +1,5 @@
 // depend on web
-export const getViewCoordinate = (event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement): Point => {
+export const getViewCoordinate = (event: MouseEvent | TouchEvent, canvas: HTMLCanvasElement): Vector2D => {
     if (event instanceof MouseEvent) {
         return {
             x: Math.round(event.clientX) - canvas.offsetLeft,
@@ -21,7 +21,7 @@ export const getTouchCount = (event: MouseEvent | TouchEvent) => {
 export const getSecondTouchCoordinate = (
     event: MouseEvent | TouchEvent,
     canvas: HTMLCanvasElement,
-): Point | undefined => {
+): Vector2D | undefined => {
     if (event instanceof TouchEvent) {
         if (event.touches.length == 2) {
             return {
