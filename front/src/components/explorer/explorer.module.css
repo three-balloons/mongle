@@ -1,6 +1,6 @@
 .default {
     background-color: var(--color-gray-25);
-    height: 100%;
+
     width: 150px;
     color: var(--color-black);
     text-align: left;

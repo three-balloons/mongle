@@ -3,9 +3,12 @@
     flex-direction: column;
     width: 100vw;
     height: 100vh;
+    height: 100svh;
+    overflow: hidden;
 }
 
 .workspace {
     display: flex;
     flex-direction: row;
+    height: 100%;
 }

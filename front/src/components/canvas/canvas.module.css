@@ -1,4 +1,16 @@
-.workspace-content {
+.sub-layer {
+    position: absolute;
+    background-color: transparent;
+}
+
+.main-layer {
+    position: absolute;
+    background-color: transparent;
+}
+
+.background-layer {
+    position: absolute;
+
     --color-ground: var(--color-background);
     --color-line: #c9cccc; /*cdcccc */
     --color-main-line: #c9cccc;

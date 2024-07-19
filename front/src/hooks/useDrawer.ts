@@ -55,12 +55,11 @@ export const useDrawer = () => {
     );
 
     const finishDrawing = useCallback(
-        (canvasView: ViewCoord, curveRenderer: (curve: Curve2D, splineCount: number) => number | undefined) => {
+        (canvasView: ViewCoord) => {
             if (positionRef.current) {
                 const pos = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, canvasView);
                 if (pos) addControlPoint({ ...pos, isVisible: true }, true);
             }
-            curveRenderer(getDrawingCurve(), splineCountRef.current);
             splineCountRef.current = -1;
             addNewCurve(getThicknessRatio(canvasView));
         },

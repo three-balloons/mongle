@@ -21,7 +21,9 @@ type UseCanvasProps = {
  * store canvas infromation and command functions
  */
 export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const mainLayerRef = useRef<HTMLCanvasElement>(null);
+    const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
+    const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
     const { setCanvasView } = useViewStore((state) => state);
     const { mode } = useConfigStore((state) => state);
     const modeRef = useRef<ControlMode>(mode);
@@ -46,7 +48,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     const canvasImageRef = useRef<ImageData | null>(null);
     const { getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
-    const { getCreatingBubble } = useBubble();
+    const { getCreatingBubble, getBubbles } = useBubble();
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
@@ -58,8 +60,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         // Rerenders when canvas view changes
         useViewStore.subscribe(({ canvasView }) => {
             canvasViewRef.current = canvasView;
-
-            renderer(getCurves());
+            reRender();
         });
 
         useConfigStore.subscribe(({ mode }) => {
@@ -69,15 +70,19 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     const reRender = () => {
         // TODO 좌표 보정하기
-        clearRender();
+        clearCreationLayerRenderer();
         renderer(getCurves());
+
+        getBubbles().forEach((bubble) => {
+            bubbleRender(bubble);
+        });
     };
 
     const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        if (canvasRef.current == undefined) return;
-        const currentPosition = getViewCoordinate(event, canvasRef.current);
+        if (mainLayerRef.current == undefined) return;
+        const currentPosition = getViewCoordinate(event, mainLayerRef.current);
         if (currentPosition) {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 isPaintingRef.current = true;
@@ -101,18 +106,17 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const touch = useCallback((event: MouseEvent | TouchEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        if (canvasRef.current == undefined) return;
-        const currentPosition = getViewCoordinate(event, canvasRef.current);
+        if (mainLayerRef.current == undefined) return;
+        const currentPosition = getViewCoordinate(event, mainLayerRef.current);
         if (currentPosition) {
             if (isMoveRef.current && modeRef.current == 'move') {
-                const secondPosition = getSecondTouchCoordinate(event, canvasRef.current);
+                const secondPosition = getSecondTouchCoordinate(event, mainLayerRef.current);
                 drag(canvasViewRef.current, currentPosition, secondPosition);
             } else if (isPaintingRef.current && modeRef.current == 'draw') {
                 draw(canvasViewRef.current, currentPosition, lineRenderer, curveRenderer);
             } else if (isEraseRef.current && modeRef.current == 'erase') {
                 eraseArea(canvasViewRef.current, currentPosition);
-                clearRender();
-                renderer(getCurves());
+                reRender();
             } else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
                 createBubble(canvasViewRef.current, currentPosition);
                 rectRender(getCreatingBubble());
@@ -125,26 +129,35 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             isMoveRef.current = false;
             release();
         } else if (isPaintingRef.current && modeRef.current == 'draw') {
-            finishDrawing(canvasViewRef.current, curveRenderer);
+            finishDrawing(canvasViewRef.current);
+            reRender();
             isPaintingRef.current = false;
         } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
         else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
             isCreateBubbleRef.current = false;
             finishCreateBubble();
+            reRender();
         }
     }, []);
 
+    const clearCreationLayerRenderer = () => {
+        if (!creationLayerRef.current) {
+            return;
+        }
+        const canvas: HTMLCanvasElement = creationLayerRef.current;
+        const context = canvas.getContext('2d');
+        if (context) context.clearRect(0, 0, canvas.width, canvas.height);
+    };
     //renders
     // bezier curve 적용 전 - 픽셀 단위로 그리기
     const lineRenderer = (startPoint: Vector2D, endPoint: Vector2D) => {
-        if (!canvasRef.current) {
+        if (!creationLayerRef.current) {
             return;
         }
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
         if (context) {
             applyPenConfig(context);
-
             setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
             context.beginPath();
             context.moveTo(startPoint.x, startPoint.y);
@@ -155,11 +168,11 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     // addControlPoint가 true일 때 실행
     const curveRenderer = (curve: Curve2D, splineCount: number): number | undefined => {
-        if (!canvasRef.current) {
+        if (!creationLayerRef.current) {
             return;
         }
         let splineCnt = splineCount;
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
 
         if (context) {
@@ -193,12 +206,13 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     };
 
     const renderer = (curves: Array<Curve>) => {
-        if (!canvasRef.current) {
+        if (!mainLayerRef.current) {
             return;
         }
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
         const context = canvas.getContext('2d');
         if (context) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
@@ -225,32 +239,22 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 }
                 context.stroke();
             });
+
             const data = context.getImageData(0, 0, canvas.width, canvas.height);
             canvasImageRef.current = data;
         }
     };
 
-    const clearRender = () => {
-        if (!canvasRef.current) {
-            return;
-        }
-        const canvas: HTMLCanvasElement = canvasRef.current;
-        const context = canvas.getContext('2d');
-        if (context) {
-            const data = context.getImageData(0, 0, canvas.width, canvas.height);
-            canvasImageRef.current = data;
-            context.clearRect(0, 0, canvas.width, canvas.height);
-        }
-    };
-
+    // usage: create bubble drag
     const rectRender = (rect: Rect) => {
-        if (!canvasRef.current) {
+        if (!creationLayerRef.current) {
             return;
         }
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
         const _rect: Rect = rect2View(rect, canvasViewRef.current);
         if (context) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
             context.beginPath(); // Start a new path
             context.strokeStyle = 'lightblue';
             context.setLineDash([10, 10]);
@@ -261,10 +265,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     // bubble과 그 내부의 요소를 렌더링함
     const bubbleRender = (bubble: Bubble) => {
-        if (!canvasRef.current) {
+        if (!mainLayerRef.current) {
             return;
         }
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
         const context = canvas.getContext('2d');
         const bubbleView = descendant2child(bubble, canvasViewRef.current.path);
         if (bubbleView == undefined) return;
@@ -312,5 +316,16 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         bubbleRender(mockedBubbles[1]);
     };
 
-    return { isEraseRef, modeRef, canvasRef, reRender, touchDown, touch, touchUp, mockRender };
+    return {
+        isEraseRef,
+        modeRef,
+        mainLayerRef,
+        creationLayerRef,
+        movementLayerRef,
+        reRender,
+        touchDown,
+        touch,
+        touchUp,
+        mockRender,
+    };
 };

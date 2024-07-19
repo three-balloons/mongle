@@ -12,7 +12,17 @@ type CanvasProps = {
 };
 
 export const Canvas = ({ width, height }: CanvasProps) => {
-    const { isEraseRef, canvasRef, touchDown, touch, touchUp, mockRender, reRender } = useCanvas({
+    const {
+        isEraseRef,
+        mainLayerRef,
+        creationLayerRef,
+        movementLayerRef,
+        touchDown,
+        touch,
+        touchUp,
+        mockRender,
+        reRender,
+    } = useCanvas({
         width,
         height,
     });
@@ -24,11 +34,11 @@ export const Canvas = ({ width, height }: CanvasProps) => {
     const [position, setPosition] = useState<Vector2D>({ x: 0, y: 0 });
 
     useEffect(() => {
-        if (!canvasRef.current) {
+        if (!mainLayerRef.current) {
             return;
         }
         mockRender();
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
         canvas.addEventListener('mousedown', touchDown);
         canvas.addEventListener('mousemove', touch);
         canvas.addEventListener('mouseup', touchUp);
@@ -52,15 +62,15 @@ export const Canvas = ({ width, height }: CanvasProps) => {
     }, [touchDown, touch, touchUp]);
 
     useEffect(() => {
-        if (!canvasRef.current) return;
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        if (!mainLayerRef.current) return;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
         const CanvasOffset: Vector2D = {
             x: canvas.offsetLeft,
             y: canvas.offsetTop,
         };
         const handleMouseMove = (event: MouseEvent | TouchEvent) => {
-            if (!canvasRef.current) return;
-            const pos: Vector2D = getViewCoordinate(event, canvasRef.current);
+            if (!mainLayerRef.current) return;
+            const pos: Vector2D = getViewCoordinate(event, mainLayerRef.current);
             if (
                 pos &&
                 isEraseRef.current &&
@@ -88,7 +98,10 @@ export const Canvas = ({ width, height }: CanvasProps) => {
     }, []);
     return (
         <div>
-            <canvas ref={canvasRef} className={cn(style.workspaceContent)} width={width} height={height}></canvas>
+            <canvas ref={creationLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>
+            <canvas ref={movementLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
+            <canvas ref={mainLayerRef} className={cn(style.mainLayer)} width={width} height={height}></canvas>
+
             {isEraseRef.current && (
                 <div
                     className={style.eraser}

@@ -1,6 +1,5 @@
 import { useBubble } from '@/objects/useBubble';
 import { view2Point } from '@/util/coordSys/conversion';
-import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 
 export const useBubbleGun = () => {

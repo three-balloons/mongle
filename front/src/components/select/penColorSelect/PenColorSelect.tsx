@@ -32,7 +32,7 @@ export const PenColorSelect = () => {
                                     setPenColor(color);
                                 }}
                             >
-                                <ColorOption color={color} />
+                                <ColorOption color={color} className={style.bigCircle} />
                             </Select.Option>
                         );
                     })}
