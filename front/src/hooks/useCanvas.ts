@@ -52,7 +52,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     // tools
     const { startDrawing, draw, finishDrawing } = useDrawer();
-    const { eraseArea } = useEraser();
+    const { erase } = useEraser();
     const { grab, drag, release } = useHand();
     const { startCreateBubble, createBubble, finishCreateBubble } = useBubbleGun();
     useEffect(() => {
@@ -70,7 +70,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
 
     const reRender = () => {
         // TODO 좌표 보정하기
-        clearCreationLayerRenderer();
+        if (creationLayerRef.current) clearLayerRenderer(creationLayerRef.current);
         renderer(getCurves());
 
         getBubbles().forEach((bubble) => {
@@ -115,7 +115,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             } else if (isPaintingRef.current && modeRef.current == 'draw') {
                 draw(canvasViewRef.current, currentPosition, lineRenderer, curveRenderer);
             } else if (isEraseRef.current && modeRef.current == 'erase') {
-                eraseArea(canvasViewRef.current, currentPosition);
+                erase(canvasViewRef.current, currentPosition);
                 reRender();
             } else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
                 createBubble(canvasViewRef.current, currentPosition);
@@ -140,14 +140,29 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     }, []);
 
-    const clearCreationLayerRenderer = () => {
-        if (!creationLayerRef.current) {
-            return;
-        }
-        const canvas: HTMLCanvasElement = creationLayerRef.current;
+    const clearLayerRenderer = (canvas: HTMLCanvasElement) => {
         const context = canvas.getContext('2d');
-        if (context) context.clearRect(0, 0, canvas.width, canvas.height);
+        if (context) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            if (mainLayerRef.current == canvas) {
+                console.log('main layer!!!!!!!!!!');
+                canvasImageRef.current = context.getImageData(0, 0, canvas.width, canvas.height);
+            }
+        }
     };
+
+    const getMainLayerRef = () => {
+        return mainLayerRef;
+    };
+
+    const getMovementLayer = () => {
+        return movementLayerRef.current;
+    };
+
+    const getCreationLayer = () => {
+        return creationLayerRef.current;
+    };
+
     //renders
     // bezier curve 적용 전 - 픽셀 단위로 그리기
     const lineRenderer = (startPoint: Vector2D, endPoint: Vector2D) => {
@@ -322,6 +337,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         mainLayerRef,
         creationLayerRef,
         movementLayerRef,
+        getMainLayerRef,
+        getCreationLayer,
+        getMovementLayer,
+        clearLayerRenderer,
         reRender,
         touchDown,
         touch,

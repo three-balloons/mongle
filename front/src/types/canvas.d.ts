@@ -79,6 +79,7 @@ type Color =
     | '#300061';
 
 type ControlMode = 'move' | 'draw' | 'erase' | 'bubble';
+type EraseMode = 'area' | 'stroke';
 type Theme = '푸른하늘' | '해질녘' | '로즈마리';
 // Coordinate systems
 

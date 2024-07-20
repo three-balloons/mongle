@@ -1,6 +1,7 @@
 import { createContext, useRef } from 'react';
 
 export type BubbleContextProps = {
+    clearAllBubbles: () => void;
     getBubbles: () => Array<Bubble>;
     getCreatingBubble: () => Rect;
     addBubble: (bubble: Bubble) => void;
@@ -23,6 +24,10 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         height: 0,
     });
 
+    const clearAllBubbles = () => {
+        bubblesRef.current = [];
+    };
+
     const updateCreatingBubble = (rect: Rect) => {
         creatingBubbleRef.current = rect;
     };
@@ -41,6 +46,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
     return (
         <BubbleContext.Provider
             value={{
+                clearAllBubbles,
                 getBubbles,
                 getCreatingBubble,
                 addBubble,

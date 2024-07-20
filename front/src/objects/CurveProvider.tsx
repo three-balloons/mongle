@@ -6,6 +6,7 @@ export type CurveContextProps = {
     viewPath: string;
     setViewPath: (path: string) => void;
     getCurves: () => Array<Curve>;
+    clearAllCurves: () => void;
     getDrawingCurve: () => Curve2D;
     addControlPoint: (pos: Point, force?: boolean) => boolean;
     addNewCurve: (thicknessRatio?: number) => void;
@@ -36,6 +37,11 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
             penConfigRef.current = penConfig;
         });
     }, []);
+
+    const clearAllCurves = () => {
+        CurvesRef.current = [];
+        newCurveRef.current = [];
+    };
 
     const addControlPoint = (pos: Point, force: boolean = false) => {
         if (force || coolTime.current >= sensitivity) {
@@ -102,6 +108,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
             value={{
                 viewPath: viewPathRef.current,
                 setViewPath,
+                clearAllCurves,
                 getCurves,
                 getDrawingCurve,
                 addControlPoint,
