@@ -100,8 +100,5 @@
     border-radius: 50%;
     border: 1px solid var(--color-black);
     pointer-events: none;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
     z-index: 1;
 }

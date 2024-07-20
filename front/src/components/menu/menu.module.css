@@ -10,6 +10,17 @@
 .config {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100px;
+    height: 100%;
+    margin: 0 20px;
+    gap: 20px;
+}
+
+.tools {
+    display: flex;
+    flex-direction: row;
     justify-content: flex-start;
     align-items: center;
     width: 100%;

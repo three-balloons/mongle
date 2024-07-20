@@ -4,11 +4,11 @@ import { cn } from '@/util/cn';
 import { EraserIcon } from '@/components/select/toolSelect/ToolSelect';
 import { useBubble } from '@/objects/useBubble';
 import { useCurve } from '@/objects/useCurve';
-import { useCanvas } from '@/hooks/useCanvas';
+// import { useCanvas } from '@/hooks/useCanvas';
 import Modal from '@/headless/modal/Modal';
 
 export const EraserModal = () => {
-    const { eraseMode, setEraseMode } = useConfigStore((state) => state);
+    const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
     const { clearAllBubbles } = useBubble();
     const { clearAllCurves } = useCurve();
     // const { clearLayerRenderer, mainLayerRef } = useCanvas();
@@ -20,7 +20,7 @@ export const EraserModal = () => {
             </Modal.Opener>
             <Modal.Overlay zIndex={1} />
             <Modal.Content className={style.content}>
-                <div className={style.title}>{eraseMode ? '영역 지우개' : '획 지우개'}</div>
+                <div className={style.title}>지우개 선택</div>
                 <div className={style.option}>
                     <label>
                         <input
@@ -28,7 +28,7 @@ export const EraserModal = () => {
                             name="option"
                             value="영역"
                             className={style.radio}
-                            checked={eraseMode == 'area'}
+                            checked={eraseConfig.mode == 'area'}
                             onChange={() => setEraseMode('area')}
                         />
                         <span className={style.radioText}>영역 지우개 선택</span>
@@ -39,7 +39,7 @@ export const EraserModal = () => {
                             name="option"
                             value="획"
                             className={style.radio}
-                            checked={eraseMode == 'stroke'}
+                            checked={eraseConfig.mode == 'stroke'}
                             onChange={() => setEraseMode('stroke')}
                         />
                         <span className={style.radioText}>획 지우개 선택</span>

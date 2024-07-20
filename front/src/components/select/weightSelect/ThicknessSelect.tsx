@@ -1,5 +1,5 @@
 import Select from '@/headless/select/Select';
-import style from '@/components/select/thicknessSelect/thickness-select.module.css';
+import style from '@/components/select/weightSelect/thickness-select.module.css';
 import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
 
@@ -13,6 +13,7 @@ const LineOption = ({ thickness, className }: { thickness: number; className?: s
 
 export const ThicknessSelect = () => {
     const { setPenThickness, penConfig } = useConfigStore((state) => state);
+
     return (
         <Select className={style.default}>
             <Select.Overlay zIndex={1} />

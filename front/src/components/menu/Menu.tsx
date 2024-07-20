@@ -1,9 +1,9 @@
 import { cn } from '@/util/cn';
 import style from '@/components/menu/menu.module.css';
 import { PenColorSelect } from '@/components/select/penColorSelect/PenColorSelect';
-import { ThicknessSelect } from '@/components/select/thicknessSelect/ThicknessSelect';
 import { ToolSelect } from '@/components/select/toolSelect/ToolSelect';
 import { ControlSelect } from '@/components/select/controlSelect/ControlSelect';
+import { WeightSelect } from '@/components/select/weightSelect/WeightSelect';
 import { useState } from 'react';
 
 type MenuProps = {
@@ -15,7 +15,9 @@ export const Menu = ({ workSpaceResizeHandler }: MenuProps) => {
         <div className={cn(style.default)}>
             <div className={cn(style.config)}>
                 <PenColorSelect />
-                <ThicknessSelect />
+                <WeightSelect />
+            </div>
+            <div className={cn(style.tools)}>
                 <ToolSelect />
             </div>
             <div className={cn(style.command)}>
