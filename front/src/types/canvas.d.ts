@@ -10,6 +10,13 @@ type TextConfig = {
     font: Font;
 };
 
+type EraseConfig = {
+    radius: number;
+    mode: EraseMode;
+};
+
+type EraseMode = 'area' | 'stroke';
+
 type Font = 'serif' | 'Arial' | 'Courier New' | 'Georgia' | 'Times New Roman' | 'Trebuchet MS' | 'Verdana';
 
 type Color =
@@ -79,7 +86,7 @@ type Color =
     | '#300061';
 
 type ControlMode = 'move' | 'draw' | 'erase' | 'bubble';
-type EraseMode = 'area' | 'stroke';
+
 type Theme = '푸른하늘' | '해질녘' | '로즈마리';
 // Coordinate systems
 

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { getViewCoordinate } from '@/util/canvas/canvas';
 import { addVector2D } from '@/util/shapes/operator';
+import { useEraser } from '@/hooks/useEraser';
 
 type CanvasProps = {
     width: number;
@@ -26,6 +27,7 @@ export const Canvas = ({ width, height }: CanvasProps) => {
         width,
         height,
     });
+    const { earseRadiusRef } = useEraser();
 
     useEffect(() => {
         reRender();
@@ -106,8 +108,10 @@ export const Canvas = ({ width, height }: CanvasProps) => {
                 <div
                     className={style.eraser}
                     style={{
-                        left: position.x,
-                        top: position.y,
+                        left: position.x - earseRadiusRef.current,
+                        top: position.y - earseRadiusRef.current,
+                        width: `${earseRadiusRef.current * 2}px`,
+                        height: `${earseRadiusRef.current * 2}px`,
                     }}
                 ></div>
             )}

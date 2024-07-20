@@ -110,8 +110,8 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         const currentPosition = getViewCoordinate(event, mainLayerRef.current);
         if (currentPosition) {
             if (isMoveRef.current && modeRef.current == 'move') {
-                const secondPosition = getSecondTouchCoordinate(event, mainLayerRef.current);
-                drag(canvasViewRef.current, currentPosition, secondPosition);
+                // const secondPosition = getSecondTouchCoordinate(event, mainLayerRef.current);
+                drag(canvasViewRef.current, currentPosition /*, secondPosition*/);
             } else if (isPaintingRef.current && modeRef.current == 'draw') {
                 draw(canvasViewRef.current, currentPosition, lineRenderer, curveRenderer);
             } else if (isEraseRef.current && modeRef.current == 'erase') {

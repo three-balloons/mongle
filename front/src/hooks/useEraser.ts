@@ -7,17 +7,21 @@ import { useConfigStore } from '@/store/configStore';
 
 export const useEraser = () => {
     const positionRef = useRef<Vector2D | undefined>();
-    const earseModeRef = useRef<EraseMode>('area');
+    const { eraseConfig } = useConfigStore((state) => state);
+    const earseModeRef = useRef<EraseMode>(eraseConfig.mode);
+    const earseRadiusRef = useRef<number>(eraseConfig.radius);
     const { getCurves, addCurve, removeCurve } = useCurve();
 
     useEffect(() => {
-        useConfigStore.subscribe(({ eraseMode }) => {
-            earseModeRef.current = eraseMode;
+        useConfigStore.subscribe(({ eraseConfig }) => {
+            earseModeRef.current = eraseConfig.mode;
+            earseRadiusRef.current = eraseConfig.radius;
+            console.log(earseRadiusRef.current);
         });
     }, []);
 
     // 임의의 상수값 지우개 크기 => 추후 config에서 받아오기
-    const removeRadius = 5;
+    // const removeRadius = 5;
 
     const erase = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         if (earseModeRef.current == 'area') eraseArea(canvasView, currentPosition);
@@ -28,7 +32,7 @@ export const useEraser = () => {
         positionRef.current = currentPosition;
         const eraser: Circle = {
             center: { x: currentPosition.x, y: currentPosition.y },
-            radius: removeRadius,
+            radius: earseRadiusRef.current,
         };
 
         const curves = findIntersectCurves(eraser, getCurves(), canvasView);
@@ -43,7 +47,7 @@ export const useEraser = () => {
         positionRef.current = currentPosition;
         const eraser: Circle = {
             center: { x: currentPosition.x, y: currentPosition.y },
-            radius: removeRadius,
+            radius: earseRadiusRef.current,
         };
 
         const curves = findIntersectCurves(eraser, getCurves(), canvasView);
@@ -62,7 +66,7 @@ export const useEraser = () => {
 
     // marked at control points which is invisible
     const isIntersectCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): boolean => {
-        // TODO 두께 고려하기 & 타원충돌 고려하기
+        // TODO 두께 고려한 지우기 & 타원충돌 고려하기
         // TODO bubbe layer를 고려한 좌표계 변환
         const points = curve2View(curve.position, canvasView);
         for (let i = 0; i < points.length - 1; i++) {
@@ -78,7 +82,7 @@ export const useEraser = () => {
     const markCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): Curve => {
         const { path, config } = curve;
 
-        // TODO 두께 고려하기 & 타원충돌 고려하기
+        // TODO 두께 고려한 지우기 & 타원충돌 고려하기
         // TODO bubbe layer를 고려한 좌표계 변환
         const points = curve2View(curve.position, canvasView);
         for (let i = 0; i < points.length - 1; i++) {
@@ -94,5 +98,5 @@ export const useEraser = () => {
         };
     };
 
-    return { erase };
+    return { erase, earseRadiusRef };
 };
