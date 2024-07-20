@@ -22,14 +22,15 @@ const Select = ({ children, className, initialOpen = undefined, disableClose = u
 
 type SelectOverlayProps = {
     className?: string;
+    zIndex?: number;
 };
-const SelectOverlay = ({ className }: SelectOverlayProps) => {
+const SelectOverlay = ({ className, zIndex = 0 }: SelectOverlayProps) => {
     const { isOpen, toggleOpen } = useSelect();
     return (
         <>
             {isOpen && (
                 <div
-                    style={{ position: 'absolute', inset: 0, cursor: 'default' }}
+                    style={{ position: 'absolute', inset: 0, cursor: 'default', zIndex: zIndex }}
                     className={cn(className)}
                     onClick={toggleOpen}
                 />

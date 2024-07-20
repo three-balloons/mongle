@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEvent } from 'react';
 import { ModalProvider, useModal } from '@/headless/modal/ModalProvider';
 import { cn } from '@/util/cn';
 
@@ -33,11 +33,18 @@ const ModalOpener = ({ className, children }: ModalOpenerProps) => {
 type ModalCloserProps = {
     className?: string;
     children?: React.ReactNode;
+    onClick?: (e?: React.MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => void;
 };
-const ModalCloser = ({ className, children }: ModalCloserProps) => {
+const ModalCloser = ({ className, children, onClick }: ModalCloserProps) => {
     const { close } = useModal();
     return (
-        <div className={cn(className)} onClick={close}>
+        <div
+            className={cn(className)}
+            onClick={(e) => {
+                if (onClick) onClick(e);
+                close();
+            }}
+        >
             {children}
         </div>
     );
@@ -45,14 +52,15 @@ const ModalCloser = ({ className, children }: ModalCloserProps) => {
 
 type ModalOverlayProps = {
     className?: string;
+    zIndex?: number;
 };
-const ModalOverlay = ({ className }: ModalOverlayProps) => {
+const ModalOverlay = ({ className, zIndex = 1 }: ModalOverlayProps) => {
     const { isOpen, close } = useModal();
     return (
         <>
             {isOpen && (
                 <div
-                    style={{ position: 'absolute', inset: 0, cursor: 'default' }}
+                    style={{ position: 'absolute', inset: 0, cursor: 'default', zIndex: zIndex }}
                     className={cn(className)}
                     onClick={close}
                 />
