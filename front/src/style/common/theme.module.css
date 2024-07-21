@@ -1,0 +1,32 @@
+.theme-blue {
+    --color-primary-100: #44e7ff;
+    --color-primary-75: #77f1ff;
+    --color-primary-50: #aff5ff;
+    --color-primary-25: #c5f8ff;
+
+    --color-neutral-100: #f9fcfc;
+    --color-neutral-50: #dcecf5;
+    --color-background: var(--color-neutral-100);
+}
+
+.theme-pink {
+    --color-primary-100: #f5b9a7;
+    --color-primary-75: #ffbebe;
+    --color-primary-50: #ffcece;
+    --color-primary-25: #ffeaea;
+
+    --color-neutral-100: #fff4f4;
+    --color-neutral-50: #fae5e5;
+    --color-background: var(--color-neutral-100);
+}
+
+.theme-green {
+    --color-primary-100: #97c1a9;
+    --color-primary-75: #aedec2;
+    --color-primary-50: #baedd0;
+    --color-primary-25: #cff2e0;
+
+    --color-neutral-100: #f1fff7;
+    --color-neutral-50: #d9f5dd;
+    --color-background: var(--color-neutral-100);
+}

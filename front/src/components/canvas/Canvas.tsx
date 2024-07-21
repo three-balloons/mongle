@@ -1,29 +1,46 @@
 import { useCanvas } from '@/hooks/useCanvas';
 import { cn } from '@/util/cn';
-import style from '@/components/workspace/workspace.module.css';
+import style from '@/components/canvas/canvas.module.css';
 import { useEffect, useState } from 'react';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { getViewCoordinate } from '@/util/canvas/canvas';
-import { addPoint } from '@/util/shapes/operator';
+import { addVector2D } from '@/util/shapes/operator';
+import { useEraser } from '@/hooks/useEraser';
 
-type WorkspaceProps = {
+type CanvasProps = {
     width: number;
     height: number;
 };
 
-export const Workspace = ({ width, height }: WorkspaceProps) => {
-    // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
-
-    const { isEraseRef, canvasRef, touchDown, touch, touchUp, mockRender } = useCanvas({ width, height });
-
-    const [position, setPosition] = useState<Point>({ x: 0, y: 0 });
+export const Canvas = ({ width, height }: CanvasProps) => {
+    const {
+        isEraseRef,
+        mainLayerRef,
+        creationLayerRef,
+        movementLayerRef,
+        touchDown,
+        touch,
+        touchUp,
+        mockRender,
+        reRender,
+    } = useCanvas({
+        width,
+        height,
+    });
+    const { earseRadiusRef } = useEraser();
 
     useEffect(() => {
-        if (!canvasRef.current) {
+        reRender();
+    }, [width, height]);
+
+    const [position, setPosition] = useState<Vector2D>({ x: 0, y: 0 });
+
+    useEffect(() => {
+        if (!mainLayerRef.current) {
             return;
         }
         mockRender();
-        const canvas: HTMLCanvasElement = canvasRef.current;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
         canvas.addEventListener('mousedown', touchDown);
         canvas.addEventListener('mousemove', touch);
         canvas.addEventListener('mouseup', touchUp);
@@ -47,15 +64,15 @@ export const Workspace = ({ width, height }: WorkspaceProps) => {
     }, [touchDown, touch, touchUp]);
 
     useEffect(() => {
-        if (!canvasRef.current) return;
-        const canvas: HTMLCanvasElement = canvasRef.current;
-        const CanvasOffset: Point = {
+        if (!mainLayerRef.current) return;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
+        const CanvasOffset: Vector2D = {
             x: canvas.offsetLeft,
             y: canvas.offsetTop,
         };
         const handleMouseMove = (event: MouseEvent | TouchEvent) => {
-            if (!canvasRef.current) return;
-            const pos: Point = getViewCoordinate(event, canvasRef.current);
+            if (!mainLayerRef.current) return;
+            const pos: Vector2D = getViewCoordinate(event, mainLayerRef.current);
             if (
                 pos &&
                 isEraseRef.current &&
@@ -66,7 +83,7 @@ export const Workspace = ({ width, height }: WorkspaceProps) => {
                     height: height,
                 })
             ) {
-                setPosition(addPoint(pos, CanvasOffset));
+                setPosition(addVector2D(pos, CanvasOffset));
             } else if (isEraseRef.current == false) {
                 // rerendering
                 setPosition({ x: 0, y: 0 });
@@ -83,13 +100,18 @@ export const Workspace = ({ width, height }: WorkspaceProps) => {
     }, []);
     return (
         <div>
-            <canvas ref={canvasRef} className={cn(style.workspaceContent)} width={width} height={height}></canvas>
+            <canvas ref={creationLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>
+            <canvas ref={movementLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
+            <canvas ref={mainLayerRef} className={cn(style.mainLayer)} width={width} height={height}></canvas>
+
             {isEraseRef.current && (
                 <div
                     className={style.eraser}
                     style={{
-                        left: position.x,
-                        top: position.y,
+                        left: position.x - earseRadiusRef.current,
+                        top: position.y - earseRadiusRef.current,
+                        width: `${earseRadiusRef.current * 2}px`,
+                        height: `${earseRadiusRef.current * 2}px`,
                     }}
                 ></div>
             )}

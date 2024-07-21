@@ -15,7 +15,7 @@ interface SelectProviderProps {
     disableClose: boolean;
 }
 
-const SelectProvider: React.FC<SelectProviderProps> = ({ children, initialIsOpen, disableClose }) => {
+const SelectProvider = ({ children, initialIsOpen, disableClose }: SelectProviderProps) => {
     const [selectedValue, setSelectedValue] = useState<React.ReactNode>();
     const [isOpen, setIsOpen] = useState(initialIsOpen);
 

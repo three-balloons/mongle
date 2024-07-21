@@ -10,8 +10,8 @@ const bubble1: Bubble = {
     curves: [
         {
             position: [
-                { x: 10, y: 10 },
-                { x: 50, y: 50 },
+                { x: 10, y: 10, isVisible: true },
+                { x: 50, y: 50, isVisible: true },
             ],
             path: '/1',
             config: {
@@ -34,8 +34,8 @@ const bubble2: Bubble = {
     curves: [
         {
             position: [
-                { x: 10, y: 10 },
-                { x: 50, y: 50 },
+                { x: 10, y: 10, isVisible: true },
+                { x: 50, y: 50, isVisible: true },
             ],
             path: '/1/2',
             config: {
@@ -85,4 +85,4 @@ const bubble5: Bubble = {
 bubble1.children = [bubble2, bubble3];
 bubble2.children = [bubble4];
 bubble4.children = [bubble5];
-export const bubbles: Array<Bubble> = [bubble1, bubble2, bubble3, bubble4, bubble5];
+export const mockedBubbles: Array<Bubble> = [bubble1, bubble2, bubble3, bubble4, bubble5];

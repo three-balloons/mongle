@@ -12,6 +12,7 @@ export const PenColorSelect = () => {
     const { setPenColor, penConfig } = useConfigStore((state) => state);
     return (
         <Select className={style.default}>
+            <Select.Overlay zIndex={1} />
             <Select.Trigger>
                 <div
                     className={cn(style.bigCircle, style.preview)}
@@ -31,7 +32,7 @@ export const PenColorSelect = () => {
                                     setPenColor(color);
                                 }}
                             >
-                                <ColorOption color={color} />
+                                <ColorOption color={color} className={style.bigCircle} />
                             </Select.Option>
                         );
                     })}

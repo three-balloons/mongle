@@ -2,6 +2,7 @@ import { createStore } from '@/store/store';
 
 type State = {
     penConfig: PenConfig;
+    eraseConfig: EraseConfig;
     textConfig: TextConfig;
     mode: ControlMode;
 };
@@ -11,6 +12,8 @@ type Action = {
     setPenThickness: (thickness: number) => void;
     setPenAlpha: (alpha: number) => void;
     setPenFont: (font: Font) => void;
+    setEraseMode: (eraseMode: EraseMode) => void;
+    setEraseRadius: (radius: number) => void;
     setMode: (mode: ControlMode) => void;
 };
 type Store = State & Action;
@@ -26,6 +29,10 @@ export const useConfigStore = createStore<Store, State>(
             fontSize: 48,
             fontWeight: 'normal',
             font: 'serif',
+        },
+        eraseConfig: {
+            radius: 20,
+            mode: 'area',
         },
         mode: 'move',
         setPenColor: (color) =>
@@ -56,13 +63,29 @@ export const useConfigStore = createStore<Store, State>(
                     font,
                 },
             })),
-        setMode: (mode) =>
-            set({
-                mode: mode,
-            }),
+        setEraseMode: (eraseMode) =>
+            set((state) => ({
+                eraseConfig: {
+                    ...state.eraseConfig,
+                    mode: eraseMode,
+                },
+            })),
+        setEraseRadius: (radius) =>
+            set((state) => ({
+                eraseConfig: {
+                    ...state.eraseConfig,
+                    radius: radius,
+                },
+            })),
+        setMode: (mode) => set({ mode: mode }),
     }),
     {
         name: 'configStorage',
-        partialize: (state) => ({ penConfig: state.penConfig, textConfig: state.textConfig, mode: state.mode }),
+        partialize: (state) => ({
+            penConfig: state.penConfig,
+            textConfig: state.textConfig,
+            eraseConfig: state.eraseConfig,
+            mode: state.mode,
+        }),
     },
 );

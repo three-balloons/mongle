@@ -1,11 +1,23 @@
-.workspace-content {
+.sub-layer {
+    position: absolute;
+    background-color: transparent;
+}
+
+.main-layer {
+    position: absolute;
+    background-color: transparent;
+}
+
+.background-layer {
+    position: absolute;
+
     --color-ground: var(--color-background);
     --color-line: #c9cccc; /*cdcccc */
     --color-main-line: #c9cccc;
     --color-main-cross: #c9cccc;
 
     background-color: var(--color-ground);
-    background-image: linear-gradient(
+    /* background-image: linear-gradient(
             90deg,
             var(--color-main-line) 0px,
             var(--color-main-line) 1px,
@@ -79,7 +91,7 @@
         100px 100%,
         100px 100%,
         100px 100px,
-        100px 100px;
+        100px 100px; */
 }
 
 .eraser {
@@ -88,8 +100,5 @@
     border-radius: 50%;
     border: 1px solid var(--color-black);
     pointer-events: none;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
     z-index: 1;
 }

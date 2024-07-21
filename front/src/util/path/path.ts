@@ -1,6 +1,10 @@
+export const pathToList = (path: string): Array<string> => {
+    return path === '/' ? [''] : path.split('/');
+};
+
 export const getPathDepth = (parentPath: string, childPath: string): number | undefined => {
-    const parent = parentPath === '/' ? [''] : parentPath.split('/');
-    const child = childPath === '/' ? [''] : childPath.split('/');
+    const parent = pathToList(parentPath);
+    const child = pathToList(childPath);
     let i;
     const len = Math.min(parent.length, child.length);
     for (i = 0; i < len; i++) {

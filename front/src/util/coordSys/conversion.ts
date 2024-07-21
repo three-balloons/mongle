@@ -26,7 +26,7 @@ import { findBubble, findParentBubble } from '@/util/bubble/bubble';
 
 // TODO canvasPath와 canvasView 합치기
 // return undefined value when point can't be seen(nope)
-export const point2View = (point: Point, canvasView: ViewCoord): Point => {
+export const point2View = (point: Point, canvasView: ViewCoord): Vector2D => {
     // if (!isCollisionPointWithRect(point, canvasView.pos)) return undefined;
     const { left, top, width, height } = canvasView.pos;
     const { x: canvasWidth, y: canvasHeight } = canvasView.size;
@@ -41,6 +41,7 @@ export const curve2View = (curve: Curve2D, canvasView: ViewCoord): Curve2D => {
         const { left, top, width, height } = canvasView.pos;
         const { x: canvasWidth, y: canvasHeight } = canvasView.size;
         return {
+            isVisible: point.isVisible,
             x: ((point.x - left) * canvasWidth) / width,
             y: ((point.y - top) * canvasHeight) / height,
         };
@@ -63,7 +64,7 @@ export const rect2View = (rect: Rect, canvasView: ViewCoord): Rect => {
 };
 
 // return undefined value when point can't be seen(nope)
-export const view2Point = (point: Point, canvasView: ViewCoord): Point | undefined => {
+export const view2Point = (point: Vector2D, canvasView: ViewCoord): Vector2D | undefined => {
     // if (!isCollisionPointWithRect(point, { top: 0, left: 0, width: canvasView.size.x, height: canvasView.size.y }))
     //     return undefined;
     const { left, top, width, height } = canvasView.pos;
@@ -103,11 +104,12 @@ export const descendant2child = (descendant: Bubble, ancestorPath: string): Bubb
     }
 };
 
-export const point2bubble = (point: Point, path: string) => {
+export const point2bubble = (point: Point, path: string): Point => {
     const bubble = findBubble(path);
     if (bubble == undefined) return point;
     else
         return {
+            isVisible: point.isVisible,
             y: (bubble.height * (100 + point.y)) / 200 + bubble.top,
             x: (bubble.width * (100 + point.x)) / 200 + bubble.left,
         };
@@ -118,6 +120,7 @@ export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2
     else
         return curve.map((point) => {
             return {
+                isVisible: point.isVisible,
                 x: (bubble.width * (100 + point.x)) / 200 + bubble.left,
                 y: (bubble.height * (100 + point.y)) / 200 + bubble.top,
             };
@@ -141,6 +144,7 @@ export const getCurvesPosInBubble = (bubble: Bubble): Array<Curve2D> => {
     return bubble.curves.map((curve) => {
         return curve.position.map((point) => {
             return {
+                isVisible: point.isVisible,
                 x: (bubble.width * point.x) / 200 + bubble.left,
                 y: (bubble.height * point.y) / 200 + bubble.top,
             };
