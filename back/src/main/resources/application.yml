@@ -1,0 +1,13 @@
+#스프링 부트 서버가 실행되면 자동으로 로딩
+spring:
+  jpa:
+    show-sql: true #전송 쿼리 확인
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true #테이블 생성 후에 data.sql 실행
+  datasource:
+    url: jdbc:h2:mem:testdb
+  h2:
+    console:
+      enabled: true
