@@ -10,6 +10,7 @@ import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { useHand } from '@/hooks/useHand';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
 import { useBubble } from '@/objects/useBubble';
+import bubbleImg from '@/assets/img/bubble.png';
 
 type UseCanvasProps = {
     width?: number;
@@ -30,6 +31,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const isPaintingRef = useRef(false);
     const isMoveRef = useRef(false);
     const isCreateBubbleRef = useRef(false);
+    const isMoveBubbleRef = useRef(false);
 
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
@@ -53,8 +55,15 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { erase } = useEraser();
     const { grab, drag, release } = useHand();
-    const { startCreateBubble, createBubble, finishCreateBubble, identifyTouchRegion, descendant2child } =
-        useBubbleGun();
+    const {
+        startCreateBubble,
+        createBubble,
+        finishCreateBubble,
+        startMoveBubble,
+        moveBubble,
+        identifyTouchRegion,
+        descendant2child,
+    } = useBubbleGun();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -71,10 +80,15 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const reRender = () => {
         // TODO 좌표 보정하기
         if (creationLayerRef.current) clearLayerRenderer(creationLayerRef.current);
+        if (movementLayerRef.current) clearLayerRenderer(movementLayerRef.current);
         renderer(getCurves());
 
         getBubbles().forEach((bubble) => {
-            bubbleRender(bubble);
+            if (bubble.isBubblized) {
+                movementBubbleRender(bubble);
+            } else {
+                bubbleRender(bubble);
+            }
         });
     };
 
@@ -99,11 +113,16 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 if (isCreateBubbleRef.current == false) {
                     if (region === 'border') {
                         console.log(region, bubble);
-                        // TODO 버블화
-                        if (bubble) bubble.isBubblized = true;
+                        if (bubble) bubble.isBubblized = !bubble.isBubblized;
+                        reRender();
                     } else {
-                        isCreateBubbleRef.current = true;
-                        startCreateBubble(canvasViewRef.current, currentPosition, bubble?.path ?? '/');
+                        if (region == 'inside' && bubble && bubble.isBubblized == true) {
+                            isMoveBubbleRef.current = true;
+                            startMoveBubble(canvasViewRef.current, currentPosition, bubble);
+                        } else {
+                            isCreateBubbleRef.current = true;
+                            startCreateBubble(canvasViewRef.current, currentPosition, bubble?.path ?? '/');
+                        }
                     }
                 }
                 console.log(getBubbles());
@@ -125,9 +144,15 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             } else if (isEraseRef.current && modeRef.current == 'erase') {
                 erase(canvasViewRef.current, currentPosition);
                 reRender();
-            } else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
-                createBubble(canvasViewRef.current, currentPosition);
-                rectRender(getCreatingBubble());
+            } else if (modeRef.current == 'bubble') {
+                if (isMoveBubbleRef.current) {
+                    moveBubble(canvasViewRef.current, currentPosition);
+                    reRender();
+                }
+                if (isCreateBubbleRef.current) {
+                    createBubble(canvasViewRef.current, currentPosition);
+                    rectRender(getCreatingBubble());
+                }
             }
         }
     }, []);
@@ -141,10 +166,15 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             reRender();
             isPaintingRef.current = false;
         } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
-        else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
-            isCreateBubbleRef.current = false;
-            finishCreateBubble(canvasViewRef.current);
-            reRender();
+        else if (modeRef.current == 'bubble') {
+            if (isCreateBubbleRef.current) {
+                isCreateBubbleRef.current = false;
+                finishCreateBubble(canvasViewRef.current);
+                reRender();
+            }
+            if (isMoveBubbleRef.current) {
+                isMoveBubbleRef.current = false;
+            }
         }
     }, []);
 
@@ -153,7 +183,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             if (mainLayerRef.current == canvas) {
-                console.log('main layer!!!!!!!!!!');
                 canvasImageRef.current = context.getImageData(0, 0, canvas.width, canvas.height);
             }
         }
@@ -331,6 +360,41 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 }
                 context.stroke();
             });
+        }
+    };
+
+    const movementBubbleRender = (bubble: Bubble) => {
+        if (!movementLayerRef.current) {
+            return;
+        }
+        const canvas: HTMLCanvasElement = movementLayerRef.current;
+        const context = canvas.getContext('2d');
+        const bubbleView = descendant2child(bubble, canvasViewRef.current.path);
+        if (bubbleView == undefined) return;
+        const rect: Rect = rect2View(
+            {
+                height: bubbleView.height,
+                width: bubbleView.width,
+                top: bubbleView.top,
+                left: bubbleView.left,
+            },
+            canvasViewRef.current,
+        );
+        if (context) {
+            context.strokeStyle = 'lightblue';
+            context.beginPath();
+            context.ellipse(
+                rect.left + rect.width / 2,
+                rect.top + rect.height / 2,
+                rect.width / 2,
+                rect.height / 2,
+                0,
+                0,
+                Math.PI * 2,
+            );
+            context.stroke();
+
+            // context.fillRect(rect.left, rect.top, rect.width, rect.height); // Render the path
         }
     };
 

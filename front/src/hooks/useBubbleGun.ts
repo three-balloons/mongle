@@ -1,13 +1,16 @@
 import { useBubble } from '@/objects/useBubble';
-import { bubble2rect, rect2View, view2Point, view2Rect } from '@/util/coordSys/conversion';
+import { bubble2rect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth, getPathDifferentDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
+import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');
     const bubbleIdRef = useRef<number>(0);
+    const moveBubbleRef = useRef<Bubble | undefined>();
+    const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
     const { updateCreatingBubble, addBubble, getCreatingBubble, findBubble } = useBubble();
     const startCreateBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
@@ -66,6 +69,33 @@ export const useBubbleGun = () => {
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
         addBubble(bubble);
+    }, []);
+
+    const startMoveBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
+        const pos = view2Point(
+            {
+                x: currentPosition.x,
+                y: currentPosition.y,
+            },
+            canvasView,
+        );
+        if (pos) moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
+        moveBubbleRef.current = bubble;
+    }, []);
+
+    const moveBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
+        const currentPos = view2Point(
+            {
+                x: currentPosition.x,
+                y: currentPosition.y,
+            },
+            canvasView,
+        );
+        const { x, y } = subVector2D(currentPos, moveBubbleOffsetRef.current as Vector2D);
+        if (moveBubbleRef.current) {
+            moveBubbleRef.current.top = y;
+            moveBubbleRef.current.left = x;
+        }
     }, []);
 
     // 버블 안인지 밖인지 테두리인지 판단하는 함수
@@ -150,5 +180,13 @@ export const useBubbleGun = () => {
         }
     };
 
-    return { startCreateBubble, createBubble, identifyTouchRegion, finishCreateBubble, descendant2child };
+    return {
+        startCreateBubble,
+        createBubble,
+        finishCreateBubble,
+        startMoveBubble,
+        moveBubble,
+        identifyTouchRegion,
+        descendant2child,
+    };
 };
