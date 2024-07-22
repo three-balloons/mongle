@@ -23,7 +23,7 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
     return (
         <Modal className={cn(className)}>
             <Modal.Opener>{name}</Modal.Opener>
-            <Modal.Overlay className={style.overlay} />
+            <Modal.Overlay className={style.overlay} zIndex={0} />
             <Modal.Content className={style.content}>
                 {isNameChange ? (
                     <>

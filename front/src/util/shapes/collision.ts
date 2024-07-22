@@ -1,3 +1,4 @@
+import { getSquaredDistance } from '@/util/shapes/operator';
 import { isRect, isCircle } from '@/util/shapes/typeGuard';
 
 export const isCollisionRectWithCircle = (rect: Rect, circle: Circle): boolean => {
@@ -35,7 +36,7 @@ export const isCollisionPointWithRect = (point: Vector2D, rect: Rect): boolean =
 };
 
 export const isCollisionWithCircle = (circleA: Circle, circleB: Circle): boolean => {
-    return true;
+    return Math.sqrt(getSquaredDistance(circleA.center, circleB.center)) <= circleA.radius + circleB.radius;
 };
 
 type Shape = Rect | Circle;

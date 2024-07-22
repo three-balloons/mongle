@@ -1,20 +1,24 @@
 export const pathToList = (path: string): Array<string> => {
-    return path === '/' ? [''] : path.split('/');
+    return path.split('/').slice(0, -1);
 };
 
-export const getPathDepth = (parentPath: string, childPath: string): number | undefined => {
+export const getPathDepth = (path: string): number => {
+    const pathList = pathToList(path);
+    return pathList.length - 1;
+};
+
+export const getPathDifferentDepth = (parentPath: string, childPath: string): number | undefined => {
     const parent = pathToList(parentPath);
     const child = pathToList(childPath);
-    let i;
     const len = Math.min(parent.length, child.length);
-    for (i = 0; i < len; i++) {
-        if (parent[i] !== child[i]) return undefined;
+    for (let i = 0; i < len; i++) {
+        if (parent[i] != child[i]) return undefined;
     }
     return child.length - parent.length;
 };
 
 export const getParentPath = (path: string): string | undefined => {
     if (path == '/') return undefined;
-    const paths = path.split('/');
-    return paths.slice(0, -1).join('/');
+    const paths = path.split('/').slice(0, -1);
+    return paths.slice(0, -1).join('/') + '/';
 };

@@ -1,5 +1,5 @@
 import { Files } from '@/pages/files/Files';
-import { MainLayout } from '@/pages/layout/MainLayout';
+import { MainLayout } from '@/pages/layout/mainLayout';
 import { Workspace } from '@/pages/workspace/Workspace';
 import { Routed } from '@/Routed';
 import { Outlet, createBrowserRouter } from 'react-router-dom';

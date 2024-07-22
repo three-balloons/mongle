@@ -6,6 +6,7 @@ export type BubbleContextProps = {
     getCreatingBubble: () => Rect;
     addBubble: (bubble: Bubble) => void;
     updateCreatingBubble: (rect: Rect) => void;
+    findBubble: (path: string) => Bubble | undefined;
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -43,6 +44,11 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         bubblesRef.current = [...bubblesRef.current, bubble];
     };
 
+    const findBubble = (path: string): Bubble | undefined => {
+        if (path == '/') return undefined;
+        return bubblesRef.current.find((bubble) => bubble.path == path);
+    };
+
     return (
         <BubbleContext.Provider
             value={{
@@ -51,6 +57,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
                 getCreatingBubble,
                 addBubble,
                 updateCreatingBubble,
+                findBubble,
             }}
         >
             {children}

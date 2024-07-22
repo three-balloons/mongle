@@ -38,4 +38,5 @@ interface Bubble extends Rect {
     curves: Array<Curve>;
     children: Array<Bubble>;
     parent: Bubble | undefined;
+    isBubblized: boolean;
 }

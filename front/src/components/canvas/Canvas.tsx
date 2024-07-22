@@ -13,20 +13,11 @@ type CanvasProps = {
 };
 
 export const Canvas = ({ width, height }: CanvasProps) => {
-    const {
-        isEraseRef,
-        mainLayerRef,
-        creationLayerRef,
-        movementLayerRef,
-        touchDown,
-        touch,
-        touchUp,
-        mockRender,
-        reRender,
-    } = useCanvas({
-        width,
-        height,
-    });
+    const { isEraseRef, mainLayerRef, creationLayerRef, movementLayerRef, touchDown, touch, touchUp, reRender } =
+        useCanvas({
+            width,
+            height,
+        });
     const { earseRadiusRef } = useEraser();
 
     useEffect(() => {
@@ -39,7 +30,6 @@ export const Canvas = ({ width, height }: CanvasProps) => {
         if (!mainLayerRef.current) {
             return;
         }
-        mockRender();
         const canvas: HTMLCanvasElement = mainLayerRef.current;
         canvas.addEventListener('mousedown', touchDown);
         canvas.addEventListener('mousemove', touch);

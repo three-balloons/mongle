@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
 import { getSecondTouchCoordinate, getViewCoordinate } from '@/util/canvas/canvas';
-import { curve2bubble, curve2View, descendant2child, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
+import { curve2bubble, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
-import { mockedBubbles } from '@/mock/bubble';
 import { useHand } from '@/hooks/useHand';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
 import { useBubble } from '@/objects/useBubble';
@@ -54,7 +53,8 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { erase } = useEraser();
     const { grab, drag, release } = useHand();
-    const { startCreateBubble, createBubble, finishCreateBubble } = useBubbleGun();
+    const { startCreateBubble, createBubble, finishCreateBubble, identifyTouchRegion, descendant2child } =
+        useBubbleGun();
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -95,10 +95,18 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                     grab(canvasViewRef.current, currentPosition);
                 }
             } else if (modeRef.current == 'bubble') {
+                const { region, bubble } = identifyTouchRegion(canvasViewRef.current, currentPosition, getBubbles());
                 if (isCreateBubbleRef.current == false) {
-                    isCreateBubbleRef.current = true;
-                    startCreateBubble(canvasViewRef.current, currentPosition);
+                    if (region === 'border') {
+                        console.log(region, bubble);
+                        // TODO 버블화
+                        if (bubble) bubble.isBubblized = true;
+                    } else {
+                        isCreateBubbleRef.current = true;
+                        startCreateBubble(canvasViewRef.current, currentPosition, bubble?.path ?? '/');
+                    }
                 }
+                console.log(getBubbles());
             }
         }
     }, []);
@@ -135,7 +143,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
         else if (isCreateBubbleRef.current && modeRef.current == 'bubble') {
             isCreateBubbleRef.current = false;
-            finishCreateBubble();
+            finishCreateBubble(canvasViewRef.current);
             reRender();
         }
     }, []);
@@ -326,10 +334,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    // 테스트를 위한 렌더링
-    const mockRender = () => {
-        bubbleRender(mockedBubbles[1]);
-    };
+    // // 테스트를 위한 렌더링
+    // const mockRender = () => {
+    //     bubbleRender(mockedBubbles[1]);
+    // };
 
     return {
         isEraseRef,
@@ -345,6 +353,5 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         touchDown,
         touch,
         touchUp,
-        mockRender,
     };
 };
