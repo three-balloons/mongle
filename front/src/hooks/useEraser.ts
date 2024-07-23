@@ -18,7 +18,6 @@ export const useEraser = () => {
         useConfigStore.subscribe(({ eraseConfig }) => {
             earseModeRef.current = eraseConfig.mode;
             earseRadiusRef.current = eraseConfig.radius;
-            console.log(earseRadiusRef.current);
         });
     }, []);
 

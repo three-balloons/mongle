@@ -85,6 +85,7 @@ export const view2Rect = (rect: Rect, canvasView: ViewCoord): Rect => {
     };
 };
 
+// point는 bubble 내 좌표계 => point를 bubble의 좌표계 밖으로 뺌
 export const point2bubble = (point: Point, bubble: Bubble | undefined): Point => {
     if (bubble == undefined) return point;
     else
@@ -95,6 +96,7 @@ export const point2bubble = (point: Point, bubble: Bubble | undefined): Point =>
         };
 };
 
+// curve는 bubble 내 좌표계 => curve를 bubble의 좌표계 밖으로 뺌
 export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
     if (bubble == undefined) return curve;
     else
@@ -107,6 +109,7 @@ export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2
         });
 };
 
+// rect은 bubble 내 좌표계 => rect을 bubble의 좌표계 밖으로 뺌
 export const rect2bubble = (rect: Rect, bubble: Bubble | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
@@ -127,6 +130,16 @@ export const bubble2rect = (rect: Rect, bubble: Bubble | undefined): Rect => {
             left: ((rect.left - bubble.left) * 200) / bubble.width - 100,
             height: (rect.height * 200) / bubble.height,
             width: (rect.width * 200) / bubble.width,
+        };
+};
+
+// point과 bubble은 좌표계가 같음 => rect을 point의 좌표계 안으로 넣음
+export const bubble2Vector2D = (point: Vector2D, bubble: Bubble | undefined): Vector2D => {
+    if (bubble == undefined) return point;
+    else
+        return {
+            y: ((point.y - bubble.top) * 200) / bubble.height - 100,
+            x: ((point.x - bubble.left) * 200) / bubble.width - 100,
         };
 };
 

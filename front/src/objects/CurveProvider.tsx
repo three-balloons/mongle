@@ -3,8 +3,8 @@ import { createContext, useEffect, useRef } from 'react';
 
 export type CurveContextProps = {
     // TODO viewPath, setViewPath, viewPathRef 제거하고 curve에서 path 받기
-    viewPath: string;
-    setViewPath: (path: string) => void;
+    getNewCurvePath: () => string;
+    setNewCurvePath: (path: string) => void;
     getCurves: () => Array<Curve>;
     clearAllCurves: () => void;
     getDrawingCurve: () => Curve2D;
@@ -25,7 +25,7 @@ type CurveProviderProps = {
 
 export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitivity = 0 }) => {
     const newCurveRef = useRef<Curve2D>([]);
-    const viewPathRef = useRef<string>('/');
+    const newCurvePathRef = useRef<string>('/');
     const CurvesRef = useRef<Curve[]>([]);
     const coolTime = useRef(sensitivity);
     const { penConfig } = useConfigStore((state) => state);
@@ -43,6 +43,14 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         newCurveRef.current = [];
     };
 
+    const setNewCurvePath = (path: string) => {
+        newCurvePathRef.current = path;
+    };
+
+    const getNewCurvePath = () => {
+        return newCurvePathRef.current;
+    };
+
     const addControlPoint = (pos: Point, force: boolean = false) => {
         if (force || coolTime.current >= sensitivity) {
             newCurveRef.current = [...newCurveRef.current, pos];
@@ -54,16 +62,12 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         }
     };
 
-    const setViewPath = (path: string) => {
-        viewPathRef.current = path;
-    };
-
     const addNewCurve = (thicknessRatio: number = 1) => {
         CurvesRef.current = [
             ...CurvesRef.current,
             {
                 position: newCurveRef.current,
-                path: viewPathRef.current,
+                path: newCurvePathRef.current,
                 config: { ...penConfigRef.current, thickness: penConfigRef.current.thickness / thicknessRatio },
             },
         ];
@@ -85,7 +89,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     const getCurves = (): Curve[] => {
         return [
             ...CurvesRef.current,
-            { position: newCurveRef.current, path: viewPathRef.current, config: penConfigRef.current },
+            { position: newCurveRef.current, path: newCurvePathRef.current, config: penConfigRef.current },
         ];
     };
 
@@ -106,11 +110,11 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     return (
         <CurveContext.Provider
             value={{
-                viewPath: viewPathRef.current,
-                setViewPath,
+                getNewCurvePath,
                 clearAllCurves,
                 getCurves,
                 getDrawingCurve,
+                setNewCurvePath,
                 addControlPoint,
                 addNewCurve,
                 addCurve,

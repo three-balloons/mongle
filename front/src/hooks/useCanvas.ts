@@ -51,22 +51,16 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         path: '/',
     });
 
-    const { getDrawingCurve, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
-    const { getCreatingBubble, getBubbles } = useBubble();
+    const { getDrawingCurve, getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } =
+        useCurve();
+    const { getCreatingBubble, getBubbles, findBubble, descendant2child } = useBubble();
 
     /* tools */
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { erase } = useEraser();
     const { grab, drag, release } = useHand();
-    const {
-        startCreateBubble,
-        createBubble,
-        finishCreateBubble,
-        startMoveBubble,
-        moveBubble,
-        identifyTouchRegion,
-        descendant2child,
-    } = useBubbleGun();
+    const { startCreateBubble, createBubble, finishCreateBubble, startMoveBubble, moveBubble, identifyTouchRegion } =
+        useBubbleGun();
 
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
@@ -88,8 +82,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         const currentPosition = getViewCoordinate(event, mainLayerRef.current);
         if (currentPosition) {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
+                const { bubble } = identifyTouchRegion(canvasViewRef.current, currentPosition, getBubbles());
+                console.log(bubble?.path);
+                startDrawing(canvasViewRef.current, currentPosition, bubble?.path);
                 isPaintingRef.current = true;
-                startDrawing(canvasViewRef.current, currentPosition);
             } else if (isEraseRef.current == false && modeRef.current == 'erase') {
                 isEraseRef.current = true;
             } else if (modeRef.current == 'move') {
@@ -113,7 +109,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                         }
                     }
                 }
-                console.log(getBubbles());
             }
         }
     }, []);
@@ -128,6 +123,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 // const secondPosition = getSecondTouchCoordinate(event, mainLayerRef.current);
                 drag(canvasViewRef.current, currentPosition /*, secondPosition*/);
             } else if (isPaintingRef.current && modeRef.current == 'draw') {
+                //
+                //
+
                 draw(canvasViewRef.current, currentPosition, lineRenderer);
                 curveRenderer(getDrawingCurve());
             } else if (isEraseRef.current && modeRef.current == 'erase') {
@@ -221,7 +219,13 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             applyPenConfig(context);
-            const beziers = catmullRom2Bezier(curve2View(curve, canvasViewRef.current));
+            const parentBubble = findBubble(getNewCurvePath());
+            let c = curve;
+            if (parentBubble) {
+                const bubbleView = descendant2child(parentBubble, canvasViewRef.current.path);
+                c = curve2bubble(curve, bubbleView);
+            }
+            const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
             context.beginPath();
             // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
             if (beziers.length > 0) {
@@ -253,7 +257,14 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             curves.forEach((curve) => {
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(canvasViewRef.current));
-                const beziers = catmullRom2Bezier(curve2View(curve.position, canvasViewRef.current));
+                const parentBubble = findBubble(curve.path);
+                let c = curve.position;
+                if (parentBubble) {
+                    const bubbleView = descendant2child(parentBubble, canvasViewRef.current.path);
+                    c = curve2bubble(curve.position, bubbleView);
+                }
+
+                const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
                 if (beziers.length > 0) {

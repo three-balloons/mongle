@@ -1,3 +1,4 @@
+import { getParentPath, getPathDifferentDepth } from '@/util/path/path';
 import { createContext, useRef } from 'react';
 
 export type BubbleContextProps = {
@@ -7,6 +8,7 @@ export type BubbleContextProps = {
     addBubble: (bubble: Bubble) => void;
     updateCreatingBubble: (rect: Rect) => void;
     findBubble: (path: string) => Bubble | undefined;
+    descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -49,6 +51,35 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         return bubblesRef.current.find((bubble) => bubble.path == path);
     };
 
+    // 자손버블좌표계에서 자식버블좌표계로 변환
+    // 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
+    // TODO: 최적화
+    // TODO useBubble에 의존하고 있음
+    // 의존성 제거 혹은 계산부분 분리 필요
+    const descendant2child = (descendant: Bubble, ancestorPath: string): Bubble | undefined => {
+        const depth = getPathDifferentDepth(ancestorPath, descendant.path);
+        if (depth == undefined) return undefined;
+        if (depth == 0) return descendant; // depth가 0인 경우 자체가 존재하지 않음
+        if (depth == 1)
+            return descendant; // descendant is child
+        else if (depth > 1) {
+            const ret: Bubble = { ...descendant };
+            let parent: Bubble | undefined = ret;
+            for (let i = 1; i < depth; i++) {
+                const path = getParentPath(ret.path);
+                if (path == undefined) return undefined;
+                parent = findBubble(path);
+                if (parent == undefined) return undefined;
+                ret.path = parent.path;
+                ret.top = (parent.height * (100 + ret.top)) / 200 + parent.top;
+                ret.left = (parent.width * (100 + ret.left)) / 200 + parent.left;
+                ret.height = (parent.height * ret.height) / 200;
+                ret.width = (parent.width * ret.width) / 200;
+            }
+            return ret;
+        }
+    };
+
     return (
         <BubbleContext.Provider
             value={{
@@ -58,6 +89,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
                 addBubble,
                 updateCreatingBubble,
                 findBubble,
+                descendant2child,
             }}
         >
             {children}
