@@ -2,6 +2,8 @@ import { useCallback, useRef } from 'react';
 import { useViewStore } from '@/store/viewStore';
 import { subVector2D } from '@/util/shapes/operator';
 
+// functions about movement
+// features: move canvasView, (TODO)zoom in/out canvasView, (TODO) focus on bubble
 export const useHand = () => {
     const startPositionRef = useRef<Vector2D | undefined>();
     const startViewPositionRef = useRef<Vector2D | undefined>();

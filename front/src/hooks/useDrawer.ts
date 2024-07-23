@@ -2,13 +2,11 @@ import { useCallback, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
 import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
 
-/**
- * store canvas infromation and command functions
- */
+// functions about pen drawing
+// features: draw curve
 export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
-    const splineCountRef = useRef(-1); // n번째 이후부터 spline 반영 안한 점들
-    const { setViewPath, getDrawingCurve, addControlPoint, addNewCurve } = useCurve();
+    const { setViewPath, addControlPoint, addNewCurve } = useCurve();
 
     const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
@@ -30,7 +28,6 @@ export const useDrawer = () => {
             canvasView: ViewCoord,
             currentPosition: Vector2D,
             lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void,
-            curveRenderer: (curve: Curve2D, splineCount: number) => number | undefined,
         ) => {
             if (
                 positionRef.current &&
@@ -44,10 +41,8 @@ export const useDrawer = () => {
                     },
                     canvasView,
                 );
-                if (currentPos != undefined && addControlPoint({ ...currentPos, isVisible: true })) {
-                    splineCountRef.current = curveRenderer(getDrawingCurve(), splineCountRef.current) ?? -1;
-                }
-                lineRenderer(positionRef.current, currentPosition);
+                if (currentPos != undefined && addControlPoint({ ...currentPos, isVisible: true }))
+                    lineRenderer(positionRef.current, currentPosition);
             }
             positionRef.current = currentPosition;
         },
@@ -60,7 +55,6 @@ export const useDrawer = () => {
                 const pos = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, canvasView);
                 if (pos) addControlPoint({ ...pos, isVisible: true }, true);
             }
-            splineCountRef.current = -1;
             addNewCurve(getThicknessRatio(canvasView));
         },
         [addNewCurve],

@@ -10,7 +10,6 @@ import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { useHand } from '@/hooks/useHand';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
 import { useBubble } from '@/objects/useBubble';
-import bubbleImg from '@/assets/img/bubble.png';
 
 type UseCanvasProps = {
     width?: number;
@@ -20,18 +19,23 @@ type UseCanvasProps = {
 /**
  * store canvas infromation and command functions
  */
+// control logic
 export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
+    /* layers */
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
     const { setCanvasView } = useViewStore((state) => state);
     const { mode } = useConfigStore((state) => state);
+
+    /* state variable */
     const modeRef = useRef<ControlMode>(mode);
     const isEraseRef = useRef<boolean>(false);
     const isPaintingRef = useRef(false);
     const isMoveRef = useRef(false);
     const isCreateBubbleRef = useRef(false);
     const isMoveBubbleRef = useRef(false);
+    const canvasImageRef = useRef<ImageData | null>(null);
 
     const canvasViewRef = useRef<ViewCoord>({
         pos: {
@@ -47,11 +51,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         path: '/',
     });
 
-    const canvasImageRef = useRef<ImageData | null>(null);
-    const { getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getDrawingCurve, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
     const { getCreatingBubble, getBubbles } = useBubble();
 
-    // tools
+    /* tools */
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { erase } = useEraser();
     const { grab, drag, release } = useHand();
@@ -64,6 +67,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         identifyTouchRegion,
         descendant2child,
     } = useBubbleGun();
+
     useEffect(() => {
         setCanvasView(canvasViewRef.current);
         // Rerenders when canvas view changes
@@ -76,21 +80,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             modeRef.current = mode;
         });
     }, []);
-
-    const reRender = () => {
-        // TODO 좌표 보정하기
-        if (creationLayerRef.current) clearLayerRenderer(creationLayerRef.current);
-        if (movementLayerRef.current) clearLayerRenderer(movementLayerRef.current);
-        renderer(getCurves());
-
-        getBubbles().forEach((bubble) => {
-            if (bubble.isBubblized) {
-                movementBubbleRender(bubble);
-            } else {
-                bubbleRender(bubble);
-            }
-        });
-    };
 
     const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
         event.preventDefault();
@@ -112,7 +101,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 const { region, bubble } = identifyTouchRegion(canvasViewRef.current, currentPosition, getBubbles());
                 if (isCreateBubbleRef.current == false) {
                     if (region === 'border') {
-                        console.log(region, bubble);
                         if (bubble) bubble.isBubblized = !bubble.isBubblized;
                         reRender();
                     } else {
@@ -140,7 +128,8 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 // const secondPosition = getSecondTouchCoordinate(event, mainLayerRef.current);
                 drag(canvasViewRef.current, currentPosition /*, secondPosition*/);
             } else if (isPaintingRef.current && modeRef.current == 'draw') {
-                draw(canvasViewRef.current, currentPosition, lineRenderer, curveRenderer);
+                draw(canvasViewRef.current, currentPosition, lineRenderer);
+                curveRenderer(getDrawingCurve());
             } else if (isEraseRef.current && modeRef.current == 'erase') {
                 erase(canvasViewRef.current, currentPosition);
                 reRender();
@@ -178,6 +167,21 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     }, []);
 
+    const reRender = () => {
+        // TODO 좌표 보정하기
+        if (creationLayerRef.current) clearLayerRenderer(creationLayerRef.current);
+        if (movementLayerRef.current) clearLayerRenderer(movementLayerRef.current);
+        renderer(getCurves());
+
+        getBubbles().forEach((bubble) => {
+            if (bubble.isBubblized) {
+                movementBubbleRender(bubble);
+            } else {
+                bubbleRender(bubble);
+            }
+        });
+    };
+
     const clearLayerRenderer = (canvas: HTMLCanvasElement) => {
         const context = canvas.getContext('2d');
         if (context) {
@@ -186,18 +190,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 canvasImageRef.current = context.getImageData(0, 0, canvas.width, canvas.height);
             }
         }
-    };
-
-    const getMainLayerRef = () => {
-        return mainLayerRef;
-    };
-
-    const getMovementLayer = () => {
-        return movementLayerRef.current;
-    };
-
-    const getCreationLayer = () => {
-        return creationLayerRef.current;
     };
 
     //renders
@@ -219,24 +211,21 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     };
 
     // addControlPoint가 true일 때 실행
-    const curveRenderer = (curve: Curve2D, splineCount: number): number | undefined => {
+    const curveRenderer = (curve: Curve2D): number | undefined => {
         if (!creationLayerRef.current) {
             return;
         }
-        let splineCnt = splineCount;
         const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
 
         if (context) {
-            if (canvasImageRef.current) context.putImageData(canvasImageRef.current, 0, 0);
-            else context.clearRect(0, 0, canvas.width, canvas.height);
+            context.clearRect(0, 0, canvas.width, canvas.height);
             applyPenConfig(context);
             const beziers = catmullRom2Bezier(curve2View(curve, canvasViewRef.current));
             context.beginPath();
             // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
             if (beziers.length > 0) {
                 for (let i = 0; i < beziers.length; i++) {
-                    if (splineCnt >= i) continue;
                     context.moveTo(beziers[i].start.x, beziers[i].start.y);
                     if (beziers[i].start.isVisible)
                         context.bezierCurveTo(
@@ -247,13 +236,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                             beziers[i].end.x,
                             beziers[i].end.y,
                         );
-                    splineCnt = i;
                 }
             }
             context.stroke();
-            const data = context.getImageData(0, 0, canvas.width, canvas.height);
-            canvasImageRef.current = data;
-            return splineCnt;
         }
     };
 
@@ -398,20 +383,12 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    // // 테스트를 위한 렌더링
-    // const mockRender = () => {
-    //     bubbleRender(mockedBubbles[1]);
-    // };
-
     return {
         isEraseRef,
         modeRef,
         mainLayerRef,
         creationLayerRef,
         movementLayerRef,
-        getMainLayerRef,
-        getCreationLayer,
-        getMovementLayer,
         clearLayerRenderer,
         reRender,
         touchDown,

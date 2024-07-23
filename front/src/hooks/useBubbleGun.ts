@@ -5,6 +5,8 @@ import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 
+// functions about bubble
+// features: create bubble, bubblize, unbubblize, move bubble
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');

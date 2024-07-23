@@ -35,6 +35,30 @@ export const isCollisionPointWithRect = (point: Vector2D, rect: Rect): boolean =
     return false;
 };
 
+export const isCollisionLineWithCircle = (line: Line2D, circle: Circle, thickness: number = 0) => {
+    const dx = line[1].x - line[0].x;
+    const dy = line[1].y - line[0].y;
+    const fx = line[0].x - circle.center.x;
+    const fy = line[0].y - circle.center.y;
+
+    const a = dx * dx + dy * dy;
+    const b = 2 * (fx * dx + fy * dy);
+    const c = fx * fx + fy * fy - (circle.radius + thickness) * (circle.radius + thickness);
+
+    let discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return false;
+    } else {
+        discriminant = Math.sqrt(discriminant);
+        const t1 = (-b - discriminant) / (2 * a);
+        const t2 = (-b + discriminant) / (2 * a);
+        if ((t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1)) {
+            return true;
+        }
+        return false;
+    }
+};
+
 export const isCollisionWithCircle = (circleA: Circle, circleB: Circle): boolean => {
     return Math.sqrt(getSquaredDistance(circleA.center, circleB.center)) <= circleA.radius + circleB.radius;
 };

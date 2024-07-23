@@ -2,9 +2,11 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
 import { curve2View } from '@/util/coordSys/conversion';
 import { curve2Rect } from '@/util/shapes/conversion';
-import { isCollisionRectWithCircle } from '@/util/shapes/collision';
+import { isCollisionLineWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
 import { useConfigStore } from '@/store/configStore';
 
+// functions about erasing
+// features: erase area, erase stroke
 export const useEraser = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { eraseConfig } = useConfigStore((state) => state);
@@ -19,9 +21,6 @@ export const useEraser = () => {
             console.log(earseRadiusRef.current);
         });
     }, []);
-
-    // 임의의 상수값 지우개 크기 => 추후 config에서 받아오기
-    // const removeRadius = 5;
 
     const erase = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
         if (earseModeRef.current == 'area') eraseArea(canvasView, currentPosition);
@@ -66,12 +65,11 @@ export const useEraser = () => {
 
     // marked at control points which is invisible
     const isIntersectCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): boolean => {
-        // TODO 두께 고려한 지우기 & 타원충돌 고려하기
+        // TODO 두께 고려한 지우기
         // TODO bubbe layer를 고려한 좌표계 변환
         const points = curve2View(curve.position, canvasView);
         for (let i = 0; i < points.length - 1; i++) {
-            const rect = curve2Rect([points[i], points[i + 1]]);
-            if (rect && isCollisionRectWithCircle(rect, circle)) {
+            if (isCollisionLineWithCircle([points[i], points[i + 1]], circle, 5)) {
                 return true;
             }
         }
@@ -82,12 +80,11 @@ export const useEraser = () => {
     const markCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): Curve => {
         const { path, config } = curve;
 
-        // TODO 두께 고려한 지우기 & 타원충돌 고려하기
+        // TODO 두께 고려한 지우기
         // TODO bubbe layer를 고려한 좌표계 변환
         const points = curve2View(curve.position, canvasView);
         for (let i = 0; i < points.length - 1; i++) {
-            const rect = curve2Rect([points[i], points[i + 1]]);
-            if (rect && isCollisionRectWithCircle(rect, circle)) {
+            if (isCollisionLineWithCircle([points[i], points[i + 1]], circle, 5)) {
                 curve.position[i].isVisible = false;
             }
         }

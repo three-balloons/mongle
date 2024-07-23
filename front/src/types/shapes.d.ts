@@ -12,6 +12,7 @@ interface Point extends Vector2D {
     isVisible: boolean;
 }
 
+type Line2D = [Vector2D, Vector2D];
 // curve
 type Curve2D = Array<Point>;
 type Curve3D = Array<Vector3D>;
