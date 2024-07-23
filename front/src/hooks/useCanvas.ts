@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
 import { getSecondTouchCoordinate, getViewCoordinate } from '@/util/canvas/canvas';
-import { curve2bubble, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
+import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { useViewStore } from '@/store/viewStore';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
@@ -223,7 +223,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             let c = curve;
             if (parentBubble) {
                 const bubbleView = descendant2child(parentBubble, canvasViewRef.current.path);
-                c = curve2bubble(curve, bubbleView);
+                c = bubble2globalWithCurve(curve, bubbleView);
             }
             const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
             context.beginPath();
@@ -261,7 +261,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 let c = curve.position;
                 if (parentBubble) {
                     const bubbleView = descendant2child(parentBubble, canvasViewRef.current.path);
-                    c = curve2bubble(curve.position, bubbleView);
+                    c = bubble2globalWithCurve(curve.position, bubbleView);
                 }
 
                 const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
@@ -336,7 +336,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
             bubble.curves.forEach((curve) => {
-                const c = curve2bubble(curve.position, bubbleView);
+                const c = bubble2globalWithCurve(curve.position, bubbleView);
                 const beziers = catmullRom2Bezier(curve2View(c, canvasViewRef.current));
                 applyPenConfig(context, curve.config);
                 context.beginPath();

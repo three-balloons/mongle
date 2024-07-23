@@ -7,7 +7,7 @@
  * 1. bubble
  *    bubble내의 obj의 로컬 좌표계를 한 단계 올림(bubble과 같은 path, bubble처럼 취급)
  *
- *    functions: point2bubble, curve2bubble
+ *    functions: bubble2globalWithPoint, curve2bubble
  *
  * 2. hierarchy
  *    canvas view의 path와 bubble의 path가 다를 경우 canvas view의 좌표계로 맞춤
@@ -86,7 +86,7 @@ export const view2Rect = (rect: Rect, canvasView: ViewCoord): Rect => {
 };
 
 // point는 bubble 내 좌표계 => point를 bubble의 좌표계 밖으로 뺌
-export const point2bubble = (point: Point, bubble: Bubble | undefined): Point => {
+export const bubble2globalWithPoint = (point: Point, bubble: Bubble | undefined): Point => {
     if (bubble == undefined) return point;
     else
         return {
@@ -97,7 +97,7 @@ export const point2bubble = (point: Point, bubble: Bubble | undefined): Point =>
 };
 
 // curve는 bubble 내 좌표계 => curve를 bubble의 좌표계 밖으로 뺌
-export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
+export const bubble2globalWithCurve = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
     if (bubble == undefined) return curve;
     else
         return curve.map((point) => {
@@ -110,7 +110,7 @@ export const curve2bubble = (curve: Curve2D, bubble: Bubble | undefined): Curve2
 };
 
 // rect은 bubble 내 좌표계 => rect을 bubble의 좌표계 밖으로 뺌
-export const rect2bubble = (rect: Rect, bubble: Bubble | undefined): Rect => {
+export const bubble2globalWithRect = (rect: Rect, bubble: Bubble | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
         return {
@@ -122,7 +122,8 @@ export const rect2bubble = (rect: Rect, bubble: Bubble | undefined): Rect => {
 };
 
 // rect과 bubble은 좌표계가 같음 => rect을 bubble의 좌표계 안으로 넣음
-export const bubble2rect = (rect: Rect, bubble: Bubble | undefined): Rect => {
+
+export const global2bubbleWithRect = (rect: Rect, bubble: Bubble | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
         return {

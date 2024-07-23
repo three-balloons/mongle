@@ -1,5 +1,5 @@
 import { useBubble } from '@/objects/useBubble';
-import { bubble2rect, rect2View, view2Point } from '@/util/coordSys/conversion';
+import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
@@ -62,7 +62,7 @@ export const useBubbleGun = () => {
         const parentBubble = findBubble(createdBubblePathRef.current);
         if (parentBubble) {
             const bubbleView = descendant2child(parentBubble, canvasView.path);
-            const rect = bubble2rect(bubbleRect, bubbleView);
+            const rect = global2bubbleWithRect(bubbleRect, bubbleView);
             bubble.height = rect.height;
             bubble.width = rect.width;
             bubble.top = rect.top;
