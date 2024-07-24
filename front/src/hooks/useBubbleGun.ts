@@ -5,8 +5,11 @@ import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 
-// functions about bubble
-// features: create bubble, bubblize, unbubblize, move bubble
+/**
+ * functions about bubble
+ * features: create bubble, bubblize, unbubblize, move bubble
+ * @returns
+ */
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');
@@ -120,7 +123,9 @@ export const useBubbleGun = () => {
         }
     }, []);
 
-    // 버블 안인지 밖인지 테두리인지 판단하는 함수
+    /**
+     * 버블 안인지 밖인지 테두리인지 판단하는 함수
+     */
     // TODO renaming
     const identifyTouchRegion = (
         canvasView: ViewCoord,

@@ -2,8 +2,17 @@ import { useCallback, useRef } from 'react';
 import { useViewStore } from '@/store/viewStore';
 import { subVector2D } from '@/util/shapes/operator';
 
-// functions about movement
-// features: move canvasView, (TODO)zoom in/out canvasView, (TODO) focus on bubble
+//
+//
+/**
+ * functions about movement
+ * @returns
+ * @function grab grab the point to move
+ * @function drag move canvasView
+ * @function release grab the point to stop
+ * @function zoom (TODO)zoom in/out canvasView
+ * @function focus (TODO) focus on bubble
+ */
 export const useHand = () => {
     const startPositionRef = useRef<Vector2D | undefined>();
     const startViewPositionRef = useRef<Vector2D | undefined>();
@@ -32,8 +41,6 @@ export const useHand = () => {
     //     startDistance.current = disSquare;
     // }, []);
 
-    // action
-    // change canvasView coordinate
     const drag = useCallback(
         (canvasView: ViewCoord, position: Vector2D /*, second: Vector2D | undefined = undefined*/) => {
             if (startPositionRef.current == undefined || startViewPositionRef.current == undefined) return;

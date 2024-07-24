@@ -123,9 +123,6 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
                 // const secondPosition = getSecondTouchCoordinate(event, mainLayerRef.current);
                 drag(canvasViewRef.current, currentPosition /*, secondPosition*/);
             } else if (isPaintingRef.current && modeRef.current == 'draw') {
-                //
-                //
-
                 draw(canvasViewRef.current, currentPosition, lineRenderer);
                 curveRenderer(getDrawingCurve());
             } else if (isEraseRef.current && modeRef.current == 'erase') {
@@ -191,7 +188,10 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
     };
 
     //renders
-    // bezier curve 적용 전 - 픽셀 단위로 그리기
+    //
+    /**
+     * bezier curve 적용 전 - 픽셀 단위로 그리기
+     */
     const lineRenderer = (startPoint: Vector2D, endPoint: Vector2D) => {
         if (!creationLayerRef.current) {
             return;
@@ -208,7 +208,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    // addControlPoint가 true일 때 실행
+    /**
+     * addControlPoint가 true일 때 실행
+     */
     const curveRenderer = (curve: Curve2D): number | undefined => {
         if (!creationLayerRef.current) {
             return;
@@ -293,7 +295,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    // usage: create bubble drag
+    /**
+     * usage: create bubble drag
+     */
     const rectRender = (rect: Rect) => {
         if (!creationLayerRef.current) {
             return;
@@ -311,7 +315,9 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         }
     };
 
-    // bubble과 그 내부의 요소를 렌더링함
+    /**
+     * bubble과 그 내부의 요소를 렌더링함
+     */
     const bubbleRender = (bubble: Bubble) => {
         if (!mainLayerRef.current) {
             return;

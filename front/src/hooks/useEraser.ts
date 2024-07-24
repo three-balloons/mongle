@@ -6,15 +6,20 @@ import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/
 import { useConfigStore } from '@/store/configStore';
 import { useBubble } from '@/objects/useBubble';
 
-// functions about erasing
-// features: erase area, erase stroke
+//
+// features:
 
 type CurveAndEraser = {
     curve: Curve;
     eraser: Circle;
 };
 
-// eraser 좌표를 버블 좌표로 바꿔서 계산
+/**
+ * eraser 좌표를 버블 좌표로 바꿔서 계산
+ * functions about erasing
+ * @function erase
+ * @returns
+ */
 export const useEraser = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { eraseConfig } = useConfigStore((state) => state);
@@ -93,7 +98,6 @@ export const useEraser = () => {
         });
     };
 
-    // marked at control points which is invisible
     const isIntersectCurveWithEraser = (circle: Circle, curve: Curve): boolean => {
         // TODO 두께 고려한 지우기, radius 보정 필요
         const points = curve.position;
@@ -105,7 +109,9 @@ export const useEraser = () => {
         return false;
     };
 
-    // marked at control points which is invisible
+    /**
+     * marked at control points which is invisible
+     */
     const markCurveWithEraser = (circle: Circle, curve: Curve): Curve => {
         const { path, config } = curve;
 

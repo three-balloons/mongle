@@ -23,8 +23,9 @@
  *
  */
 
-// TODO canvasPath와 canvasView 합치기
-// return undefined value when point can't be seen(nope)
+/**
+ * TODO canvasPath와 canvasView 합치기
+ */
 export const point2View = (point: Point, canvasView: ViewCoord): Vector2D => {
     // if (!isCollisionPointWithRect(point, canvasView.pos)) return undefined;
     const { left, top, width, height } = canvasView.pos;
@@ -62,7 +63,6 @@ export const rect2View = (rect: Rect, canvasView: ViewCoord): Rect => {
     return ret;
 };
 
-// return undefined value when point can't be seen(nope)
 export const view2Point = (point: Vector2D, canvasView: ViewCoord): Vector2D => {
     const { left, top, width, height } = canvasView.pos;
     const { x: canvasWidth, y: canvasHeight } = canvasView.size;
@@ -85,7 +85,9 @@ export const view2Rect = (rect: Rect, canvasView: ViewCoord): Rect => {
     };
 };
 
-// point는 bubble 내 좌표계 => point를 bubble의 좌표계 밖으로 뺌
+/**
+ * point는 bubble 내 좌표계 => point를 bubble의 좌표계 밖으로 뺌
+ */
 export const bubble2globalWithPoint = (point: Point, bubble: Bubble | undefined): Point => {
     if (bubble == undefined) return point;
     else
@@ -96,7 +98,9 @@ export const bubble2globalWithPoint = (point: Point, bubble: Bubble | undefined)
         };
 };
 
-// curve는 bubble 내 좌표계 => curve를 bubble의 좌표계 밖으로 뺌
+/**
+ * curve는 bubble 내 좌표계 => curve를 bubble의 좌표계 밖으로 뺌
+ */
 export const bubble2globalWithCurve = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
     if (bubble == undefined) return curve;
     else
@@ -109,7 +113,9 @@ export const bubble2globalWithCurve = (curve: Curve2D, bubble: Bubble | undefine
         });
 };
 
-// rect은 bubble 내 좌표계 => rect을 bubble의 좌표계 밖으로 뺌
+/**
+ * rect은 bubble 내 좌표계 => rect을 bubble의 좌표계 밖으로 뺌
+ */
 export const bubble2globalWithRect = (rect: Rect, bubble: Bubble | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
@@ -121,8 +127,9 @@ export const bubble2globalWithRect = (rect: Rect, bubble: Bubble | undefined): R
         };
 };
 
-// rect과 bubble은 좌표계가 같음 => rect을 bubble의 좌표계 안으로 넣음
-
+/**
+ * rect과 bubble은 좌표계가 같음 => rect을 bubble의 좌표계 안으로 넣음
+ */
 export const global2bubbleWithRect = (rect: Rect, bubble: Bubble | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
@@ -134,7 +141,9 @@ export const global2bubbleWithRect = (rect: Rect, bubble: Bubble | undefined): R
         };
 };
 
-// point과 bubble은 좌표계가 같음 => rect을 point의 좌표계 안으로 넣음
+/**
+ * point과 bubble은 좌표계가 같음 => rect을 point의 좌표계 안으로 넣음
+ */
 export const bubble2Vector2D = (point: Vector2D, bubble: Bubble | undefined): Vector2D => {
     if (bubble == undefined) return point;
     else
@@ -144,8 +153,11 @@ export const bubble2Vector2D = (point: Vector2D, bubble: Bubble | undefined): Ve
         };
 };
 
-// bubble 안의 curves를 밖으로 뺌
-// renaming
+/**
+ * bubble 안의 curves를 밖으로 뺌
+ *
+ * TODO: renaming
+ */
 export const getCurvesPosInBubble = (bubble: Bubble): Array<Curve2D> => {
     return bubble.curves.map((curve) => {
         return curve.position.map((point) => {

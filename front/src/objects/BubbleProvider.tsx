@@ -53,7 +53,9 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         return bubblesRef.current.find((bubble) => bubble.path == path);
     };
 
-    // 실제 View 위의 좌표를 bubble 내의 좌표로 변환
+    /**
+     * 실제 View 위의 좌표를 bubble 내의 좌표로 변환
+     */
     const view2BubbleWithVector2D = (pos: Vector2D, canvasView: ViewCoord, bubblePath: string) => {
         let ret = { ...pos };
 
@@ -65,11 +67,13 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         return ret;
     };
 
-    // 자손버블좌표계에서 자식버블좌표계로 변환
-    // 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
-    // TODO: 최적화
-    // TODO useBubble에 의존하고 있음
-    // 의존성 제거 혹은 계산부분 분리 필요
+    /**
+     * 자손버블좌표계에서 자식버블좌표계로 변환
+     *
+     * 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
+     *
+     * TODO: 최적화, useBubble에 의존하고 있음 => 의존성 제거 혹은 계산부분 분리 필요
+     */
     const descendant2child = (descendant: Bubble, ancestorPath: string): Bubble | undefined => {
         const depth = getPathDifferentDepth(ancestorPath, descendant.path);
         if (depth == undefined) return undefined;
