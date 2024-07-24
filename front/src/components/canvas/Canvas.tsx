@@ -6,6 +6,7 @@ import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { getViewCoordinate } from '@/util/canvas/canvas';
 import { addVector2D } from '@/util/shapes/operator';
 import { useEraser } from '@/hooks/useEraser';
+import { useRenderer } from '@/objects/renderer/useRenderer';
 
 type CanvasProps = {
     width: number;
@@ -13,11 +14,8 @@ type CanvasProps = {
 };
 
 export const Canvas = ({ width, height }: CanvasProps) => {
-    const { isEraseRef, mainLayerRef, creationLayerRef, movementLayerRef, touchDown, touch, touchUp, reRender } =
-        useCanvas({
-            width,
-            height,
-        });
+    const { isEraseRef, touchDown, touch, touchUp } = useCanvas();
+    const { mainLayerRef, creationLayerRef, movementLayerRef, reRender } = useRenderer();
     const { earseRadiusRef } = useEraser();
 
     useEffect(() => {

@@ -10,7 +10,7 @@ export type BubbleContextProps = {
     updateCreatingBubble: (rect: Rect) => void;
     findBubble: (path: string) => Bubble | undefined;
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
-    view2BubbleWithVector2D: (pos: Vector2D, canvasView: ViewCoord, bubblePath: string) => Vector2D;
+    view2BubbleWithVector2D: (pos: Vector2D, cameraView: ViewCoord, bubblePath: string) => Vector2D;
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -56,12 +56,12 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
     /**
      * 실제 View 위의 좌표를 bubble 내의 좌표로 변환
      */
-    const view2BubbleWithVector2D = (pos: Vector2D, canvasView: ViewCoord, bubblePath: string) => {
+    const view2BubbleWithVector2D = (pos: Vector2D, cameraView: ViewCoord, bubblePath: string) => {
         let ret = { ...pos };
 
         const bubble = findBubble(bubblePath);
         if (bubble) {
-            const bubbleView = descendant2child(bubble, canvasView.path);
+            const bubbleView = descendant2child(bubble, cameraView.path);
             ret = bubble2Vector2D(ret, bubbleView);
         }
         return ret;
@@ -70,7 +70,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
     /**
      * 자손버블좌표계에서 자식버블좌표계로 변환
      *
-     * 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
+     * 사용처: 버블 이동, 내부의 요소를 cameraView로 변환하기 위한 사전 작업
      *
      * TODO: 최적화, useBubble에 의존하고 있음 => 의존성 제거 혹은 계산부분 분리 필요
      */

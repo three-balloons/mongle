@@ -8,9 +8,9 @@ import { subVector2D } from '@/util/shapes/operator';
  * functions about movement
  * @returns
  * @function grab grab the point to move
- * @function drag move canvasView
+ * @function drag move cameraView
  * @function release grab the point to stop
- * @function zoom (TODO)zoom in/out canvasView
+ * @function zoom (TODO)zoom in/out cameraView
  * @function focus (TODO) focus on bubble
  */
 export const useHand = () => {
@@ -19,21 +19,21 @@ export const useHand = () => {
     const moveIntensityRef = useRef<Vector2D>({ x: 0, y: 0 });
     const startViewSizeRef = useRef<Vector2D>({ x: 0, y: 0 });
     // const startDistance = useRef<number | undefined>();
-    const { setCanvasView } = useViewStore((state) => state);
+    const { setCameraView } = useViewStore((state) => state);
 
-    const grab = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
+    const grab = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         startPositionRef.current = { ...currentPosition };
         moveIntensityRef.current = {
-            x: canvasView.pos.width / canvasView.size.x,
-            y: canvasView.pos.height / canvasView.size.y,
+            x: cameraView.pos.width / cameraView.size.x,
+            y: cameraView.pos.height / cameraView.size.y,
         };
         startViewPositionRef.current = {
-            x: canvasView.pos.left,
-            y: canvasView.pos.top,
+            x: cameraView.pos.left,
+            y: cameraView.pos.top,
         };
         startViewSizeRef.current = {
-            x: canvasView.pos.width,
-            y: canvasView.pos.height,
+            x: cameraView.pos.width,
+            y: cameraView.pos.height,
         };
     }, []);
 
@@ -42,22 +42,22 @@ export const useHand = () => {
     // }, []);
 
     const drag = useCallback(
-        (canvasView: ViewCoord, position: Vector2D /*, second: Vector2D | undefined = undefined*/) => {
+        (cameraView: ViewCoord, position: Vector2D /*, second: Vector2D | undefined = undefined*/) => {
             if (startPositionRef.current == undefined || startViewPositionRef.current == undefined) return;
             const { x, y } = subVector2D(startPositionRef.current, position);
 
-            setCanvasView({
-                ...canvasView,
+            setCameraView({
+                ...cameraView,
                 pos: {
-                    ...canvasView.pos,
+                    ...cameraView.pos,
                     left: startViewPositionRef.current.x + moveIntensityRef.current.x * x,
                     top: startViewPositionRef.current.y + moveIntensityRef.current.y * y,
                 },
             });
             // if (second != undefined && startDistance.current != undefined && startDistance.current != 0) {
             //     const intensity = Math.round((distanceSquare(position, second) * 100) / startDistance.current);
-            //     setCanvasView({
-            //         ...canvasView,
+            //     setCameraView({
+            //         ...cameraView,
             //         pos: {
             //             left: startViewPositionRef.current.x + (startViewSizeRef.current.x * intensity) / 100,
             //             top: startViewPositionRef.current.y + (startViewSizeRef.current.y * intensity) / 100,

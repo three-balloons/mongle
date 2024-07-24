@@ -15,8 +15,8 @@
  *
  *    functions: descendant2child
  *
- * 3. canvasView
- *    canvasView를 통해 실제 canvas에 표시할 수 있는 좌표계 구하기
+ * 3. cameraView
+ *    cameraView를 통해 실제 canvas에 표시할 수 있는 좌표계 구하기
  *    1, 2과정을 포함함
  *
  *    functions: point2View, curve2View, rect2View
@@ -24,22 +24,22 @@
  */
 
 /**
- * TODO canvasPath와 canvasView 합치기
+ * TODO canvasPath와 cameraView 합치기
  */
-export const point2View = (point: Point, canvasView: ViewCoord): Vector2D => {
-    // if (!isCollisionPointWithRect(point, canvasView.pos)) return undefined;
-    const { left, top, width, height } = canvasView.pos;
-    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+export const point2View = (point: Point, cameraView: ViewCoord): Vector2D => {
+    // if (!isCollisionPointWithRect(point, cameraView.pos)) return undefined;
+    const { left, top, width, height } = cameraView.pos;
+    const { x: canvasWidth, y: canvasHeight } = cameraView.size;
     return {
         x: ((point.x - left) * canvasWidth) / width,
         y: ((point.y - top) * canvasHeight) / height,
     };
 };
 
-export const curve2View = (curve: Curve2D, canvasView: ViewCoord): Curve2D => {
+export const curve2View = (curve: Curve2D, cameraView: ViewCoord): Curve2D => {
     const ret: Curve2D = curve.map((point) => {
-        const { left, top, width, height } = canvasView.pos;
-        const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+        const { left, top, width, height } = cameraView.pos;
+        const { x: canvasWidth, y: canvasHeight } = cameraView.size;
         return {
             isVisible: point.isVisible,
             x: ((point.x - left) * canvasWidth) / width,
@@ -49,9 +49,9 @@ export const curve2View = (curve: Curve2D, canvasView: ViewCoord): Curve2D => {
     return ret;
 };
 
-export const rect2View = (rect: Rect, canvasView: ViewCoord): Rect => {
-    const { left, top, width, height } = canvasView.pos;
-    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+export const rect2View = (rect: Rect, cameraView: ViewCoord): Rect => {
+    const { left, top, width, height } = cameraView.pos;
+    const { x: canvasWidth, y: canvasHeight } = cameraView.size;
     const rectTop = ((rect.top - top) * canvasHeight) / height;
     const rectLeft = ((rect.left - left) * canvasWidth) / width;
     const ret: Rect = {
@@ -63,18 +63,18 @@ export const rect2View = (rect: Rect, canvasView: ViewCoord): Rect => {
     return ret;
 };
 
-export const view2Point = (point: Vector2D, canvasView: ViewCoord): Vector2D => {
-    const { left, top, width, height } = canvasView.pos;
-    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+export const view2Point = (point: Vector2D, cameraView: ViewCoord): Vector2D => {
+    const { left, top, width, height } = cameraView.pos;
+    const { x: canvasWidth, y: canvasHeight } = cameraView.size;
     return {
         x: (point.x * width) / canvasWidth + left,
         y: (point.y * height) / canvasHeight + top,
     };
 };
 
-export const view2Rect = (rect: Rect, canvasView: ViewCoord): Rect => {
-    const { left, top, width, height } = canvasView.pos;
-    const { x: canvasWidth, y: canvasHeight } = canvasView.size;
+export const view2Rect = (rect: Rect, cameraView: ViewCoord): Rect => {
+    const { left, top, width, height } = cameraView.pos;
+    const { x: canvasWidth, y: canvasHeight } = cameraView.size;
     const rectTop = (rect.top * height) / canvasHeight + top;
     const rectLeft = (rect.left * width) / canvasWidth + left;
     return {
@@ -170,6 +170,6 @@ export const getCurvesPosInBubble = (bubble: Bubble): Array<Curve2D> => {
     });
 };
 
-export const getThicknessRatio = (canvasView: ViewCoord) => {
-    return canvasView.size.x / canvasView.pos.width;
+export const getThicknessRatio = (cameraView: ViewCoord) => {
+    return cameraView.size.x / cameraView.pos.width;
 };

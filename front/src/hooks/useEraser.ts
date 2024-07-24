@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useCurve } from '@/objects/useCurve';
+import { useCurve } from '@/objects/curve/useCurve';
 import { view2Point } from '@/util/coordSys/conversion';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
 import { useConfigStore } from '@/store/configStore';
-import { useBubble } from '@/objects/useBubble';
+import { useBubble } from '@/objects/bubble/useBubble';
 
 //
 // features:
@@ -35,18 +35,18 @@ export const useEraser = () => {
         });
     }, []);
 
-    const erase = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
-        if (earseModeRef.current == 'area') eraseArea(canvasView, currentPosition);
-        else eraseStroke(canvasView, currentPosition);
+    const erase = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
+        if (earseModeRef.current == 'area') eraseArea(cameraView, currentPosition);
+        else eraseStroke(cameraView, currentPosition);
     }, []);
 
-    const eraseArea = (canvasView: ViewCoord, currentPosition: Vector2D) => {
+    const eraseArea = (cameraView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
 
         const curveWithErasers = findIntersectCurves(
             getCurves().map((curve) => {
-                const position = view2Point(currentPosition, canvasView);
-                const pos = view2BubbleWithVector2D(position, canvasView, curve.path);
+                const position = view2Point(currentPosition, cameraView);
+                const pos = view2BubbleWithVector2D(position, cameraView, curve.path);
                 return {
                     curve: curve,
                     eraser: {
@@ -67,12 +67,12 @@ export const useEraser = () => {
         });
     };
 
-    const eraseStroke = (canvasView: ViewCoord, currentPosition: Vector2D) => {
+    const eraseStroke = (cameraView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
         const curveWithErasers = findIntersectCurves(
             getCurves().map((curve) => {
-                const position = view2Point(currentPosition, canvasView);
-                const pos = view2BubbleWithVector2D(position, canvasView, curve.path);
+                const position = view2Point(currentPosition, cameraView);
+                const pos = view2BubbleWithVector2D(position, cameraView, curve.path);
                 return {
                     curve: curve,
                     eraser: {

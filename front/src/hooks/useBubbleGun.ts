@@ -1,4 +1,4 @@
-import { useBubble } from '@/objects/useBubble';
+import { useBubble } from '@/objects/bubble/useBubble';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
@@ -24,19 +24,19 @@ export const useBubbleGun = () => {
         descendant2child,
         view2BubbleWithVector2D,
     } = useBubble();
-    const startCreateBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, path: string) => {
+    const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
-            canvasView,
+            cameraView,
         );
         if (pos) createdBubblePosRef.current = pos;
         createdBubblePathRef.current = path;
     }, []);
 
-    const createBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
+    const createBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         if (
             createdBubblePosRef.current &&
             (createdBubblePosRef.current.x != currentPosition.x || createdBubblePosRef.current.y != currentPosition.y)
@@ -46,7 +46,7 @@ export const useBubbleGun = () => {
                     x: currentPosition.x,
                     y: currentPosition.y,
                 },
-                canvasView,
+                cameraView,
             );
             const { x, y } = createdBubblePosRef.current;
             if (currentPos)
@@ -59,7 +59,7 @@ export const useBubbleGun = () => {
         }
     }, []);
 
-    const finishCreateBubble = useCallback((canvasView: ViewCoord) => {
+    const finishCreateBubble = useCallback((cameraView: ViewCoord) => {
         const bubbleRect = getCreatingBubble();
         const bubble: Bubble = {
             ...bubbleRect,
@@ -72,7 +72,7 @@ export const useBubbleGun = () => {
         };
         const parentBubble = findBubble(createdBubblePathRef.current);
         if (parentBubble) {
-            const bubbleView = descendant2child(parentBubble, canvasView.path);
+            const bubbleView = descendant2child(parentBubble, cameraView.path);
             const rect = global2bubbleWithRect(bubbleRect, bubbleView);
             bubble.height = rect.height;
             bubble.width = rect.width;
@@ -84,38 +84,38 @@ export const useBubbleGun = () => {
         addBubble(bubble);
     }, []);
 
-    const startMoveBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
+    const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
         let pos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
-            canvasView,
+            cameraView,
         );
         if (pos == undefined) return;
 
         const parentPath = getParentPath(bubble.path);
         if (parentPath) {
-            pos = view2BubbleWithVector2D(pos, canvasView, parentPath);
+            pos = view2BubbleWithVector2D(pos, cameraView, parentPath);
         }
         moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
 
         moveBubbleRef.current = bubble;
     }, []);
 
-    const moveBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
+    const moveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         let currentPos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
-            canvasView,
+            cameraView,
         );
         if (!moveBubbleRef.current) return;
 
         const parentPath = getParentPath(moveBubbleRef.current.path);
         if (parentPath) {
-            currentPos = view2BubbleWithVector2D(currentPos, canvasView, parentPath);
+            currentPos = view2BubbleWithVector2D(currentPos, cameraView, parentPath);
             const { x, y } = subVector2D(currentPos, moveBubbleOffsetRef.current as Vector2D);
             if (moveBubbleOffsetRef.current) {
                 moveBubbleRef.current.top = y;
@@ -129,13 +129,13 @@ export const useBubbleGun = () => {
      */
     // TODO renaming
     const identifyTouchRegion = (
-        canvasView: ViewCoord,
+        cameraView: ViewCoord,
         position: Vector2D,
         bubbles: Array<Bubble>,
     ): { region: 'inside' | 'outside' | 'border'; bubble: Bubble | undefined } => {
         bubbles.sort((a, b) => getPathDepth(b.path) - getPathDepth(a.path));
         for (const bubble of bubbles) {
-            const bubbleView = descendant2child(bubble, canvasView.path);
+            const bubbleView = descendant2child(bubble, cameraView.path);
             if (bubbleView) {
                 const rect = rect2View(
                     {
@@ -144,7 +144,7 @@ export const useBubbleGun = () => {
                         width: bubbleView.width,
                         height: bubbleView.height,
                     },
-                    canvasView,
+                    cameraView,
                 );
                 if (
                     isCollisionPointWithRect(position, {

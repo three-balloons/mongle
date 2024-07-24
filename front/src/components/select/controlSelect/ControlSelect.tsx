@@ -11,16 +11,16 @@ const Icon = ({ src, alt, className, ...props }: React.ImgHTMLAttributes<HTMLIma
 };
 
 export const ControlSelect = () => {
-    const { canvasView, setCanvasView } = useViewStore((state) => state);
+    const { cameraView, setCameraView } = useViewStore((state) => state);
     // TODO: 투터치 인터페이스 구현(줌/아웃 가능)
     const resizeView = (intensity: number) => {
-        setCanvasView({
-            ...canvasView,
+        setCameraView({
+            ...cameraView,
             pos: {
-                left: canvasView.pos.left + (canvasView.pos.width * intensity) / 200,
-                top: canvasView.pos.top + (canvasView.pos.height * intensity) / 200,
-                width: (canvasView.pos.width * (100 - intensity)) / 100,
-                height: (canvasView.pos.height * (100 - intensity)) / 100,
+                left: cameraView.pos.left + (cameraView.pos.width * intensity) / 200,
+                top: cameraView.pos.top + (cameraView.pos.height * intensity) / 200,
+                width: (cameraView.pos.width * (100 - intensity)) / 100,
+                height: (cameraView.pos.height * (100 - intensity)) / 100,
             },
         });
     };

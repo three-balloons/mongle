@@ -4,10 +4,11 @@ import style from '@/pages/workspace/workspace.module.css';
 import { Menu } from '@/components/menu/Menu';
 import { Canvas } from '@/components/canvas/Canvas';
 import { Explorer } from '@/components/explorer/Explorer';
-import { CurveProvider } from '@/objects/CurveProvider';
+import { CurveProvider } from '@/objects/curve/CurveProvider';
 import { files } from '@/mock/files';
 import { getThemeStyle } from '@/util/getThemeStyle';
-import { BubbleProvider } from '@/objects/BubbleProvider';
+import { BubbleProvider } from '@/objects/bubble/BubbleProvider';
+import { RendererProvider } from '@/objects/renderer/RendererProvider';
 
 type WorkspaceProps = {
     workspaceID: string;
@@ -32,15 +33,17 @@ export const Workspace = ({ workspaceID }: WorkspaceProps) => {
     };
     return (
         <div className={cn(style.default, getThemeStyle(theme))}>
-            <CurveProvider sensitivity={2}>
-                <BubbleProvider>
-                    <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                    <div className={cn(style.workspace)}>
-                        {isShowExplorer && <Explorer />}
-                        <Canvas width={canvasSize.width} height={canvasSize.height} />
-                    </div>
-                </BubbleProvider>
-            </CurveProvider>
+            <BubbleProvider>
+                <CurveProvider sensitivity={2}>
+                    <RendererProvider width={canvasSize.width} height={canvasSize.height}>
+                        <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                        <div className={cn(style.workspace)}>
+                            {isShowExplorer && <Explorer />}
+                            <Canvas width={canvasSize.width} height={canvasSize.height} />
+                        </div>
+                    </RendererProvider>
+                </CurveProvider>
+            </BubbleProvider>
         </div>
     );
 };

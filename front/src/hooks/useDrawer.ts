@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
-import { useCurve } from '@/objects/useCurve';
+import { useCurve } from '@/objects/curve/useCurve';
 import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
-import { useBubble } from '@/objects/useBubble';
+import { useBubble } from '@/objects/bubble/useBubble';
 
 // functions about pen drawing
 // features: draw curve
@@ -10,23 +10,23 @@ export const useDrawer = () => {
     const { getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve } = useCurve();
     const { view2BubbleWithVector2D } = useBubble();
 
-    const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {
+    const startDrawing = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {
         positionRef.current = currentPosition;
-        setNewCurvePath(path ?? canvasView.path);
+        setNewCurvePath(path ?? cameraView.path);
         const pos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
-            canvasView,
+            cameraView,
         );
-        const position = view2BubbleWithVector2D(pos, canvasView, getNewCurvePath());
+        const position = view2BubbleWithVector2D(pos, cameraView, getNewCurvePath());
         addControlPoint({ ...position, isVisible: true }, true);
     }, []);
 
     const draw = useCallback(
         (
-            canvasView: ViewCoord,
+            cameraView: ViewCoord,
             currentPosition: Vector2D,
             lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void,
         ) => {
@@ -39,10 +39,10 @@ export const useDrawer = () => {
                         x: currentPosition.x,
                         y: currentPosition.y,
                     },
-                    canvasView,
+                    cameraView,
                 );
 
-                const position = view2BubbleWithVector2D(currentPos, canvasView, getNewCurvePath());
+                const position = view2BubbleWithVector2D(currentPos, cameraView, getNewCurvePath());
                 if (addControlPoint({ ...position, isVisible: true }, true))
                     lineRenderer(positionRef.current, currentPosition);
             }
@@ -52,13 +52,13 @@ export const useDrawer = () => {
     );
 
     const finishDrawing = useCallback(
-        (canvasView: ViewCoord) => {
+        (cameraView: ViewCoord) => {
             if (positionRef.current) {
-                const pos = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, canvasView);
-                const position = view2BubbleWithVector2D(pos, canvasView, getNewCurvePath());
+                const pos = view2Point({ x: positionRef.current.x, y: positionRef.current.y }, cameraView);
+                const position = view2BubbleWithVector2D(pos, cameraView, getNewCurvePath());
                 addControlPoint({ ...position, isVisible: true }, true);
             }
-            addNewCurve(getThicknessRatio(canvasView));
+            addNewCurve(getThicknessRatio(cameraView));
         },
 
         [addNewCurve],

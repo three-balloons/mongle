@@ -2,8 +2,8 @@ import style from '@/components/select/toolSelect/eraser-select.module.css';
 import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
 import { EraserIcon } from '@/components/select/toolSelect/ToolSelect';
-import { useBubble } from '@/objects/useBubble';
-import { useCurve } from '@/objects/useCurve';
+import { useBubble } from '@/objects/bubble/useBubble';
+import { useCurve } from '@/objects/curve/useCurve';
 // import { useCanvas } from '@/hooks/useCanvas';
 import Modal from '@/headless/modal/Modal';
 
