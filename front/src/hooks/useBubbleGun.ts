@@ -1,5 +1,5 @@
 import { useBubble } from '@/objects/useBubble';
-import { bubble2Vector2D, global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
+import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
@@ -68,6 +68,7 @@ export const useBubbleGun = () => {
             children: [],
             parent: undefined,
             isBubblized: false,
+            isVisible: true,
         };
         const parentBubble = findBubble(createdBubblePathRef.current);
         if (parentBubble) {

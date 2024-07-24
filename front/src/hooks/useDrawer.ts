@@ -7,7 +7,7 @@ import { useBubble } from '@/objects/useBubble';
 // features: draw curve
 export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
-    const { getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve, getCurves } = useCurve();
+    const { getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve } = useCurve();
     const { view2BubbleWithVector2D } = useBubble();
 
     const startDrawing = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {

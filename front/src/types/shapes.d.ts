@@ -46,4 +46,5 @@ interface Bubble extends Rect {
     children: Array<Bubble>;
     parent: Bubble | undefined;
     isBubblized: boolean;
+    isVisible: boolean;
 }

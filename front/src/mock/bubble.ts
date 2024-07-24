@@ -8,6 +8,7 @@ const bubble1: Bubble = {
     width: 200,
     height: 200,
     isBubblized: false,
+    isVisible: true,
     curves: [
         {
             position: [
@@ -33,6 +34,7 @@ const bubble2: Bubble = {
     width: 50,
     height: 50,
     isBubblized: false,
+    isVisible: true,
     curves: [
         {
             position: [
@@ -58,6 +60,7 @@ const bubble3: Bubble = {
     width: 10,
     height: 10,
     isBubblized: false,
+    isVisible: true,
     curves: [],
     children: [],
     parent: bubble1,
@@ -70,6 +73,7 @@ const bubble4: Bubble = {
     width: 50,
     height: 50,
     isBubblized: false,
+    isVisible: true,
     curves: [],
     children: [],
     parent: bubble2,
@@ -82,6 +86,7 @@ const bubble5: Bubble = {
     width: 100,
     height: 100,
     isBubblized: false,
+    isVisible: true,
     curves: [],
     children: [],
     parent: bubble4,
