@@ -44,6 +44,17 @@ export const EraserModal = () => {
                         />
                         <span className={style.radioText}>획 지우개 선택</span>
                     </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="option"
+                            value="버블"
+                            className={style.radio}
+                            checked={eraseConfig.mode == 'bubble'}
+                            onChange={() => setEraseMode('bubble')}
+                        />
+                        <span className={style.radioText}>버블 지우개 선택</span>
+                    </label>
                 </div>
                 <Modal.Closer
                     className={cn(style.clear)}

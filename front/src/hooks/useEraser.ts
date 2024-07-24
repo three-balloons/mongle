@@ -5,6 +5,7 @@ import { curve2Rect } from '@/util/shapes/conversion';
 import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
 import { useConfigStore } from '@/store/configStore';
 import { useBubble } from '@/objects/bubble/useBubble';
+import { useBubbleGun } from '@/hooks/useBubbleGun';
 
 //
 // features:
@@ -22,11 +23,12 @@ type CurveAndEraser = {
  */
 export const useEraser = () => {
     const positionRef = useRef<Vector2D | undefined>();
-    const { eraseConfig } = useConfigStore((state) => state);
+    const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
     const earseModeRef = useRef<EraseMode>(eraseConfig.mode);
     const earseRadiusRef = useRef<number>(eraseConfig.radius);
-    const { getCurves, addCurve, removeCurve } = useCurve();
-    const { view2BubbleWithVector2D } = useBubble();
+    const { getCurves, addCurve, removeCurve, removeCurvesWithPath } = useCurve();
+    const { view2BubbleWithVector2D, getBubbles, removeBubble, getDescendantBubbles } = useBubble();
+    const { identifyTouchRegion } = useBubbleGun();
 
     useEffect(() => {
         useConfigStore.subscribe(({ eraseConfig }) => {
@@ -37,7 +39,8 @@ export const useEraser = () => {
 
     const erase = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         if (earseModeRef.current == 'area') eraseArea(cameraView, currentPosition);
-        else eraseStroke(cameraView, currentPosition);
+        else if (earseModeRef.current == 'stroke') eraseStroke(cameraView, currentPosition);
+        else eraseBubble(cameraView, currentPosition);
     }, []);
 
     const eraseArea = (cameraView: ViewCoord, currentPosition: Vector2D) => {
@@ -88,6 +91,26 @@ export const useEraser = () => {
         curveWithErasers.forEach(({ curve, eraser }) => {
             if (isIntersectCurveWithEraser(eraser, curve)) removeCurve(curve);
         });
+    };
+
+    const eraseBubble = (cameraView: ViewCoord, currentPosition: Vector2D) => {
+        const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
+        if (region == 'inside') {
+            // TODO 경고 창 띄우고 지우기
+            setEraseMode('area');
+            if (bubble) {
+                console.log(bubble.path);
+                removeCurvesWithPath(bubble.path);
+                getDescendantBubbles(bubble.path).forEach((descendant) => {
+                    removeCurvesWithPath(descendant.path);
+                    removeBubble(descendant);
+                });
+
+                removeBubble(bubble);
+            }
+
+            console.log(getBubbles());
+        }
     };
 
     const findIntersectCurves = (curveWithErasers: Array<CurveAndEraser>): Array<CurveAndEraser> => {

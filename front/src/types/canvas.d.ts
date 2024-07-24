@@ -15,7 +15,7 @@ type EraseConfig = {
     mode: EraseMode;
 };
 
-type EraseMode = 'area' | 'stroke';
+type EraseMode = 'area' | 'stroke' | 'bubble';
 
 type Font = 'serif' | 'Arial' | 'Courier New' | 'Georgia' | 'Times New Roman' | 'Trebuchet MS' | 'Verdana';
 

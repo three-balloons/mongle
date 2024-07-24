@@ -5,8 +5,10 @@ import { createContext, useRef } from 'react';
 export type BubbleContextProps = {
     clearAllBubbles: () => void;
     getBubbles: () => Array<Bubble>;
+    getDescendantBubbles: (path: string) => Array<Bubble>;
     getCreatingBubble: () => Rect;
     addBubble: (bubble: Bubble) => void;
+    removeBubble: (bubble: Bubble) => void;
     updateCreatingBubble: (rect: Rect) => void;
     findBubble: (path: string) => Bubble | undefined;
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
@@ -44,8 +46,16 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         return [...bubblesRef.current];
     };
 
+    const getDescendantBubbles = (path: string) => {
+        return [...bubblesRef.current.filter((bubble) => bubble.path.startsWith(path))];
+    };
+
     const addBubble = (bubble: Bubble) => {
         bubblesRef.current = [...bubblesRef.current, bubble];
+    };
+
+    const removeBubble = (bubbleToRemove: Bubble) => {
+        bubblesRef.current = [...bubblesRef.current.filter((bubble) => bubble !== bubbleToRemove)];
     };
 
     const findBubble = (path: string): Bubble | undefined => {
@@ -103,8 +113,10 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
             value={{
                 clearAllBubbles,
                 getBubbles,
+                getDescendantBubbles,
                 getCreatingBubble,
                 addBubble,
+                removeBubble,
                 updateCreatingBubble,
                 findBubble,
                 descendant2child,

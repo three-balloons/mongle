@@ -12,6 +12,7 @@ export type CurveContextProps = {
     addNewCurve: (thicknessRatio?: number) => void;
     addCurve: (curve: Curve) => void;
     removeCurve: (curve: Curve) => void;
+    removeCurvesWithPath: (path: string) => void;
     applyPenConfig: (context: CanvasRenderingContext2D, options?: PenConfig) => void;
     setThicknessWithRatio: (context: CanvasRenderingContext2D, thicknessRatio: number) => void;
 };
@@ -82,6 +83,10 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         CurvesRef.current = [...CurvesRef.current.filter((curve) => curve !== curveToRemove)];
     };
 
+    const removeCurvesWithPath = (path: string) => {
+        CurvesRef.current = [...CurvesRef.current.filter((curve) => curve.path !== path)];
+    };
+
     const getDrawingCurve = (): Curve2D => {
         return [...newCurveRef.current];
     };
@@ -119,6 +124,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
                 addNewCurve,
                 addCurve,
                 removeCurve,
+                removeCurvesWithPath,
                 applyPenConfig,
                 setThicknessWithRatio,
             }}
