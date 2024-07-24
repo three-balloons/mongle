@@ -83,7 +83,7 @@ export const useCanvas = ({ width = 0, height = 0 }: UseCanvasProps = {}) => {
         if (currentPosition) {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 const { bubble } = identifyTouchRegion(canvasViewRef.current, currentPosition, getBubbles());
-                console.log(bubble?.path);
+
                 startDrawing(canvasViewRef.current, currentPosition, bubble?.path);
                 isPaintingRef.current = true;
             } else if (isEraseRef.current == false && modeRef.current == 'erase') {

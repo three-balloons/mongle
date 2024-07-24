@@ -34,6 +34,12 @@ interface Circle {
     radius: number;
 }
 
+interface Capsule {
+    p1: Vector2D;
+    p2: Vector2D;
+    radius: number;
+}
+
 interface Bubble extends Rect {
     path: string;
     curves: Array<Curve>;

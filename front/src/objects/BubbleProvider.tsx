@@ -1,3 +1,4 @@
+import { bubble2Vector2D } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDifferentDepth } from '@/util/path/path';
 import { createContext, useRef } from 'react';
 
@@ -9,6 +10,7 @@ export type BubbleContextProps = {
     updateCreatingBubble: (rect: Rect) => void;
     findBubble: (path: string) => Bubble | undefined;
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
+    view2BubbleWithVector2D: (pos: Vector2D, canvasView: ViewCoord, bubblePath: string) => Vector2D;
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -51,6 +53,18 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
         return bubblesRef.current.find((bubble) => bubble.path == path);
     };
 
+    // 실제 View 위의 좌표를 bubble 내의 좌표로 변환
+    const view2BubbleWithVector2D = (pos: Vector2D, canvasView: ViewCoord, bubblePath: string) => {
+        let ret = { ...pos };
+
+        const bubble = findBubble(bubblePath);
+        if (bubble) {
+            const bubbleView = descendant2child(bubble, canvasView.path);
+            ret = bubble2Vector2D(ret, bubbleView);
+        }
+        return ret;
+    };
+
     // 자손버블좌표계에서 자식버블좌표계로 변환
     // 사용처: 버블 이동, 내부의 요소를 canvasView로 변환하기 위한 사전 작업
     // TODO: 최적화
@@ -90,6 +104,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
                 updateCreatingBubble,
                 findBubble,
                 descendant2child,
+                view2BubbleWithVector2D,
             }}
         >
             {children}

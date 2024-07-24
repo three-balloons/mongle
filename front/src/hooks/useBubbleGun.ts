@@ -1,6 +1,6 @@
 import { useBubble } from '@/objects/useBubble';
-import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
-import { getPathDepth } from '@/util/path/path';
+import { bubble2Vector2D, global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
+import { getParentPath, getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
@@ -13,7 +13,14 @@ export const useBubbleGun = () => {
     const bubbleIdRef = useRef<number>(0);
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
-    const { updateCreatingBubble, addBubble, getCreatingBubble, findBubble, descendant2child } = useBubble();
+    const {
+        updateCreatingBubble,
+        addBubble,
+        getCreatingBubble,
+        findBubble,
+        descendant2child,
+        view2BubbleWithVector2D,
+    } = useBubble();
     const startCreateBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
             {
@@ -74,29 +81,42 @@ export const useBubbleGun = () => {
     }, []);
 
     const startMoveBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
-        const pos = view2Point(
+        let pos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
             canvasView,
         );
-        if (pos) moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
+        if (pos == undefined) return;
+
+        const parentPath = getParentPath(bubble.path);
+        if (parentPath) {
+            pos = view2BubbleWithVector2D(pos, canvasView, parentPath);
+        }
+        moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
+
         moveBubbleRef.current = bubble;
     }, []);
 
     const moveBubble = useCallback((canvasView: ViewCoord, currentPosition: Vector2D) => {
-        const currentPos = view2Point(
+        let currentPos = view2Point(
             {
                 x: currentPosition.x,
                 y: currentPosition.y,
             },
             canvasView,
         );
-        const { x, y } = subVector2D(currentPos, moveBubbleOffsetRef.current as Vector2D);
-        if (moveBubbleRef.current) {
-            moveBubbleRef.current.top = y;
-            moveBubbleRef.current.left = x;
+        if (!moveBubbleRef.current) return;
+
+        const parentPath = getParentPath(moveBubbleRef.current.path);
+        if (parentPath) {
+            currentPos = view2BubbleWithVector2D(currentPos, canvasView, parentPath);
+            const { x, y } = subVector2D(currentPos, moveBubbleOffsetRef.current as Vector2D);
+            if (moveBubbleOffsetRef.current) {
+                moveBubbleRef.current.top = y;
+                moveBubbleRef.current.left = x;
+            }
         }
     }, []);
 

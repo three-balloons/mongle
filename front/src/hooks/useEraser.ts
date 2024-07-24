@@ -1,18 +1,27 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/useCurve';
-import { curve2View } from '@/util/coordSys/conversion';
+import { view2Point } from '@/util/coordSys/conversion';
 import { curve2Rect } from '@/util/shapes/conversion';
-import { isCollisionLineWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
+import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
 import { useConfigStore } from '@/store/configStore';
+import { useBubble } from '@/objects/useBubble';
 
 // functions about erasing
 // features: erase area, erase stroke
+
+type CurveAndEraser = {
+    curve: Curve;
+    eraser: Circle;
+};
+
+// eraser 좌표를 버블 좌표로 바꿔서 계산
 export const useEraser = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { eraseConfig } = useConfigStore((state) => state);
     const earseModeRef = useRef<EraseMode>(eraseConfig.mode);
     const earseRadiusRef = useRef<number>(eraseConfig.radius);
     const { getCurves, addCurve, removeCurve } = useCurve();
+    const { view2BubbleWithVector2D } = useBubble();
 
     useEffect(() => {
         useConfigStore.subscribe(({ eraseConfig }) => {
@@ -28,14 +37,26 @@ export const useEraser = () => {
 
     const eraseArea = (canvasView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
-        const eraser: Circle = {
-            center: { x: currentPosition.x, y: currentPosition.y },
-            radius: earseRadiusRef.current,
-        };
 
-        const curves = findIntersectCurves(eraser, getCurves(), canvasView);
-        curves.forEach((curve) => {
-            const temp = markCurveWithEraser(eraser, curve, canvasView);
+        const curveWithErasers = findIntersectCurves(
+            getCurves().map((curve) => {
+                const position = view2Point(currentPosition, canvasView);
+                const pos = view2BubbleWithVector2D(position, canvasView, curve.path);
+                return {
+                    curve: curve,
+                    eraser: {
+                        center: {
+                            x: pos.x,
+                            y: pos.y,
+                        },
+                        radius: earseRadiusRef.current,
+                    },
+                };
+            }),
+        );
+
+        curveWithErasers.forEach(({ curve, eraser }) => {
+            const temp = markCurveWithEraser(eraser, curve);
             removeCurve(curve);
             addCurve(temp);
         });
@@ -43,32 +64,41 @@ export const useEraser = () => {
 
     const eraseStroke = (canvasView: ViewCoord, currentPosition: Vector2D) => {
         positionRef.current = currentPosition;
-        const eraser: Circle = {
-            center: { x: currentPosition.x, y: currentPosition.y },
-            radius: earseRadiusRef.current,
-        };
-
-        const curves = findIntersectCurves(eraser, getCurves(), canvasView);
-        curves.forEach((curve) => {
-            if (isIntersectCurveWithEraser(eraser, curve, canvasView)) removeCurve(curve);
+        const curveWithErasers = findIntersectCurves(
+            getCurves().map((curve) => {
+                const position = view2Point(currentPosition, canvasView);
+                const pos = view2BubbleWithVector2D(position, canvasView, curve.path);
+                return {
+                    curve: curve,
+                    eraser: {
+                        center: {
+                            x: pos.x,
+                            y: pos.y,
+                        },
+                        radius: earseRadiusRef.current,
+                    },
+                };
+            }),
+        );
+        curveWithErasers.forEach(({ curve, eraser }) => {
+            if (isIntersectCurveWithEraser(eraser, curve)) removeCurve(curve);
         });
     };
 
-    const findIntersectCurves = (circle: Circle, curves: Array<Curve>, canvasView: ViewCoord): Array<Curve> => {
-        return curves.filter((curve) => {
-            const rect = curve2Rect(curve2View(curve.position, canvasView));
-            if (rect) return isCollisionRectWithCircle(rect, circle);
+    const findIntersectCurves = (curveWithErasers: Array<CurveAndEraser>): Array<CurveAndEraser> => {
+        return curveWithErasers.filter(({ curve, eraser }) => {
+            const rect = curve2Rect(curve.position);
+            if (rect) return isCollisionRectWithCircle(rect, eraser);
             return false;
         });
     };
 
     // marked at control points which is invisible
-    const isIntersectCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): boolean => {
-        // TODO 두께 고려한 지우기
-        // TODO bubbe layer를 고려한 좌표계 변환
-        const points = curve2View(curve.position, canvasView);
+    const isIntersectCurveWithEraser = (circle: Circle, curve: Curve): boolean => {
+        // TODO 두께 고려한 지우기, radius 보정 필요
+        const points = curve.position;
         for (let i = 0; i < points.length - 1; i++) {
-            if (isCollisionLineWithCircle([points[i], points[i + 1]], circle, 5)) {
+            if (isCollisionCapsuleWithCircle({ p1: points[i], p2: points[i + 1], radius: 5 }, circle)) {
                 return true;
             }
         }
@@ -76,14 +106,13 @@ export const useEraser = () => {
     };
 
     // marked at control points which is invisible
-    const markCurveWithEraser = (circle: Circle, curve: Curve, canvasView: ViewCoord): Curve => {
+    const markCurveWithEraser = (circle: Circle, curve: Curve): Curve => {
         const { path, config } = curve;
 
-        // TODO 두께 고려한 지우기
-        // TODO bubbe layer를 고려한 좌표계 변환
-        const points = curve2View(curve.position, canvasView);
+        // TODO 두께 고려한 지우기, radius 보정 필요
+        const points = curve.position;
         for (let i = 0; i < points.length - 1; i++) {
-            if (isCollisionLineWithCircle([points[i], points[i + 1]], circle, 5)) {
+            if (isCollisionCapsuleWithCircle({ p1: points[i], p2: points[i + 1], radius: 5 }, circle)) {
                 curve.position[i].isVisible = false;
             }
         }
