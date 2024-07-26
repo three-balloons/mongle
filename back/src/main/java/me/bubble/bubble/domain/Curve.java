@@ -20,17 +20,8 @@ public class Curve {
     @Column(name = "id", updatable = false)
     private Long id;
 
-    @Column(name = "red")
-    private int red;
-
-    @Column(name = "green")
-    private int green;
-
-    @Column(name = "blue")
-    private int blue;
-
-    @Column(name = "alpha")
-    private int alpha;
+    @Column(name = "color")
+    private String color;
 
     @Column(name = "b_width")
     private int b_width;
@@ -56,12 +47,9 @@ public class Curve {
     private Bubble bubble;
 
     @Builder
-    public Curve(int red, int green, int blue, int alpha, int b_width, int b_height, int b_top, int b_left,
+    public Curve(String color, int b_width, int b_height, int b_top, int b_left,
                  String path, int thickness, Bubble bubble) {
-        this.red = red;
-        this.green = green;
-        this.blue = blue;
-        this.alpha = alpha;
+        this.color = color;
         this.b_width = b_width;
         this.b_height = b_height;
         this.b_top = b_top;
