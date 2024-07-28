@@ -35,7 +35,7 @@ export const Workspace = ({ workspaceID }: WorkspaceProps) => {
         <div className={cn(style.default, getThemeStyle(theme))}>
             <BubbleProvider>
                 <CurveProvider sensitivity={2}>
-                    <RendererProvider width={canvasSize.width} height={canvasSize.height}>
+                    <RendererProvider width={canvasSize.width} height={canvasSize.height} theme={theme}>
                         <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
                         <div className={cn(style.workspace)}>
                             {isShowExplorer && <Explorer />}

@@ -2,6 +2,7 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
+import { getThemeMainColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { createContext, useEffect, useRef } from 'react';
 
@@ -26,9 +27,15 @@ type RendererProviderProps = {
     children: React.ReactNode;
     height?: number;
     width?: number;
+    theme?: Theme;
 };
 
-export const RendererProvider: React.FC<RendererProviderProps> = ({ children, height = 0, width = 0 }) => {
+export const RendererProvider: React.FC<RendererProviderProps> = ({
+    children,
+    height = 0,
+    width = 0,
+    theme = '하늘',
+}) => {
     const { setCameraView } = useViewStore((state) => state);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
@@ -245,7 +252,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, he
         );
         if (context) {
             context.beginPath(); // Start a new path
-            context.strokeStyle = 'lightblue';
+            context.strokeStyle = getThemeMainColor(theme);
             context.setLineDash([10, 10]);
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
@@ -291,20 +298,28 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, he
             cameraViewRef.current,
         );
         if (context) {
-            context.strokeStyle = 'lightblue';
+            const radiusX = rect.width / 2;
+            const radiusY = rect.height / 2;
+            const x = rect.width / 2 + rect.left;
+            const y = rect.height / 2 + rect.top;
+            context.strokeStyle = getThemeMainColor(theme);
             context.beginPath();
-            context.ellipse(
-                rect.left + rect.width / 2,
-                rect.top + rect.height / 2,
-                rect.width / 2,
-                rect.height / 2,
-                0,
-                0,
-                Math.PI * 2,
+            context.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
+            const gradient = context.createRadialGradient(
+                x - rect.width * 0.2,
+                y - rect.height * 0.2,
+                Math.min(radiusX, radiusY) * 0.2,
+                x,
+                y,
+                Math.max(radiusX, radiusY),
             );
+            console.log(theme, getThemeMainColor(theme));
+            gradient.addColorStop(0, 'rgb(255, 255, 255)');
+            gradient.addColorStop(0.5, getThemeMainColor(theme, 0.5));
+            context.fillStyle = gradient;
+            context.fill();
+            context.strokeStyle = getThemeMainColor(theme);
             context.stroke();
-
-            // context.fillRect(rect.left, rect.top, rect.width, rect.height); // Render the path
         }
     };
 
