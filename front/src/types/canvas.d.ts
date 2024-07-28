@@ -87,7 +87,7 @@ type Color =
 
 type ControlMode = 'move' | 'draw' | 'erase' | 'bubble';
 
-type Theme = '푸른하늘' | '해질녘' | '로즈마리';
+type Theme = '하늘' | '분홍' | '연두' | '노랑' | '하양' | '검정';
 // Coordinate systems
 
 /**

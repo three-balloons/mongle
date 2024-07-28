@@ -1,8 +1,8 @@
 .default {
-    background-color: var(--color-gray-25);
+    background-color: var(--color-primary-25);
 
     width: 150px;
-    color: var(--color-black);
+    color: var(--color-text);
     text-align: left;
 }
 
