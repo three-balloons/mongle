@@ -12,8 +12,9 @@ import { RendererProvider } from '@/objects/renderer/RendererProvider';
 
 type WorkspaceProps = {
     workspaceID: string;
+    workSpaceName: string;
 };
-export const Workspace = ({ workspaceID }: WorkspaceProps) => {
+export const Workspace = ({ workspaceID, workSpaceName }: WorkspaceProps) => {
     // TODO API로 대체
     const theme = files.find((file) => {
         return file.id == workspaceID;
@@ -33,7 +34,7 @@ export const Workspace = ({ workspaceID }: WorkspaceProps) => {
     };
     return (
         <div className={cn(style.default, getThemeStyle(theme))}>
-            <BubbleProvider>
+            <BubbleProvider workspaceName={workSpaceName}>
                 <CurveProvider sensitivity={2}>
                     <RendererProvider width={canvasSize.width} height={canvasSize.height} theme={theme}>
                         <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />

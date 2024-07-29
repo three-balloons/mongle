@@ -15,7 +15,16 @@ export const appRouter = createBrowserRouter([
         children: [
             {
                 path: 'workspace/:workspaceID',
-                element: <Routed>{({ params }) => <Workspace workspaceID={params.workspaceID ?? ''} />}</Routed>,
+                element: (
+                    <Routed>
+                        {({ params }) => (
+                            <Workspace
+                                workspaceID={params.workspaceID ?? ''}
+                                workSpaceName={params.workspaceName ?? '제목없음'}
+                            />
+                        )}
+                    </Routed>
+                ),
             },
             {
                 path: 'files',

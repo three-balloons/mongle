@@ -6,13 +6,12 @@ import arrow from '@/assets/icon/button-right.svg';
 type BubbleToggleListProps = {
     name: string;
     children: Array<BubbleToggleListProps>;
+    className?: string;
 };
 
-const marginValue = 12;
-
-export const BubbleToggleList = ({ name, children }: BubbleToggleListProps) => {
+export const BubbleToggleList = ({ name, children, className }: BubbleToggleListProps) => {
     return (
-        <ToggleList className={cn(style.default)} style={{ marginLeft: `${marginValue}px` }}>
+        <ToggleList className={cn(style.default, className)}>
             {({ open }: { open: boolean }) => (
                 <>
                     <ToggleList.Button className={cn(style.title)}>
@@ -24,15 +23,18 @@ export const BubbleToggleList = ({ name, children }: BubbleToggleListProps) => {
                             children.map((child, index) => {
                                 if (child.children.length == 0)
                                     return (
-                                        <div
-                                            key={index}
-                                            className={cn(style.title)}
-                                            style={{ marginLeft: `${marginValue}px` }}
-                                        >
+                                        <div key={index} className={cn(style.title, style.marginLeft16)}>
                                             {child.name}
                                         </div>
                                     );
-                                return <BubbleToggleList key={index} name={child.name} children={child.children} />;
+                                return (
+                                    <BubbleToggleList
+                                        key={index}
+                                        name={child.name}
+                                        children={child.children}
+                                        className={style.marginLeft}
+                                    />
+                                );
                             })}
                     </ToggleList.Content>
                 </>

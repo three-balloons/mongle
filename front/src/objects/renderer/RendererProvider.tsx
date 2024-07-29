@@ -223,7 +223,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.beginPath(); // Start a new path
-            context.strokeStyle = 'lightblue';
+            context.strokeStyle = getThemeMainColor(theme);
             context.setLineDash([10, 10]);
             context.strokeRect(_rect.left, _rect.top, _rect.width, _rect.height); // Render the path
             context.setLineDash([]);

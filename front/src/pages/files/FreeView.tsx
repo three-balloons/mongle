@@ -4,7 +4,7 @@ import style from '@/pages/files/free-view.module.css';
 import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
 import { getThemeStyle } from '@/util/getThemeStyle';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const FreeView = () => {
@@ -21,7 +21,6 @@ export const FreeView = () => {
         }),
     ]);
 
-    const velocityRef = useRef<Array<Vector2D>>([]);
     useEffect(() => {
         const getNextPos = () => {
             const newPos = pos.map(({ pos, velocity }) => {
@@ -34,7 +33,6 @@ export const FreeView = () => {
                     velocity: velocity,
                 };
             });
-            console.log(pos[0], velocityRef.current[0]);
             setPos([...newPos]);
         };
         setInterval(getNextPos, 100);
