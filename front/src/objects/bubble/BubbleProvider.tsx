@@ -15,6 +15,7 @@ export type BubbleContextProps = {
     view2BubbleWithVector2D: (pos: Vector2D, cameraView: ViewCoord, bubblePath: string) => Vector2D;
     bubbleTree: BubbleTreeNode;
     setBubbleTree: (bubbleTreeRoot: BubbleTreeNode) => void;
+    getBubbleInTree: (bubble: Bubble) => BubbleTreeNode | undefined;
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -22,6 +23,7 @@ export const BubbleContext = createContext<BubbleContextProps | undefined>(undef
 type BubbleTreeNode = {
     name: string;
     children: Array<BubbleTreeNode>;
+    this: Bubble | undefined;
 };
 type BubbleState = {
     bubbleTree: BubbleTreeNode;
@@ -46,7 +48,7 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                     currentNode = currentNode.children.find((node) => node.name === name);
                 }
                 if (currentNode == undefined)
-                    prevNode?.children.push({ name: pathList[pathList.length - 1], children: [] });
+                    prevNode?.children.push({ name: pathList[pathList.length - 1], children: [], this: bubble });
                 return bubbleTreeRoot;
             };
             return {
@@ -73,6 +75,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         bubbleTree: {
             name: workspaceName,
             children: [],
+            this: undefined,
         },
     });
     const creatingBubbleRef = useRef<Rect>({
@@ -168,22 +171,16 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         dispatch({ type: 'ADD_BUBBLE_IN_TREE', payload: { bubble } });
     };
 
-    /**
-     * bubbletree에 추가
-     * 내부에서만 사용
-     */
-    // const _addBubbleInTree = (bubble: Bubble) => {
-    //     const pathList = pathToList(bubble.path);
-    //     let currentNode: BubbleTreeNode | undefined = bubbleTreeRef.current;
-    //     let prevNode: BubbleTreeNode | undefined;
-    //     for (const name of pathList) {
-    //         if (name == '') continue;
-    //         if (currentNode == undefined) break;
-    //         prevNode = currentNode;
-    //         currentNode = currentNode.children.find((node) => node.name === name);
-    //     }
-    //     if (currentNode == undefined) prevNode?.children.push({ name: pathList[pathList.length - 1], children: [] });
-    // };
+    const getBubbleInTree = (bubble: Bubble): BubbleTreeNode | undefined => {
+        const pathList = pathToList(bubble.path);
+        let currentNode: BubbleTreeNode | undefined = state.bubbleTree;
+        for (const name of pathList) {
+            if (name == '') continue;
+            if (currentNode == undefined) return undefined;
+            currentNode = currentNode.children.find((child) => child.name == name);
+        }
+        return currentNode;
+    };
 
     return (
         <BubbleContext.Provider
@@ -200,6 +197,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
                 view2BubbleWithVector2D,
                 bubbleTree: state.bubbleTree,
                 setBubbleTree,
+                getBubbleInTree,
             }}
         >
             {children}

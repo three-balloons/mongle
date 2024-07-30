@@ -1,4 +1,5 @@
 import { useBubble } from '@/objects/bubble/useBubble';
+import { useCurve } from '@/objects/curve/useCurve';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
@@ -23,7 +24,9 @@ export const useBubbleGun = () => {
         findBubble,
         descendant2child,
         view2BubbleWithVector2D,
+        getBubbleInTree,
     } = useBubble();
+    const { getCurvesWithPath } = useCurve();
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
             {
@@ -179,6 +182,37 @@ export const useBubbleGun = () => {
         };
     };
 
+    const bubblize = (bubble: Bubble) => {
+        bubble.isBubblized = true;
+        getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = false));
+
+        const node = getBubbleInTree(bubble);
+        if (node == undefined) return;
+        for (const child of node.children) {
+            if (child.this) _setIsVisibleAll(child.this, false);
+        }
+    };
+
+    const unbubblize = (bubble: Bubble) => {
+        bubble.isBubblized = false;
+        getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = true));
+        const node = getBubbleInTree(bubble);
+        if (node == undefined) return;
+        for (const child of node.children) {
+            if (child.this) _setIsVisibleAll(child.this, true);
+        }
+    };
+
+    const _setIsVisibleAll = (bubble: Bubble, isVisible: boolean) => {
+        bubble.isVisible = isVisible;
+        getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = isVisible));
+        const node = getBubbleInTree(bubble);
+        if (node == undefined) return;
+        for (const child of node.children) {
+            if (child.this) _setIsVisibleAll(child.this, isVisible);
+        }
+    };
+
     return {
         startCreateBubble,
         createBubble,
@@ -186,5 +220,7 @@ export const useBubbleGun = () => {
         startMoveBubble,
         moveBubble,
         identifyTouchRegion,
+        bubblize,
+        unbubblize,
     };
 };

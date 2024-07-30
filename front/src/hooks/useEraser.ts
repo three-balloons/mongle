@@ -99,7 +99,6 @@ export const useEraser = () => {
             // TODO 경고 창 띄우고 지우기
             setEraseMode('area');
             if (bubble) {
-                console.log(bubble.path);
                 removeCurvesWithPath(bubble.path);
                 getDescendantBubbles(bubble.path).forEach((descendant) => {
                     removeCurvesWithPath(descendant.path);
@@ -108,8 +107,6 @@ export const useEraser = () => {
 
                 removeBubble(bubble);
             }
-
-            console.log(getBubbles());
         }
     };
 

@@ -172,6 +172,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             curves.forEach((curve) => {
+                if (!curve.isVisible) return;
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(cameraViewRef.current));
                 const parentBubble = findBubble(curve.path);
@@ -234,6 +235,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
      * bubble과 그 내부의 요소를 렌더링함
      */
     const bubbleRender = (bubble: Bubble) => {
+        if (!bubble.isVisible) return;
         if (!mainLayerRef.current) {
             return;
         }
@@ -256,27 +258,27 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
             context.setLineDash([10, 10]);
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
-            bubble.curves.forEach((curve) => {
-                const c = bubble2globalWithCurve(curve.position, bubbleView);
-                const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
-                applyPenConfig(context, curve.config);
-                context.beginPath();
-                // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-                if (beziers.length > 0) {
-                    for (let i = 0; i < beziers.length; i++) {
-                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
-                        context.bezierCurveTo(
-                            beziers[i].cp1.x,
-                            beziers[i].cp1.y,
-                            beziers[i].cp2.x,
-                            beziers[i].cp2.y,
-                            beziers[i].end.x,
-                            beziers[i].end.y,
-                        );
-                    }
-                }
-                context.stroke();
-            });
+            // bubble.curves.forEach((curve) => {
+            //     const c = bubble2globalWithCurve(curve.position, bubbleView);
+            //     const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
+            //     applyPenConfig(context, curve.config);
+            //     context.beginPath();
+            //     // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
+            //     if (beziers.length > 0) {
+            //         for (let i = 0; i < beziers.length; i++) {
+            //             context.moveTo(beziers[i].start.x, beziers[i].start.y);
+            //             context.bezierCurveTo(
+            //                 beziers[i].cp1.x,
+            //                 beziers[i].cp1.y,
+            //                 beziers[i].cp2.x,
+            //                 beziers[i].cp2.y,
+            //                 beziers[i].end.x,
+            //                 beziers[i].end.y,
+            //             );
+            //         }
+            //     }
+            //     context.stroke();
+            // });
         }
     };
 
@@ -313,7 +315,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 y,
                 Math.max(radiusX, radiusY),
             );
-            console.log(theme, getThemeMainColor(theme));
             gradient.addColorStop(0, 'rgb(255, 255, 255)');
             gradient.addColorStop(0.5, getThemeMainColor(theme, 0.5));
             context.fillStyle = gradient;

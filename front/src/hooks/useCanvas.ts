@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/curve/useCurve';
-import { getSecondTouchCoordinate, getViewCoordinate } from '@/util/canvas/canvas';
+import { /*getSecondTouchCoordinate,*/ getViewCoordinate } from '@/util/canvas/canvas';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
@@ -32,8 +32,16 @@ export const useCanvas = () => {
     const { startDrawing, draw, finishDrawing } = useDrawer();
     const { erase } = useEraser();
     const { grab, drag, release } = useHand();
-    const { startCreateBubble, createBubble, finishCreateBubble, startMoveBubble, moveBubble, identifyTouchRegion } =
-        useBubbleGun();
+    const {
+        startCreateBubble,
+        createBubble,
+        finishCreateBubble,
+        startMoveBubble,
+        moveBubble,
+        identifyTouchRegion,
+        bubblize,
+        unbubblize,
+    } = useBubbleGun();
 
     useEffect(() => {
         useConfigStore.subscribe(({ mode }) => {
@@ -64,7 +72,10 @@ export const useCanvas = () => {
                 const { region, bubble } = identifyTouchRegion(getCameraView(), currentPosition, getBubbles());
                 if (isCreateBubbleRef.current == false) {
                     if (region === 'border') {
-                        if (bubble) bubble.isBubblized = !bubble.isBubblized;
+                        if (bubble) {
+                            if (bubble.isBubblized === false) bubblize(bubble);
+                            else unbubblize(bubble);
+                        }
                         reRender();
                     } else {
                         if (region == 'inside' && bubble && bubble.isBubblized == true) {

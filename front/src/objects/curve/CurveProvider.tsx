@@ -6,6 +6,7 @@ export type CurveContextProps = {
     getNewCurvePath: () => string;
     setNewCurvePath: (path: string) => void;
     getCurves: () => Array<Curve>;
+    getCurvesWithPath: (path: string) => Array<Curve>;
     clearAllCurves: () => void;
     getDrawingCurve: () => Curve2D;
     addControlPoint: (pos: Point, force?: boolean) => boolean;
@@ -27,7 +28,7 @@ type CurveProviderProps = {
 export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitivity = 0 }) => {
     const newCurveRef = useRef<Curve2D>([]);
     const newCurvePathRef = useRef<string>('/');
-    const CurvesRef = useRef<Curve[]>([]);
+    const curvesRef = useRef<Curve[]>([]);
     const coolTime = useRef(sensitivity);
     const { penConfig } = useConfigStore((state) => state);
 
@@ -40,7 +41,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     }, []);
 
     const clearAllCurves = () => {
-        CurvesRef.current = [];
+        curvesRef.current = [];
         newCurveRef.current = [];
     };
 
@@ -64,27 +65,33 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     };
 
     const addNewCurve = (thicknessRatio: number = 1) => {
-        CurvesRef.current = [
-            ...CurvesRef.current,
+        curvesRef.current = [
+            ...curvesRef.current,
             {
                 position: newCurveRef.current,
                 path: newCurvePathRef.current,
+
                 config: { ...penConfigRef.current, thickness: penConfigRef.current.thickness / thicknessRatio },
+                isVisible: true,
             },
         ];
         newCurveRef.current = [];
     };
 
     const addCurve = (curve: Curve) => {
-        CurvesRef.current = [...CurvesRef.current, curve];
+        curvesRef.current = [...curvesRef.current, curve];
     };
 
     const removeCurve = (curveToRemove: Curve) => {
-        CurvesRef.current = [...CurvesRef.current.filter((curve) => curve !== curveToRemove)];
+        curvesRef.current = [...curvesRef.current.filter((curve) => curve !== curveToRemove)];
     };
 
     const removeCurvesWithPath = (path: string) => {
-        CurvesRef.current = [...CurvesRef.current.filter((curve) => curve.path !== path)];
+        curvesRef.current = [...curvesRef.current.filter((curve) => curve.path !== path)];
+    };
+
+    const getCurvesWithPath = (path: string) => {
+        return curvesRef.current.filter((curve) => curve.path == path);
     };
 
     const getDrawingCurve = (): Curve2D => {
@@ -93,8 +100,13 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
 
     const getCurves = (): Curve[] => {
         return [
-            ...CurvesRef.current,
-            { position: newCurveRef.current, path: newCurvePathRef.current, config: penConfigRef.current },
+            ...curvesRef.current,
+            {
+                position: newCurveRef.current,
+                path: newCurvePathRef.current,
+                config: penConfigRef.current,
+                isVisible: true,
+            },
         ];
     };
 
@@ -118,6 +130,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
                 getNewCurvePath,
                 clearAllCurves,
                 getCurves,
+                getCurvesWithPath,
                 getDrawingCurve,
                 setNewCurvePath,
                 addControlPoint,
