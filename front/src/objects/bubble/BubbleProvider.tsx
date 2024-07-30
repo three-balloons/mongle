@@ -12,6 +12,7 @@ export type BubbleContextProps = {
     updateCreatingBubble: (rect: Rect) => void;
     findBubble: (path: string) => Bubble | undefined;
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
+    getRatioWithCamera: (bubble: Bubble, cameraView: ViewCoord) => number | undefined;
     view2BubbleWithVector2D: (pos: Vector2D, cameraView: ViewCoord, bubblePath: string) => Vector2D;
     bubbleTree: BubbleTreeNode;
     setBubbleTree: (bubbleTreeRoot: BubbleTreeNode) => void;
@@ -163,6 +164,31 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         }
     };
 
+    /**
+     * texture minification을 위한 비율 계산
+     */
+    const getRatioWithCamera = (bubble: Bubble, cameraView: ViewCoord) => {
+        const depth = getPathDifferentDepth(cameraView.path, bubble.path);
+        if (depth == undefined) return undefined;
+        if (depth == 0) return cameraView.size.x / cameraView.pos.width;
+        if (depth == 1) return bubble.width / cameraView.pos.width;
+        else if (depth > 1) {
+            let path: string | undefined = bubble.path;
+            let ret = bubble.width;
+
+            let parent: Bubble | undefined;
+            for (let i = 1; i < depth; i++) {
+                path = getParentPath(path);
+                if (path == undefined) return undefined;
+                parent = findBubble(path);
+                if (parent == undefined) return undefined;
+                ret = (ret * parent.width) / 200;
+            }
+            ret = ret / cameraView.pos.width;
+            return ret;
+        }
+    };
+
     const setBubbleTree = (bubbleTreeRoot: BubbleTreeNode) => {
         dispatch({ type: 'SET_BUBBLE_TREE', payload: bubbleTreeRoot });
     };
@@ -194,6 +220,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
                 updateCreatingBubble,
                 findBubble,
                 descendant2child,
+                getRatioWithCamera,
                 view2BubbleWithVector2D,
                 bubbleTree: state.bubbleTree,
                 setBubbleTree,

@@ -44,7 +44,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     const canvasImageRef = useRef<ImageData | null>(null);
 
     const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
-    const { getBubbles, findBubble, descendant2child } = useBubble();
+    const { getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
 
     const cameraViewRef = useRef<ViewCoord>({
         pos: {
@@ -171,6 +171,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
+            // TODO 버블을 먼저 찾고 버블 안에서 커브 넣기
             curves.forEach((curve) => {
                 if (!curve.isVisible) return;
                 applyPenConfig(context, curve.config);
@@ -180,6 +181,10 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 if (parentBubble) {
                     const bubbleView = descendant2child(parentBubble, cameraViewRef.current.path);
                     c = bubble2globalWithCurve(curve.position, bubbleView);
+                    const ratio = getRatioWithCamera(parentBubble, cameraViewRef.current);
+                    if (ratio && ratio * cameraViewRef.current.size.x < 30) {
+                        return;
+                    }
                 }
 
                 const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
@@ -215,15 +220,14 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
      * usage: create bubble drag
      */
     const rectRender = (rect: Rect) => {
-        if (!creationLayerRef.current) {
-            return;
-        }
+        if (!creationLayerRef.current) return;
         const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
         const _rect: Rect = rect2View(rect, cameraViewRef.current);
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.beginPath(); // Start a new path
+            context.lineWidth = 5;
             context.strokeStyle = getThemeMainColor(theme);
             context.setLineDash([10, 10]);
             context.strokeRect(_rect.left, _rect.top, _rect.width, _rect.height); // Render the path
@@ -236,6 +240,10 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
      */
     const bubbleRender = (bubble: Bubble) => {
         if (!bubble.isVisible) return;
+        const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
+        if (ratio && ratio * cameraViewRef.current.size.x < 30) {
+            return;
+        }
         if (!mainLayerRef.current) {
             return;
         }
@@ -255,9 +263,11 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         if (context) {
             context.beginPath(); // Start a new path
             context.strokeStyle = getThemeMainColor(theme);
+            context.lineWidth = 5;
             context.setLineDash([10, 10]);
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
+            setThicknessWithRatio(context, getThicknessRatio(cameraViewRef.current));
             // bubble.curves.forEach((curve) => {
             //     const c = bubble2globalWithCurve(curve.position, bubbleView);
             //     const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
