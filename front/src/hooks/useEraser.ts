@@ -146,6 +146,7 @@ export const useEraser = () => {
             path: path,
             config: config,
             position: curve.position,
+            isVisible: curve.isVisible,
         };
     };
 
