@@ -5,7 +5,7 @@ import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
 import { useState } from 'react';
 import Select from '@/headless/select/Select';
-import modify from '@/assets/icon/modify.svg';
+import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 
 type WorkspaceSettingModalProps = {
     workSpaceName: string;
@@ -41,7 +41,7 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                 ) : (
                     <>
                         <span className={style.name}>{name}</span>
-                        <img className={style.iconModify} src={modify} onClick={() => setIsNameChange(true)}></img>
+                        <ModifyIcon className={style.iconModify} onClick={() => setIsNameChange(true)} />
                     </>
                 )}
 
