@@ -67,3 +67,8 @@
     border: 3px solid var(--color-white);
     box-shadow: 0 0 0 1.6px var(--color-primary-100);
 }
+
+.icon {
+    width: 20px;
+    height: 20px;
+}

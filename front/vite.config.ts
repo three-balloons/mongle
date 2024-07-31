@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+import svgr from '@svgr/rollup';
 import autoprefixer from 'autoprefixer';
 import postcssNesting from 'postcss-nesting';
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [svgr(), react()],
     // server: {
     //     proxy: {
     //         '/api': {

@@ -1,7 +1,7 @@
 import ToggleList from '@/headless/toggleList/ToggleList';
 import style from '@/components/explorer/bubbleToggleList/bubble-toggle-list.module.css';
 import { cn } from '@/util/cn';
-import arrow from '@/assets/icon/button-right.svg';
+import { ReactComponent as ArrowIcon } from '@/assets/icon/button-right.svg';
 
 type BubbleToggleListProps = {
     name: string;
@@ -15,7 +15,7 @@ export const BubbleToggleList = ({ name, children, className }: BubbleToggleList
             {({ open }: { open: boolean }) => (
                 <>
                     <ToggleList.Button className={cn(style.title)}>
-                        <img src={arrow} className={cn(style.toggleButton, open ? style.rotated : style.idle)} />
+                        <ArrowIcon className={cn(style.toggleButton, open ? style.rotated : style.idle)} />
                         <span className={cn(style.titleText)}>{name}</span>
                     </ToggleList.Button>
                     <ToggleList.Content>

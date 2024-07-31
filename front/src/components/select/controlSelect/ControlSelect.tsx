@@ -1,17 +1,18 @@
 import Select from '@/headless/select/Select';
 import style from '@/components/select/controlSelect/control-select.module.css';
 import { cn } from '@/util/cn';
-import shrink from '@/assets/icon/shrink.svg';
-import enlarge from '@/assets/icon/enlarge.svg';
-
+import { ReactComponent as ShrinkIcon } from '@/assets/icon/shrink.svg';
+import { ReactComponent as EnlargeIcon } from '@/assets/icon/enlarge.svg';
+import { ReactComponent as UndoIcon } from '@/assets/icon/undo.svg';
+import { ReactComponent as RedoIcon } from '@/assets/icon/redo.svg';
 import { useViewStore } from '@/store/viewStore';
-
-const Icon = ({ src, alt, className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => {
-    return <img className={cn(className)} src={src} alt={alt} {...props}></img>;
-};
+import { useLog } from '@/objects/log/useLog';
+import { useRenderer } from '@/objects/renderer/useRenderer';
 
 export const ControlSelect = () => {
     const { cameraView, setCameraView } = useViewStore((state) => state);
+    const { isUndoAvailable, isRedoAvailable, undo, redo } = useLog();
+    const { reRender } = useRenderer();
     // TODO: 투터치 인터페이스 구현(줌/아웃 가능)
     const resizeView = (intensity: number) => {
         setCameraView({
@@ -31,21 +32,44 @@ export const ControlSelect = () => {
                 <div className={style.resize}>
                     <Select.Option
                         className={cn(style.option, style.large)}
-                        value={<Icon src={shrink} className={style.large} />}
+                        value={<ShrinkIcon className={style.large} />}
                         onSelect={() => {
                             resizeView(-20);
                         }}
                     >
-                        <Icon src={shrink} className={style.large} />
+                        <ShrinkIcon className={style.large} />
                     </Select.Option>
                     <Select.Option
                         className={cn(style.option, style.large)}
-                        value={<Icon src={enlarge} className={style.large} />}
+                        value={<EnlargeIcon className={style.large} />}
                         onSelect={() => {
                             resizeView(20);
                         }}
                     >
-                        <Icon src={enlarge} className={style.large} />
+                        <EnlargeIcon className={style.large} />
+                    </Select.Option>
+                    <Select.Option
+                        className={cn(style.option, style.large)}
+                        value={<UndoIcon className={cn(style.large, !isUndoAvailable && style.disabled)}></UndoIcon>}
+                        onSelect={() => {
+                            if (!isUndoAvailable) return;
+                            undo();
+                            reRender();
+                        }}
+                    >
+                        {/* <Icon src={undoIcon} className={cn(style.large)} /> */}
+                        <UndoIcon className={cn(style.large, !isUndoAvailable && style.disabled)} />
+                    </Select.Option>
+                    <Select.Option
+                        className={cn(style.option, style.large)}
+                        value={<RedoIcon className={cn(style.large, !isRedoAvailable && style.disabled)} />}
+                        onSelect={() => {
+                            redo();
+                            reRender();
+                            console.log('redo');
+                        }}
+                    >
+                        <RedoIcon className={cn(style.large, !isRedoAvailable && style.disabled)} />
                     </Select.Option>
                 </div>
             </Select.Content>

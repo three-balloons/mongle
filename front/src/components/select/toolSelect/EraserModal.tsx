@@ -1,7 +1,7 @@
 import style from '@/components/select/toolSelect/eraser-select.module.css';
 import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
-import { EraserIcon } from '@/components/select/toolSelect/ToolSelect';
+import { ReactComponent as EraserIcon } from '@/assets/icon/eraser.svg';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import Modal from '@/headless/modal/Modal';
@@ -16,7 +16,7 @@ export const EraserModal = () => {
     return (
         <Modal className={style.default}>
             <Modal.Opener>
-                <EraserIcon />
+                <EraserIcon className={style.icon} />
             </Modal.Opener>
             <Modal.Overlay zIndex={1} />
             <Modal.Content className={style.content}>
