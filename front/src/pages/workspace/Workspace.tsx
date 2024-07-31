@@ -9,6 +9,7 @@ import { files } from '@/mock/files';
 import { getThemeStyle } from '@/util/getThemeStyle';
 import { BubbleProvider } from '@/objects/bubble/BubbleProvider';
 import { RendererProvider } from '@/objects/renderer/RendererProvider';
+import { LogProvider } from '@/objects/log/LogProvider';
 
 type WorkspaceProps = {
     workspaceID: string;
@@ -36,13 +37,15 @@ export const Workspace = ({ workspaceID, workSpaceName }: WorkspaceProps) => {
         <div className={cn(style.default, getThemeStyle(theme))}>
             <BubbleProvider workspaceName={workSpaceName}>
                 <CurveProvider sensitivity={2}>
-                    <RendererProvider width={canvasSize.width} height={canvasSize.height} theme={theme}>
-                        <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                        <div className={cn(style.workspace)}>
-                            {isShowExplorer && <Explorer />}
-                            <Canvas width={canvasSize.width} height={canvasSize.height} />
-                        </div>
-                    </RendererProvider>
+                    <LogProvider>
+                        <RendererProvider width={canvasSize.width} height={canvasSize.height} theme={theme}>
+                            <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                            <div className={cn(style.workspace)}>
+                                {isShowExplorer && <Explorer />}
+                                <Canvas width={canvasSize.width} height={canvasSize.height} />
+                            </div>
+                        </RendererProvider>
+                    </LogProvider>
                 </CurveProvider>
             </BubbleProvider>
         </div>

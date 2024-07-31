@@ -1,5 +1,6 @@
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
+import { useLog } from '@/objects/log/useLog';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { getThemeMainColor } from '@/util/getThemeStyle';
@@ -45,6 +46,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
     const { getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
+    const { pushLog } = useLog();
 
     const cameraViewRef = useRef<ViewCoord>({
         pos: {
@@ -206,7 +208,11 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                             isSweep = false;
                         }
                     }
-                    if (isSweep) removeCurve(curve);
+                    // TODO sweep 로직 다른 곳으로 옮기기
+                    if (isSweep) {
+                        removeCurve(curve);
+                        pushLog({ type: 'delete', object: curve });
+                    }
                 }
                 context.stroke();
             });

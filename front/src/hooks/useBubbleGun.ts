@@ -1,5 +1,6 @@
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
+import { useLog } from '@/objects/log/useLog';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
@@ -27,6 +28,10 @@ export const useBubbleGun = () => {
         getBubbleInTree,
     } = useBubble();
     const { getCurvesWithPath } = useCurve();
+
+    /* logs */
+    const { pushLog } = useLog();
+
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
             {
@@ -85,6 +90,7 @@ export const useBubbleGun = () => {
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
         addBubble(bubble);
+        pushLog({ type: 'create', object: bubble });
     }, []);
 
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {

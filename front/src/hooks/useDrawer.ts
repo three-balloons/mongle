@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { useCurve } from '@/objects/curve/useCurve';
 import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
 import { useBubble } from '@/objects/bubble/useBubble';
+import { useLog } from '@/objects/log/useLog';
 
 // functions about pen drawing
 // features: draw curve
@@ -9,6 +10,9 @@ export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve } = useCurve();
     const { view2BubbleWithVector2D } = useBubble();
+
+    /* logs */
+    const { pushLog } = useLog();
 
     const startDrawing = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {
         positionRef.current = currentPosition;
@@ -58,7 +62,8 @@ export const useDrawer = () => {
                 const position = view2BubbleWithVector2D(pos, cameraView, getNewCurvePath());
                 addControlPoint({ ...position, isVisible: true }, true);
             }
-            addNewCurve(getThicknessRatio(cameraView));
+            const newCurve = addNewCurve(getThicknessRatio(cameraView));
+            pushLog({ type: 'create', object: newCurve });
         },
 
         [addNewCurve],

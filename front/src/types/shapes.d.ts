@@ -18,7 +18,7 @@ type Curve2D = Array<Point>;
 type Curve3D = Array<Vector3D>;
 
 // TODO: penConfig 추가할 것
-type Curve = { position: Curve2D; path: string; config: PenConfig; isVisible: boolean };
+type Curve = { position: Curve2D; path: string; config: PenConfig; isVisible: boolean; id: number | undefined };
 
 // rectangle
 interface Rect {
