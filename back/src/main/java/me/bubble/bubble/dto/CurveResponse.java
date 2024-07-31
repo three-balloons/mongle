@@ -3,29 +3,18 @@ package me.bubble.bubble.dto;
 import lombok.Getter;
 import me.bubble.bubble.domain.Curve;
 
+import java.util.List;
+
 @Getter
 public class CurveResponse {
-    private final int red;
-    private final int green;
-    private final int blue;
-    private final int alpha;
-    private final int b_width;
-    private final int b_height;
-    private final int b_top;
-    private final int b_left;
+    private final List<ControlsResponse> position;
     private final String path;
-    private final int thickness;
+    private final Config config;
 
-    public CurveResponse(Curve curve) {
-        this.red = curve.getRed();
-        this.green = curve.getGreen();
-        this.blue = curve.getBlue();
-        this.alpha = curve.getAlpha();
-        this.b_width = curve.getB_width();
-        this.b_height = curve.getB_height();
-        this.b_top = curve.getB_top();
-        this.b_left = curve.getB_left();
+    public CurveResponse(Curve curve, List<ControlsResponse> position) {
+        this.position = position;
         this.path = curve.getPath();
-        this.thickness = curve.getThickness();
+        this.config = new Config(curve.getColor(), curve.getThickness());
     }
+
 }

@@ -23,8 +23,8 @@ public class Controls {
     @Column(name = "y")
     private int y;
 
-    @Column(name = "is_visible")
-    private int is_visible;
+    @Column(name = "visible")
+    private boolean visible;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "curve_id")
@@ -32,10 +32,11 @@ public class Controls {
     private Curve curve;
 
     @Builder
-    public Controls(int x, int y, int is_visible, Curve curve) {
+    public Controls(int x, int y, boolean visible, Curve curve) {
         this.x = x;
         this.y = y;
-        this.is_visible = is_visible;
+        this.visible = visible;
         this.curve = curve;
     }
+
 }

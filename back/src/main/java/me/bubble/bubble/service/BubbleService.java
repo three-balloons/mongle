@@ -14,18 +14,30 @@ public class BubbleService {
     private final BubbleRepository bubbleRepository;
 
 
-    public Bubble findByPath(String workspace){
-        return bubbleRepository.findByPath(workspace)
-                .orElseThrow(() -> new IllegalArgumentException("Not Found " + workspace));
+    public Bubble findByPathAndWorkspaceId(String path, Long workspaceId){
+        return bubbleRepository.findByPathAndWorkspaceId(path, workspaceId)
+                .orElseThrow(() -> new IllegalArgumentException("Not Found at findByPathAndWorkspaceId"));
     }
 
-    public List<Bubble> findChildrenByBubble (Bubble bubble) {
-        return bubbleRepository.findByPathDepthAndPathStartingWith(bubble.getPathDepth()+1, bubble.getPath());
+    public List<Bubble> findChildrenByBubbleAndWorkspaceId (Bubble bubble, Long workspaceId) {
+        return bubbleRepository.findByPathDepthAndPathStartingWithAndWorkspaceId(bubble.getPathDepth()+1,
+                bubble.getPath(), workspaceId);
     }
 
+    public Bubble getMaxPathDepth(Long workspaceId) {
+        return bubbleRepository.findTopByWorkspaceIdOrderByPathDepthDesc(workspaceId);
+    }
+
+    public List<Bubble> findBubblesByPathDepthAndWorkspaceId (int pathDepth, Long workspaceId) {
+        return bubbleRepository.findByPathDepthAndWorkspaceId(pathDepth, workspaceId);
+    }
     @Transactional
-    public void deleteByPath(String workspace) {
-        bubbleRepository.deleteByPathStartingWith(workspace);
-        return;
+    public void deleteByPathStartingWithAndWorkspaceId(String path, Long workspaceId) {
+        bubbleRepository.deleteByPathStartingWithAndWorkspaceId(path, workspaceId);
+    }
+
+
+    public Bubble saveBubble(Bubble bubble) {
+        return bubbleRepository.save(bubble);
     }
 }
