@@ -138,6 +138,7 @@ export const useBubbleGun = () => {
     ): { region: 'inside' | 'outside' | 'border'; bubble: Bubble | undefined } => {
         bubbles.sort((a, b) => getPathDepth(b.path) - getPathDepth(a.path));
         for (const bubble of bubbles) {
+            if (!bubble.isVisible) continue;
             const bubbleView = descendant2child(bubble, cameraView.path);
             if (bubbleView) {
                 const rect = rect2View(
@@ -205,7 +206,7 @@ export const useBubbleGun = () => {
 
     const _setIsVisibleAll = (bubble: Bubble, isVisible: boolean) => {
         bubble.isVisible = isVisible;
-        getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = isVisible));
+        if (!bubble.isBubblized) getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = isVisible));
         const node = getBubbleInTree(bubble);
         if (node == undefined) return;
         for (const child of node.children) {

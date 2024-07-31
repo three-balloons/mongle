@@ -293,6 +293,11 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     };
 
     const movementBubbleRender = (bubble: Bubble) => {
+        if (!bubble.isVisible) return;
+        const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
+        if (ratio && ratio * cameraViewRef.current.size.x < 30) {
+            return;
+        }
         if (!movementLayerRef.current) {
             return;
         }
