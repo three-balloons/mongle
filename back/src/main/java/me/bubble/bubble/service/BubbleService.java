@@ -35,4 +35,9 @@ public class BubbleService {
     public void deleteByPathStartingWithAndWorkspaceId(String path, Long workspaceId) {
         bubbleRepository.deleteByPathStartingWithAndWorkspaceId(path, workspaceId);
     }
+
+
+    public Bubble saveBubble(Bubble bubble) {
+        return bubbleRepository.save(bubble);
+    }
 }

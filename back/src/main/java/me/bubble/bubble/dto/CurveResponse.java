@@ -17,16 +17,4 @@ public class CurveResponse {
         this.config = new Config(curve.getColor(), curve.getThickness());
     }
 
-
-    @Getter
-    public static class Config {
-        private final String color;
-        private final int thickness;
-
-        public Config(String color, int thickness) {
-            this.color = color;
-            this.thickness = thickness;
-        }
-    }
-
 }

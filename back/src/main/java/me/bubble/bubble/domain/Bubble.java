@@ -39,19 +39,28 @@ public class Bubble {
     @Column(name = "path_depth")
     private int pathDepth;
 
+    @Column(name = "bubblized")
+    private boolean bubblized;
+
+    @Column(name = "visible")
+    private boolean visible;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Workspace workspace;
 
     @Builder
-    public Bubble(int top, int leftmost, int width, int height, String path, int pathDepth, Workspace workspace) {
+    public Bubble(int top, int leftmost, int width, int height, String path, int pathDepth, boolean bubblized, boolean visible, Workspace workspace) {
         this.top = top;
         this.leftmost = leftmost;
         this.width = width;
         this.height = height;
         this.path = path;
         this.pathDepth = pathDepth;
+        this.bubblized = bubblized;
+        this.visible = visible;
         this.workspace = workspace;
     }
+
 }
