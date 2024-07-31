@@ -8,6 +8,14 @@
     height: 16px;
 }
 
+.margin-left {
+    margin-left: 12px;
+}
+
+.margin-left16 {
+    margin-left: 16px;
+}
+
 .title {
     display: flex;
     align-items: center;

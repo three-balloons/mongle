@@ -15,7 +15,7 @@ type EraseConfig = {
     mode: EraseMode;
 };
 
-type EraseMode = 'area' | 'stroke';
+type EraseMode = 'area' | 'stroke' | 'bubble';
 
 type Font = 'serif' | 'Arial' | 'Courier New' | 'Georgia' | 'Times New Roman' | 'Trebuchet MS' | 'Verdana';
 
@@ -87,29 +87,35 @@ type Color =
 
 type ControlMode = 'move' | 'draw' | 'erase' | 'bubble';
 
-type Theme = '푸른하늘' | '해질녘' | '로즈마리';
+type Theme = '하늘' | '분홍' | '연두' | '노랑' | '하양' | '검정';
 // Coordinate systems
 
-// (canvas) View coordinate system
-// path: canvas path
-// pos: relative position
-// size: canvas size in screen
+/**
+ * (canvas) View coordinate system
+ * @field path canvas path
+ * @field pos relative position
+ * @field size canvas size in screen
+ */
 type ViewCoord = {
     pos: Rect;
     path: string;
     size: Vector2D;
 };
 
-// Poloar coordinate system
-// angle: [0, 360), radius: (0, 100] except for root
+/**
+ * Poloar coordinate system
+ * @field angle: [0, 360), radius: (0, 100] except for root
+ */
 type PolarCoord = {
     path: string;
     radius: number;
     angle: number;
 };
 
-// Cartesian coordinate system
-// x: [-100, 100], y: [-100, 100] except for root
+/**
+ * Cartesian coordinate system
+ * @field x: [-100, 100], y: [-100, 100] except for root
+ */
 type RectCoord = {
     path: string;
     x: number;

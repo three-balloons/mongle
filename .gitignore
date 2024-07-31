@@ -45,3 +45,6 @@ out/
 !**/src/test/**/out/
 
 
+# env files
+*.env
+*.env.*

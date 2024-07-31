@@ -2,16 +2,16 @@ import style from '@/components/select/toolSelect/eraser-select.module.css';
 import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
 import { EraserIcon } from '@/components/select/toolSelect/ToolSelect';
-import { useBubble } from '@/objects/useBubble';
-import { useCurve } from '@/objects/useCurve';
-// import { useCanvas } from '@/hooks/useCanvas';
+import { useBubble } from '@/objects/bubble/useBubble';
+import { useCurve } from '@/objects/curve/useCurve';
 import Modal from '@/headless/modal/Modal';
+import { useRenderer } from '@/objects/renderer/useRenderer';
 
 export const EraserModal = () => {
     const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
     const { clearAllBubbles } = useBubble();
     const { clearAllCurves } = useCurve();
-    // const { clearLayerRenderer, mainLayerRef } = useCanvas();
+    const { reRender } = useRenderer();
 
     return (
         <Modal className={style.default}>
@@ -44,16 +44,24 @@ export const EraserModal = () => {
                         />
                         <span className={style.radioText}>획 지우개 선택</span>
                     </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="option"
+                            value="버블"
+                            className={style.radio}
+                            checked={eraseConfig.mode == 'bubble'}
+                            onChange={() => setEraseMode('bubble')}
+                        />
+                        <span className={style.radioText}>버블 지우개 선택</span>
+                    </label>
                 </div>
                 <Modal.Closer
                     className={cn(style.clear)}
                     onClick={() => {
                         clearAllBubbles();
                         clearAllCurves();
-                        // TODO useCanvas의 canvasRef를 workspace 내에서 접근할 수 있도록 provider 패턴 적용
-                        // 용도: 메뉴에서 모두 지우고 렌더링, 탐색기에서 버블 클릭시 이동후 렌더링
-                        // const mainLayer = mainLayerRef.current;
-                        // if (mainLayer) clearLayerRenderer(mainLayer);
+                        reRender();
                     }}
                 >
                     모두 지우기

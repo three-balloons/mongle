@@ -1,15 +1,14 @@
 .default {
-    background-color: var(--color-gray-25);
+    background-color: var(--color-primary-25);
 
     width: 150px;
-    color: var(--color-black);
+    color: var(--color-text);
     text-align: left;
 }
 
 .work-space-name {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
     font-weight: bold;
     margin-left: 6px;
     padding-right: 5px;

@@ -1,17 +1,17 @@
 import { createStore } from '@/store/store';
 
 type State = {
-    canvasView: ViewCoord;
+    cameraView: ViewCoord;
 };
 
 type Action = {
-    setCanvasView: (canvasView: ViewCoord) => void;
+    setCameraView: (cameraView: ViewCoord) => void;
 };
 type Store = State & Action;
 
 export const useViewStore = createStore<Store, State>(
     (set) => ({
-        canvasView: {
+        cameraView: {
             pos: {
                 top: -50,
                 left: -50,
@@ -21,10 +21,10 @@ export const useViewStore = createStore<Store, State>(
             path: '/',
             size: { x: 100, y: 100 },
         },
-        setCanvasView: (canvasView) => set({ canvasView: canvasView }),
+        setCameraView: (cameraView) => set({ cameraView: cameraView }),
     }),
     {
         name: 'viewStorage',
-        partialize: (state) => ({ canvasView: state.canvasView }),
+        partialize: (state) => ({ cameraView: state.cameraView }),
     },
 );

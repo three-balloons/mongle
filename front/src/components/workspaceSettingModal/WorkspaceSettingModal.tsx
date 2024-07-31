@@ -14,7 +14,7 @@ type WorkspaceSettingModalProps = {
 export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSettingModalProps) => {
     const [isNameChange, setIsNameChange] = useState(false);
     const [name, setName] = useState(workSpaceName);
-    const [theme, setTheme] = useState<Theme>('푸른하늘');
+    const [theme, setTheme] = useState<Theme>('하늘');
 
     const saveHandler = () => {
         // TODO 저장 구현하기
@@ -23,7 +23,7 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
     return (
         <Modal className={cn(className)}>
             <Modal.Opener>{name}</Modal.Opener>
-            <Modal.Overlay className={style.overlay} />
+            <Modal.Overlay className={style.overlay} zIndex={0} />
             <Modal.Content className={style.content}>
                 {isNameChange ? (
                     <>
@@ -51,36 +51,72 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                             className={style.option}
                             value={theme}
                             onSelect={() => {
-                                setTheme('푸른하늘');
+                                setTheme('하늘');
                             }}
                         >
                             <div className={cn(colorStyle.themeBlue, style.themeOption)}>
                                 <div className={objectStyle.bubble}></div>
-                                <div className={cn(theme == '푸른하늘' && style.themeSelected)}>푸른하늘</div>
+                                <div className={cn(theme == '하늘' && style.themeSelected)}>하늘</div>
                             </div>
                         </Select.Option>
                         <Select.Option
                             className={style.option}
                             value={theme}
                             onSelect={() => {
-                                setTheme('해질녘');
+                                setTheme('분홍');
                             }}
                         >
                             <div className={cn(colorStyle.themePink, style.themeOption)}>
                                 <div className={objectStyle.bubble}></div>
-                                <div className={cn(theme == '해질녘' && style.themeSelected)}>해질녘</div>
+                                <div className={cn(theme == '분홍' && style.themeSelected)}>분홍</div>
                             </div>
                         </Select.Option>
                         <Select.Option
                             className={style.option}
                             value={theme}
                             onSelect={() => {
-                                setTheme('로즈마리');
+                                setTheme('연두');
                             }}
                         >
                             <div className={cn(colorStyle.themeGreen, style.themeOption)}>
                                 <div className={objectStyle.bubble}></div>
-                                <div className={cn(theme == '로즈마리' && style.themeSelected)}>로즈마리</div>
+                                <div className={cn(theme == '연두' && style.themeSelected)}>연두</div>
+                            </div>
+                        </Select.Option>
+                        <Select.Option
+                            className={style.option}
+                            value={theme}
+                            onSelect={() => {
+                                setTheme('노랑');
+                            }}
+                        >
+                            <div className={cn(colorStyle.themeYellow, style.themeOption)}>
+                                <div className={objectStyle.bubble}></div>
+                                <div className={cn(theme == '노랑' && style.themeSelected)}>노랑</div>
+                            </div>
+                        </Select.Option>
+                        <Select.Option
+                            className={style.option}
+                            value={theme}
+                            onSelect={() => {
+                                setTheme('하양');
+                            }}
+                        >
+                            <div className={cn(colorStyle.themeWhite, style.themeOption)}>
+                                <div className={objectStyle.bubble}></div>
+                                <div className={cn(theme == '하양' && style.themeSelected)}>하양</div>
+                            </div>
+                        </Select.Option>
+                        <Select.Option
+                            className={style.option}
+                            value={theme}
+                            onSelect={() => {
+                                setTheme('검정');
+                            }}
+                        >
+                            <div className={cn(colorStyle.themeBlack, style.themeOption)}>
+                                <div className={objectStyle.bubble}></div>
+                                <div className={cn(theme == '검정' && style.themeSelected)}>검정</div>
                             </div>
                         </Select.Option>
                     </Select.Content>

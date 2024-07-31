@@ -1,4 +1,4 @@
-import { type BubbleContextProps, BubbleContext } from '@/objects/BubbleProvider';
+import { type BubbleContextProps, BubbleContext } from '@/objects/bubble/BubbleProvider';
 import { useContext } from 'react';
 
 /**

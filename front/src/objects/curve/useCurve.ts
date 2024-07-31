@@ -1,4 +1,4 @@
-import { type CurveContextProps, CurveContext } from '@/objects/CurveProvider';
+import { type CurveContextProps, CurveContext } from '@/objects/curve/CurveProvider';
 import { useContext } from 'react';
 
 /**
