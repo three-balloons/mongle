@@ -267,6 +267,9 @@ public class BubbleApiController {
             }
         }
 
+        for (PutResponseObject deleteObject: deleteList) {
+            System.out.println(deleteObject.isSuccessYn());
+        }
         return ApiResponse_2.<PutResponse>builder()
                 .code("No Parent.")
                 .message("부모 버블이 존재하지 않습니다.")

@@ -33,10 +33,10 @@ export const deleteBubble = async (workspace: string, path: string, isCascade: b
     }
 };
 
-export const _getBubbleTree = async (workspace: string, path: string = '/', depth: number | null) => {
+export const _getBubbleTree = async (workspace: string, path: string = '/', depth: number = -1) => {
     try {
         const res = await bubbleAPI.get<Bubble, 'INAPPROPRIATE_DEPTH'>(
-            `/bubble/tree/${workspace}?path=${path}${depth ? 'path=' + depth.toString() : ''}}`,
+            `/bubble/tree/${workspace}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
         );
         return res;
     } catch (error: unknown) {
