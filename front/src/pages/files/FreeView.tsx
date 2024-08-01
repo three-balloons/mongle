@@ -47,7 +47,7 @@ export const FreeView = () => {
                     style={{ left: `${pos[index].pos.x}px`, top: `${pos[index].pos.y}px` }}
                     onClick={() => navigate(`/workspace/${file.id}`)}
                 >
-                    <WorkspaceSettingModal className={style.fileName} workSpaceName={file.name} />
+                    <WorkspaceSettingModal className={style.fileName} workspace={file} />
                 </div>
             ))}
         </div>

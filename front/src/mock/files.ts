@@ -1,16 +1,11 @@
-type TData = {
-    name: string;
-    id: string;
-    theme: Theme;
-};
-export const files: Array<TData> = [
+export const files: Array<Workspace> = [
     {
         name: '3학년 1학기',
         id: '42094830',
         theme: '하늘',
     },
     {
-        name: 'test',
+        name: 'test1',
         id: '123567',
         theme: '노랑',
     },
@@ -20,22 +15,22 @@ export const files: Array<TData> = [
         theme: '분홍',
     },
     {
-        name: 'test',
+        name: 'mock',
         id: '1235267',
         theme: '하양',
     },
     {
-        name: 'test',
+        name: '하이',
         id: '1223567',
         theme: '연두',
     },
     {
-        name: 'test',
+        name: '테스트2',
         id: '1235667',
         theme: '분홍',
     },
     {
-        name: 'test',
+        name: '테스트',
         id: '1523567',
         theme: '연두',
     },
