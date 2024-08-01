@@ -1,10 +1,11 @@
-import { bubbleAPI } from '@/api/BubbleApi';
+import { bubbleAPI } from '@/api/api';
 import { APIException } from '@/api/exceptions';
 
-export const getBubbleAPI = async (workspace: string, path: string, depth: number = 1) => {
+type GetBubbleRes = Bubble;
+export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = 1) => {
     try {
-        const res = await bubbleAPI.get<Bubble, 'INAPPROPRIATE_DEPTH'>(
-            `/bubble/${workspace}?path=${path}&depth=${depth.toString()}`,
+        const res = await bubbleAPI.get<GetBubbleRes, 'INAPPROPRIATE_DEPTH'>(
+            `/bubble/${workspaceId}?path=${path}&depth=${depth.toString()}`,
         );
         return res;
     } catch (error: unknown) {
@@ -17,10 +18,11 @@ export const getBubbleAPI = async (workspace: string, path: string, depth: numbe
     }
 };
 
-export const deleteBubbleAPI = async (workspace: string, path: string, isCascade: boolean = true) => {
+type DeleteBubbleRes = Bubble;
+export const deleteBubbleAPI = async (workspaceId: string, path: string, isCascade: boolean = true) => {
     try {
-        const res = await bubbleAPI.delete<Bubble, 'INAPPROPRIATE_DEPTH'>(
-            `/bubble/${workspace}?path=${path}&isCascade=${isCascade}`,
+        const res = await bubbleAPI.delete<DeleteBubbleRes, 'INAPPROPRIATE_DEPTH'>(
+            `/bubble/${workspaceId}?path=${path}&isCascade=${isCascade}`,
         );
         return res;
     } catch (error: unknown) {
@@ -33,10 +35,11 @@ export const deleteBubbleAPI = async (workspace: string, path: string, isCascade
     }
 };
 
-export const getBubbleTreeAPI = async (workspace: string, path: string = '/', depth: number = -1) => {
+type GetBubbleTreeRes = Bubble;
+export const getBubbleTreeAPI = async (workspaceId: string, path: string = '/', depth: number = -1) => {
     try {
-        const res = await bubbleAPI.get<Bubble, 'INAPPROPRIATE_DEPTH'>(
-            `/bubble/tree/${workspace}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
+        const res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+            `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
         );
         return res;
     } catch (error: unknown) {
@@ -55,10 +58,11 @@ type CreateBubbleReq = {
     height: number;
     width: number;
 };
-export const createBubbleAPI = async (workspace: string, path: string) => {
+type CreateBubbleRes = Bubble;
+export const createBubbleAPI = async (workspaceId: string, path: string) => {
     try {
-        const res = await bubbleAPI.post<CreateBubbleReq, Bubble, 'NO_PARENT' | 'ALREADY_EXEIST'>(
-            `/bubble/${workspace}?path=${path}`,
+        const res = await bubbleAPI.post<CreateBubbleReq, CreateBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
+            `/bubble/${workspaceId}?path=${path}`,
         );
         return res;
     } catch (error: unknown) {
@@ -79,10 +83,11 @@ type UpdateBubbleReq = {
     }>;
     create: Array<{ curve: Curve }>;
 };
-export const updateBubbleAPI = async (workspace: string, path: string) => {
+type UpdateBubbleRes = Record<string, never>;
+export const updateBubbleAPI = async (workspaceId: string, path: string) => {
     try {
-        const res = await bubbleAPI.put<UpdateBubbleReq, Record<string, never>, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
-            `/bubble/${workspace}?path=${path}`,
+        const res = await bubbleAPI.put<UpdateBubbleReq, UpdateBubbleRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
+            `/bubble/${workspaceId}?path=${path}`,
         );
         return res;
     } catch (error: unknown) {
