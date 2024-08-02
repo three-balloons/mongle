@@ -137,9 +137,8 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
      */
     const descendant2child = (descendant: Bubble, ancestorPath: string): Bubble | undefined => {
         const depth = getPathDifferentDepth(ancestorPath, descendant.path);
-        console.log(ancestorPath, descendant.path, depth, 'depth');
         if (depth == undefined) return undefined;
-        if (depth <= 0) return undefined; // depth가 0인 경우 자체가 존재하지 않음
+        if (depth <= 0) return undefined; // depth가 0 이하인 경우 render X
         if (depth == 1)
             return descendant; // descendant is child
         else if (depth > 1) {
@@ -162,11 +161,15 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
 
     /**
      * texture minification을 위한 비율 계산
+     * 1보다 크면 bubble이 더 큼, 작으면 camera가 더 큼
+     * alising이 필요하면 undefined 리턴?
+     * renaming? : getRatioWithCameraForRendering
      */
     const getRatioWithCamera = (bubble: Bubble, cameraView: ViewCoord) => {
         const depth = getPathDifferentDepth(cameraView.path, bubble.path);
         if (depth == undefined) return undefined;
-        if (depth == 0) return cameraView.size.x / cameraView.pos.width;
+        // TODO 0 이하의 경우 camera, bubble 반대로
+        if (depth == 0) return 200 / cameraView.pos.width;
         if (depth == 1) return bubble.width / cameraView.pos.width;
         else if (depth > 1) {
             let path: string | undefined = bubble.path;

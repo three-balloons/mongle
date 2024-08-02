@@ -2,7 +2,14 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
 import { useViewStore } from '@/store/viewStore';
-import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
+import {
+    bubble2globalWithCurve,
+    bubble2globalWithRect,
+    curve2View,
+    getThicknessRatio,
+    global2bubbleWithRect,
+    rect2View,
+} from '@/util/coordSys/conversion';
 import { getThemeMainColor } from '@/util/getThemeStyle';
 import { getParentPath } from '@/util/path/path';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
@@ -15,6 +22,7 @@ export type RendererContextProps = {
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
     zoomInBubble: (bubblePath: string) => void;
+    updateCameraPath: (cameraView: ViewCoord) => void;
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
@@ -52,8 +60,8 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const cameraViewRef = useRef<ViewCoord>({
         pos: {
-            top: -Math.floor(height / 2),
-            left: -Math.floor(width / 2),
+            top: -height / 2,
+            left: -width / 2,
             width: width,
             height: height,
         },
@@ -83,16 +91,17 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const zoomInBubble = (bubblePath: string) => {
         const bubble = findBubble(bubblePath);
-        console.log('cameraPath', getParentPath(bubblePath) ?? '/');
         if (bubble == undefined) return;
+        const parentPath = getParentPath(bubblePath);
+        let pos = cameraViewRef.current.pos;
+        if (parentPath != undefined) {
+            const parentBubble = findBubble(parentPath);
+            pos = global2bubbleWithRect(cameraViewRef.current.pos, parentBubble);
+        }
         const isLongHeight: boolean =
             bubble.width * cameraViewRef.current.size.y < bubble.height * cameraViewRef.current.size.x;
-        const newHeight = isLongHeight
-            ? bubble.height
-            : (bubble.width * cameraViewRef.current.size.y) / cameraViewRef.current.size.x;
-        const newWidth = isLongHeight
-            ? (bubble.height * cameraViewRef.current.size.x) / cameraViewRef.current.size.y
-            : bubble.width;
+        const newHeight = isLongHeight ? bubble.height : (bubble.width * pos.height) / pos.width;
+        const newWidth = isLongHeight ? (bubble.height * pos.width) / pos.height : bubble.width;
         setCameraView({
             ...cameraViewRef.current,
             pos: {
@@ -102,6 +111,39 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 width: newWidth,
             },
             path: getParentPath(bubblePath) ?? '/',
+        });
+
+        updateCameraPath({
+            ...cameraViewRef.current,
+            pos: {
+                top: bubble.top + (bubble.height - newHeight) / 2,
+                left: bubble.left + (bubble.width - newWidth) / 2,
+                height: newHeight,
+                width: newWidth,
+            },
+            path: getParentPath(bubblePath) ?? '/',
+        });
+    };
+
+    const updateCameraPath = (cameraView: ViewCoord) => {
+        console.log('cameraViewRef', cameraView);
+        let { pos, path } = { ...cameraView };
+
+        if (path == '/') {
+            // path가 /이면 바로 자식으로 갈 수 있는지 탐색
+        } else if (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100) {
+            console.log('parent', getParentPath(path));
+            pos = bubble2globalWithRect(pos, findBubble(path));
+            path = getParentPath(path) ?? '/';
+
+            // => 자식으로!
+            // 자식(바로 밑) 중에서 완전히 포함하는 자식이 있으면 ㄱㄱ
+        }
+
+        setCameraView({
+            ...cameraViewRef.current,
+            pos,
+            path,
         });
     };
 
@@ -273,7 +315,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     const bubbleRender = (bubble: Bubble) => {
         if (!bubble.isVisible) return;
         const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
-        console.log('ratio', ratio);
         if (ratio && ratio * cameraViewRef.current.size.x < 30) {
             return;
         }
@@ -381,6 +422,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 creationLayerRef,
                 movementLayerRef,
                 zoomInBubble,
+                updateCameraPath,
                 reRender,
                 lineRenderer,
                 curveRenderer,
