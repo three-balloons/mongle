@@ -2,6 +2,7 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
 import { useViewStore } from '@/store/viewStore';
+import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import {
     bubble2globalWithCurve,
     bubble2globalWithRect,
@@ -21,7 +22,7 @@ export type RendererContextProps = {
     mainLayerRef: React.RefObject<HTMLCanvasElement>;
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
-    zoomInBubble: (bubblePath: string) => void;
+    zoomBubble: (bubblePath: string) => void;
     updateCameraPath: (cameraView: ViewCoord) => void;
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
@@ -89,7 +90,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         return mainLayerRef.current;
     };
 
-    const zoomInBubble = (bubblePath: string) => {
+    const zoomBubble = (bubblePath: string) => {
         const bubble = findBubble(bubblePath);
         if (bubble == undefined) return;
         const parentPath = getParentPath(bubblePath);
@@ -112,7 +113,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
             },
             path: getParentPath(bubblePath) ?? '/',
         });
-
         updateCameraPath({
             ...cameraViewRef.current,
             pos: {
@@ -127,7 +127,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const updateCameraPath = (cameraView: ViewCoord) => {
         let { pos, path } = { ...cameraView };
-
         while (
             path != '/' &&
             (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100)
@@ -141,6 +140,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
             canUpdateCamera = false;
             const children = getChildBubbles(path);
             for (const child of children) {
+                // TODO isInside 유틸함수 만들기
                 if (
                     child.top < pos.top &&
                     child.left < pos.left &&
@@ -156,7 +156,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         }
 
         setCameraView({
-            ...cameraViewRef.current,
+            ...cameraView,
             pos,
             path,
         });
@@ -267,7 +267,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                     const bubbleView = descendant2child(parentBubble, cameraViewRef.current.path);
                     c = bubble2globalWithCurve(curve.position, bubbleView);
                     const ratio = getRatioWithCamera(parentBubble, cameraViewRef.current);
-                    if (ratio && ratio * cameraViewRef.current.size.x < 30) {
+                    if (ratio && ratio * cameraViewRef.current.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
                         return;
                     }
                 }
@@ -330,7 +330,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     const bubbleRender = (bubble: Bubble) => {
         if (!bubble.isVisible) return;
         const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
-        if (ratio && ratio * cameraViewRef.current.size.x < 30) {
+        if (ratio && ratio * cameraViewRef.current.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
             return;
         }
         if (!mainLayerRef.current) {
@@ -384,7 +384,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     const movementBubbleRender = (bubble: Bubble) => {
         if (!bubble.isVisible) return;
         const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
-        if (ratio && ratio * cameraViewRef.current.size.x < 30) {
+        if (ratio && ratio * cameraViewRef.current.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
             return;
         }
         if (!movementLayerRef.current) {
@@ -436,7 +436,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 mainLayerRef,
                 creationLayerRef,
                 movementLayerRef,
-                zoomInBubble,
+                zoomBubble,
                 updateCameraPath,
                 reRender,
                 lineRenderer,

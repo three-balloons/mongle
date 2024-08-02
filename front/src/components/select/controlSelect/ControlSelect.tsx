@@ -66,7 +66,6 @@ export const ControlSelect = () => {
                         onSelect={() => {
                             redo();
                             reRender();
-                            console.log('redo');
                         }}
                     >
                         <RedoIcon className={cn(style.large, !isRedoAvailable && style.disabled)} />

@@ -12,10 +12,10 @@ type BubbleToggleListProps = {
 };
 
 export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
-    const { zoomInBubble } = useRenderer();
+    const { zoomBubble } = useRenderer();
     const zoomAtBubble = (bubblePath: string) => {
         if (bubblePath == '') return;
-        zoomInBubble(bubblePath + '/');
+        zoomBubble(bubblePath);
     };
     return (
         <ToggleList className={cn(style.default, className)}>

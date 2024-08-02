@@ -1,23 +1,28 @@
-import { bubble2Vector2D } from '@/util/coordSys/conversion';
+import { bubble2globalWithRect, bubble2Vector2D, global2bubbleWithRect } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDifferentDepth, pathToList } from '@/util/path/path';
 import { createContext, useRef, useReducer } from 'react';
 
 export type BubbleContextProps = {
+    /* 버블 */
+    getCreatingBubble: () => Rect;
+    updateCreatingBubble: (rect: Rect) => void;
     clearAllBubbles: () => void;
     getBubbles: () => Array<Bubble>;
-    getDescendantBubbles: (path: string) => Array<Bubble>;
-    getChildBubbles: (path: string) => Array<Bubble>;
-    getCreatingBubble: () => Rect;
-    addBubble: (bubble: Bubble) => void;
+    addBubble: (bubble: Bubble, childrenPaths: Array<string>) => void;
     removeBubble: (bubble: Bubble) => void;
-    updateCreatingBubble: (rect: Rect) => void;
     findBubble: (path: string) => Bubble | undefined;
+
+    /* 좌표 변환 */
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
     getRatioWithCamera: (bubble: Bubble, cameraView: ViewCoord) => number | undefined;
     view2BubbleWithVector2D: (pos: Vector2D, cameraView: ViewCoord, bubblePath: string) => Vector2D;
+
+    /* 버블 트리 */
     bubbleTree: BubbleTreeNode;
     setBubbleTree: (bubbleTreeRoot: BubbleTreeNode) => void;
     getBubbleInTree: (bubble: Bubble) => BubbleTreeNode | undefined;
+    getDescendantBubbles: (path: string) => Array<Bubble>;
+    getChildBubbles: (path: string) => Array<Bubble>;
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -26,31 +31,112 @@ type BubbleState = {
     bubbleTree: BubbleTreeNode;
 };
 export type BubbleAction =
+    | { type: 'GET_BUBBLE_TREE' }
     | { type: 'SET_BUBBLE_TREE'; payload: BubbleTreeNode }
-    | { type: 'ADD_BUBBLE_IN_TREE'; payload: { bubble: Bubble } };
+    | { type: 'ADD_BUBBLE_IN_TREE'; payload: { bubble: Bubble; childrenPaths: Array<string> } }
+    | { type: 'REMOVE_BUBBLE_IN_TREE'; payload: { bubble: Bubble } };
 
 const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleState => {
     switch (action.type) {
+        case 'GET_BUBBLE_TREE':
+            return state;
         case 'SET_BUBBLE_TREE':
             return { ...state, bubbleTree: action.payload };
         case 'ADD_BUBBLE_IN_TREE': {
-            const addBubbleInTree = (bubbleTreeRoot: BubbleTreeNode, bubble: Bubble) => {
+            const addBubbleInTree = (bubbleTreeRoot: BubbleTreeNode, bubble: Bubble, childrenPaths: Array<string>) => {
                 const pathList = pathToList(bubble.path);
                 let currentNode: BubbleTreeNode | undefined = bubbleTreeRoot;
                 let prevNode: BubbleTreeNode | undefined;
                 for (const name of pathList) {
                     if (name == '') continue;
-                    if (currentNode == undefined) break;
+                    if (currentNode == undefined) return bubbleTreeRoot; // 비정상적인 경우(해당 경로가 없음)
                     prevNode = currentNode;
                     currentNode = currentNode.children.find((node) => node.name === name);
                 }
-                if (currentNode == undefined)
-                    prevNode?.children.push({ name: pathList[pathList.length - 1], children: [], this: bubble });
+                if (currentNode === undefined) {
+                    const newNode: BubbleTreeNode = {
+                        name: pathList[pathList.length - 1],
+                        children: [],
+                        this: bubble,
+                        parent: prevNode,
+                    };
+                    if (prevNode?.children) {
+                        newNode.this = bubble;
+                        newNode.children = prevNode.children.filter((child) => {
+                            const parentPath = getParentPath(bubble.path);
+                            const path = parentPath === '/' ? '/' + child.name : parentPath + '/' + child.name;
+                            return childrenPaths.find((childPath) => childPath == path);
+                        });
+                        prevNode.children = prevNode.children.filter((child) => {
+                            const parentPath = getParentPath(bubble.path);
+                            const path = parentPath === '/' ? '/' + child.name : parentPath + '/' + child.name;
+                            const isNewNodeChild = childrenPaths.find((childPath) => childPath == path);
+                            if (isNewNodeChild && child.this) {
+                                // children의 path 업데이트
+                                child.this.path =
+                                    parentPath === '/'
+                                        ? '/' + newNode.name + '/' + child.name
+                                        : parentPath + '/' + newNode.name + '/' + child.name;
+
+                                const parentBubble = prevNode.this;
+                                const pos = global2bubbleWithRect(
+                                    bubble2globalWithRect(child.this as Rect, parentBubble),
+                                    newNode.this,
+                                );
+                                // refernce 유지
+                                child.this.top = pos.top;
+                                child.this.left = pos.left;
+                                child.this.height = pos.height;
+                                child.this.width = pos.width;
+                            }
+                            return !isNewNodeChild;
+                        });
+                        prevNode.children.push(newNode);
+                    }
+                }
                 return bubbleTreeRoot;
             };
             return {
                 ...state,
-                bubbleTree: addBubbleInTree(state.bubbleTree, action.payload.bubble),
+                bubbleTree: addBubbleInTree(state.bubbleTree, action.payload.bubble, action.payload.childrenPaths),
+            };
+        }
+        case 'REMOVE_BUBBLE_IN_TREE': {
+            const removeBubbleInTree = (bubbleTreeRoot: BubbleTreeNode, bubble: Bubble) => {
+                const pathList = pathToList(bubble.path);
+                let currentNode: BubbleTreeNode | undefined = bubbleTreeRoot;
+                let prevNode: BubbleTreeNode | undefined;
+                for (const name of pathList) {
+                    if (name == '') continue;
+                    if (currentNode == undefined) return bubbleTreeRoot; // 비정상적인 경우(해당 경로가 없음)
+                    prevNode = currentNode;
+                    currentNode = currentNode.children.find((node) => node.name === name);
+                }
+                if (prevNode && currentNode) {
+                    const parentPath = prevNode.this?.path ?? '/';
+                    currentNode.children.forEach((child) => {
+                        const pos = global2bubbleWithRect(
+                            bubble2globalWithRect(child.this as Rect, currentNode.this),
+                            prevNode.this,
+                        );
+                        if (child.this) {
+                            child.this.top = pos.top;
+                            child.this.left = pos.left;
+                            child.this.height = pos.height;
+                            child.this.width = pos.width;
+                            child.this.path = parentPath + '/' + child.name;
+                        }
+                    });
+                    prevNode.children = [
+                        ...prevNode.children.filter((child) => child != currentNode),
+                        ...currentNode.children,
+                    ];
+                }
+                return bubbleTreeRoot;
+            };
+            return {
+                ...state,
+                bubbleTree: removeBubbleInTree(state.bubbleTree, action.payload.bubble),
             };
         }
         default:
@@ -64,15 +150,12 @@ type BubbleProviderProps = {
 };
 export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, workspaceName = '제목없음' }) => {
     const bubblesRef = useRef<Array<Bubble>>([]);
-    // const bubbleTreeRef = useRef<BubbleTreeNode>({
-    //     name: workspaceName,
-    //     children: [],
-    // });
     const [state, dispatch] = useReducer(bubbleTreeReducer, {
         bubbleTree: {
             name: workspaceName,
             children: [],
             this: undefined,
+            parent: undefined,
         },
     });
     const creatingBubbleRef = useRef<Rect>({
@@ -97,21 +180,15 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         return [...bubblesRef.current];
     };
 
-    const getDescendantBubbles = (path: string) => {
-        return [...bubblesRef.current.filter((bubble) => bubble.path.startsWith(path))];
-    };
-
-    const getChildBubbles = (path: string) => {
-        return [...bubblesRef.current.filter((bubble) => getParentPath(bubble.path) == path)];
-    };
-
-    const addBubble = (bubble: Bubble) => {
+    const addBubble = (bubble: Bubble, childrenPaths: Array<string>) => {
         bubblesRef.current = [...bubblesRef.current, bubble];
-        addBubbleInTree(bubble);
+        _addBubbleInTree(bubble, childrenPaths);
     };
 
+    // children 정보 필요 없음
     const removeBubble = (bubbleToRemove: Bubble) => {
         bubblesRef.current = [...bubblesRef.current.filter((bubble) => bubble !== bubbleToRemove)];
+        _removeBubbleInTree(bubbleToRemove);
     };
 
     const findBubble = (path: string): Bubble | undefined => {
@@ -173,7 +250,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
     const getRatioWithCamera = (bubble: Bubble, cameraView: ViewCoord) => {
         const depth = getPathDifferentDepth(cameraView.path, bubble.path);
         if (depth == undefined) return undefined;
-        // TODO 0 이하의 경우 camera, bubble 반대로
+        // TODO 0 이하의 경우 고려 안함
         if (depth == 0) return 200 / cameraView.pos.width;
         if (depth == 1) return bubble.width / cameraView.pos.width;
         else if (depth > 1) {
@@ -197,8 +274,44 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         dispatch({ type: 'SET_BUBBLE_TREE', payload: bubbleTreeRoot });
     };
 
-    const addBubbleInTree = (bubble: Bubble) => {
-        dispatch({ type: 'ADD_BUBBLE_IN_TREE', payload: { bubble } });
+    const _addBubbleInTree = (bubble: Bubble, childrenPaths: Array<string>) => {
+        dispatch({ type: 'ADD_BUBBLE_IN_TREE', payload: { bubble, childrenPaths } });
+    };
+
+    const _removeBubbleInTree = (bubble: Bubble) => {
+        dispatch({ type: 'REMOVE_BUBBLE_IN_TREE', payload: { bubble } });
+    };
+
+    const getDescendantBubbles = (path: string) => {
+        const pathList = pathToList(path);
+        let currentNode: BubbleTreeNode | undefined = state.bubbleTree;
+        for (const name of pathList) {
+            if (name == '') continue;
+            currentNode = currentNode.children.find((node) => node.name === name);
+            if (currentNode == undefined) return []; // 비정상적인 경우(해당 경로가 없음)
+        }
+
+        const findDescendants = (node: BubbleTreeNode): Array<Bubble> => {
+            const childrenBubbles = node.children
+                .map((child) => child.this)
+                .filter((bubble): bubble is Bubble => bubble !== undefined);
+            const descendants = node.children.flatMap((child) => findDescendants(child));
+            return [...childrenBubbles, ...descendants];
+        };
+        return findDescendants(currentNode);
+    };
+
+    const getChildBubbles = (path: string): Array<Bubble> => {
+        const pathList = pathToList(path);
+        let currentNode: BubbleTreeNode | undefined = state.bubbleTree;
+        for (const name of pathList) {
+            if (name == '') continue;
+            currentNode = currentNode.children.find((node) => node.name === name);
+            if (currentNode == undefined) return []; // 비정상적인 경우(해당 경로가 없음)
+        }
+        return currentNode.children
+            .map((child) => child.this)
+            .filter((bubble): bubble is Bubble => bubble !== undefined);
     };
 
     const getBubbleInTree = (bubble: Bubble): BubbleTreeNode | undefined => {

@@ -1,6 +1,7 @@
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
+import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
 import { isCollisionPointWithRect } from '@/util/shapes/collision';
@@ -26,6 +27,7 @@ export const useBubbleGun = () => {
         descendant2child,
         view2BubbleWithVector2D,
         getBubbleInTree,
+        getChildBubbles,
     } = useBubble();
     const { getCurvesWithPath } = useCurve();
 
@@ -69,12 +71,17 @@ export const useBubbleGun = () => {
 
     const finishCreateBubble = useCallback((cameraView: ViewCoord) => {
         const bubbleRect = getCreatingBubble();
+        if (bubbleRect.height < MINIMUN_RENDERED_BUBBLE_SIZE || bubbleRect.width < MINIMUN_RENDERED_BUBBLE_SIZE) {
+            console.error('생성하려는 버블의 크기가 너무 작습니다');
+            return;
+        }
+        const name = bubbleIdRef.current.toString();
+
         const bubble: Bubble = {
             ...bubbleRect,
-            path: createdBubblePathRef.current + bubbleIdRef.current.toString() + '/',
+            path: createdBubblePathRef.current == '/' ? '/' + name : createdBubblePathRef.current + '/' + name,
+            name: name,
             curves: [],
-            children: [],
-            parent: undefined,
             isBubblized: false,
             isVisible: true,
         };
@@ -87,10 +94,28 @@ export const useBubbleGun = () => {
             bubble.top = rect.top;
             bubble.left = rect.left;
         }
+        const childrenPaths = getChildBubbles(createdBubblePathRef.current)
+            .filter((child) => {
+                // isInside 유틸함수 만들기
+                if (
+                    bubble.top < child.top &&
+                    bubble.left < child.left &&
+                    child.top + child.height < bubble.top + bubble.height &&
+                    child.left + child.width < bubble.left + bubble.width
+                )
+                    return true;
+            })
+            .map((child) => child.path);
+        addBubble(bubble, childrenPaths);
+        pushLog({ type: 'create', object: bubble });
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
-        addBubble(bubble);
-        pushLog({ type: 'create', object: bubble });
+        updateCreatingBubble({
+            top: 0,
+            left: 0,
+            height: 0,
+            width: 0,
+        });
     }, []);
 
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {

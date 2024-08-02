@@ -10,7 +10,6 @@ import { subVector2D } from '@/util/shapes/operator';
  * @function grab grab the point to move
  * @function drag move cameraView
  * @function release grab the point to stop
- * @function zoom (TODO)zoom in/out cameraView
  * @function focus (TODO) focus on bubble
  */
 export const useHand = () => {

@@ -107,13 +107,19 @@ export const useEraser = () => {
             setEraseMode('area');
             if (bubble) {
                 removeCurvesWithPath(bubble.path);
-                getDescendantBubbles(bubble.path).forEach((descendant) => {
+                const descendants = getDescendantBubbles(bubble.path);
+                descendants.forEach((descendant) => {
                     removeCurvesWithPath(descendant.path);
                     removeBubble(descendant);
                 });
-                // TODO bubble 내 children을 넣어서 한 번에 삭제 추가할 수 있도록 할 것
-                // TODO bubble, curve 관리 방식 변경(linear -> tree)
-                pushLog({ type: 'delete', object: bubble });
+                // TODO  한 번에 삭제 추가할 수 있도록 할 것
+                pushLog({
+                    type: 'delete',
+                    object: bubble,
+                    options: {
+                        childrenPaths: descendants.map((descendant) => descendant.path),
+                    },
+                });
                 removeBubble(bubble);
             }
         }
