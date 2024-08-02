@@ -55,7 +55,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     const canvasImageRef = useRef<ImageData | null>(null);
 
     const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
-    const { getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
+    const { getBubbles, findBubble, descendant2child, getRatioWithCamera, getChildBubbles } = useBubble();
     const { pushLog } = useLog();
 
     const cameraViewRef = useRef<ViewCoord>({
@@ -126,18 +126,33 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     };
 
     const updateCameraPath = (cameraView: ViewCoord) => {
-        console.log('cameraViewRef', cameraView);
         let { pos, path } = { ...cameraView };
 
-        if (path == '/') {
-            // path가 /이면 바로 자식으로 갈 수 있는지 탐색
-        } else if (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100) {
-            console.log('parent', getParentPath(path));
+        while (
+            path != '/' &&
+            (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100)
+        ) {
             pos = bubble2globalWithRect(pos, findBubble(path));
             path = getParentPath(path) ?? '/';
+        }
 
-            // => 자식으로!
-            // 자식(바로 밑) 중에서 완전히 포함하는 자식이 있으면 ㄱㄱ
+        let canUpdateCamera = true;
+        while (canUpdateCamera) {
+            canUpdateCamera = false;
+            const children = getChildBubbles(path);
+            for (const child of children) {
+                if (
+                    child.top < pos.top &&
+                    child.left < pos.left &&
+                    pos.top + pos.height < child.top + child.height &&
+                    pos.left + pos.width < child.left + child.width
+                ) {
+                    pos = global2bubbleWithRect(pos, child);
+                    path = child.path;
+                    canUpdateCamera = true;
+                    break;
+                }
+            }
         }
 
         setCameraView({

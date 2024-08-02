@@ -6,6 +6,7 @@ export type BubbleContextProps = {
     clearAllBubbles: () => void;
     getBubbles: () => Array<Bubble>;
     getDescendantBubbles: (path: string) => Array<Bubble>;
+    getChildBubbles: (path: string) => Array<Bubble>;
     getCreatingBubble: () => Rect;
     addBubble: (bubble: Bubble) => void;
     removeBubble: (bubble: Bubble) => void;
@@ -98,6 +99,10 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
 
     const getDescendantBubbles = (path: string) => {
         return [...bubblesRef.current.filter((bubble) => bubble.path.startsWith(path))];
+    };
+
+    const getChildBubbles = (path: string) => {
+        return [...bubblesRef.current.filter((bubble) => getParentPath(bubble.path) == path)];
     };
 
     const addBubble = (bubble: Bubble) => {
@@ -213,6 +218,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
                 clearAllBubbles,
                 getBubbles,
                 getDescendantBubbles,
+                getChildBubbles,
                 getCreatingBubble,
                 addBubble,
                 removeBubble,
