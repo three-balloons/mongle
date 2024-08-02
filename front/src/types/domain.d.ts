@@ -9,9 +9,8 @@ interface Curve {
 
 interface Bubble extends Rect {
     path: string;
+    name: string;
     curves: Array<Curve>;
-    children: Array<Bubble>;
-    parent: Bubble | undefined;
     isBubblized: boolean;
     isVisible: boolean;
 }
@@ -19,6 +18,7 @@ interface Bubble extends Rect {
 type BubbleTreeNode = {
     name: string;
     children: Array<BubbleTreeNode>;
+    parent: BubbleTreeNode | undefined;
     this: Bubble | undefined;
 };
 
