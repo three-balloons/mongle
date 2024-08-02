@@ -8,7 +8,14 @@ export const Explorer = () => {
 
     return (
         <div className={cn(style.default)}>
-            {<BubbleToggleList className={style.workSpaceName} name={bubbleTree.name} children={bubbleTree.children} />}
+            {
+                <BubbleToggleList
+                    className={style.workSpaceName}
+                    name={bubbleTree.name}
+                    children={bubbleTree.children}
+                    path={''}
+                />
+            }
         </div>
     );
 };

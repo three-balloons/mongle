@@ -16,6 +16,12 @@ interface Bubble extends Rect {
     isVisible: boolean;
 }
 
+type BubbleTreeNode = {
+    name: string;
+    children: Array<BubbleTreeNode>;
+    this: Bubble | undefined;
+};
+
 interface Workspace {
     id: string;
     name: string;

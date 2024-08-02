@@ -52,11 +52,21 @@ const ToggleListButton = ({ children, className }: ToggleListButtonProps) => {
 type ToggleListContentProps = {
     children?: React.ReactNode;
     className?: string;
+    onClick?: (e?: React.MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => void;
 };
-const ToggleListContent = ({ children, className }: ToggleListContentProps) => {
+const ToggleListContent = ({ children, className, onClick }: ToggleListContentProps) => {
     const { isOpen } = useToggleList();
     if (!isOpen) return null;
-    return <div className={cn(className)}>{children}</div>;
+    return (
+        <div
+            className={cn(className)}
+            onClick={(e) => {
+                if (onClick) onClick(e);
+            }}
+        >
+            {children}
+        </div>
+    );
 };
 
 ToggleList.Content = ToggleListContent;

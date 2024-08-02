@@ -21,11 +21,6 @@ export type BubbleContextProps = {
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
 
-type BubbleTreeNode = {
-    name: string;
-    children: Array<BubbleTreeNode>;
-    this: Bubble | undefined;
-};
 type BubbleState = {
     bubbleTree: BubbleTreeNode;
 };
@@ -142,8 +137,9 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
      */
     const descendant2child = (descendant: Bubble, ancestorPath: string): Bubble | undefined => {
         const depth = getPathDifferentDepth(ancestorPath, descendant.path);
+        console.log(ancestorPath, descendant.path, depth, 'depth');
         if (depth == undefined) return undefined;
-        if (depth == 0) return descendant; // depth가 0인 경우 자체가 존재하지 않음
+        if (depth <= 0) return undefined; // depth가 0인 경우 자체가 존재하지 않음
         if (depth == 1)
             return descendant; // descendant is child
         else if (depth > 1) {

@@ -4,6 +4,7 @@ import { useLog } from '@/objects/log/useLog';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { getThemeMainColor } from '@/util/getThemeStyle';
+import { getParentPath } from '@/util/path/path';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { createContext, useEffect, useRef } from 'react';
 
@@ -13,6 +14,7 @@ export type RendererContextProps = {
     mainLayerRef: React.RefObject<HTMLCanvasElement>;
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
+    zoomInBubble: (bubblePath: string) => void;
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
@@ -77,6 +79,30 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const getMainLayer = () => {
         return mainLayerRef.current;
+    };
+
+    const zoomInBubble = (bubblePath: string) => {
+        const bubble = findBubble(bubblePath);
+        console.log('cameraPath', getParentPath(bubblePath) ?? '/');
+        if (bubble == undefined) return;
+        const isLongHeight: boolean =
+            bubble.width * cameraViewRef.current.size.y < bubble.height * cameraViewRef.current.size.x;
+        const newHeight = isLongHeight
+            ? bubble.height
+            : (bubble.width * cameraViewRef.current.size.y) / cameraViewRef.current.size.x;
+        const newWidth = isLongHeight
+            ? (bubble.height * cameraViewRef.current.size.x) / cameraViewRef.current.size.y
+            : bubble.width;
+        setCameraView({
+            ...cameraViewRef.current,
+            pos: {
+                top: bubble.top + (bubble.height - newHeight) / 2,
+                left: bubble.left + (bubble.width - newWidth) / 2,
+                height: newHeight,
+                width: newWidth,
+            },
+            path: getParentPath(bubblePath) ?? '/',
+        });
     };
 
     const reRender = () => {
@@ -247,6 +273,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     const bubbleRender = (bubble: Bubble) => {
         if (!bubble.isVisible) return;
         const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
+        console.log('ratio', ratio);
         if (ratio && ratio * cameraViewRef.current.size.x < 30) {
             return;
         }
@@ -353,6 +380,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 mainLayerRef,
                 creationLayerRef,
                 movementLayerRef,
+                zoomInBubble,
                 reRender,
                 lineRenderer,
                 curveRenderer,
