@@ -1,3 +1,4 @@
+import { useAnimation } from '@/hooks/useAnimation';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
@@ -23,7 +24,7 @@ export type RendererContextProps = {
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
     zoomBubble: (bubblePath: string) => void;
-    updateCameraPath: (cameraView: ViewCoord) => void;
+    updateCameraView: (cameraView: ViewCoord, prevPosition?: Rect | undefined) => void;
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
@@ -57,6 +58,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
     const { getBubbles, findBubble, descendant2child, getRatioWithCamera, getChildBubbles } = useBubble();
+    const { viewTransitAnimation } = useAnimation();
     const { pushLog } = useLog();
 
     const cameraViewRef = useRef<ViewCoord>({
@@ -95,46 +97,48 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         if (bubble == undefined) return;
         const parentPath = getParentPath(bubblePath);
         let pos = cameraViewRef.current.pos;
+        let prevPos = { ...pos };
         if (parentPath != undefined) {
             const parentBubble = findBubble(parentPath);
             pos = global2bubbleWithRect(cameraViewRef.current.pos, parentBubble);
+            prevPos = global2bubbleWithRect(prevPos, parentBubble);
         }
         const isLongHeight: boolean =
             bubble.width * cameraViewRef.current.size.y < bubble.height * cameraViewRef.current.size.x;
         const newHeight = isLongHeight ? bubble.height : (bubble.width * pos.height) / pos.width;
         const newWidth = isLongHeight ? (bubble.height * pos.width) / pos.height : bubble.width;
-        setCameraView({
-            ...cameraViewRef.current,
-            pos: {
-                top: bubble.top + (bubble.height - newHeight) / 2,
-                left: bubble.left + (bubble.width - newWidth) / 2,
-                height: newHeight,
-                width: newWidth,
+        updateCameraView(
+            {
+                size: cameraViewRef.current.size,
+                pos: {
+                    top: bubble.top + (bubble.height - newHeight) / 2,
+                    left: bubble.left + (bubble.width - newWidth) / 2,
+                    height: newHeight,
+                    width: newWidth,
+                },
+                path: getParentPath(bubblePath) ?? '/',
             },
-            path: getParentPath(bubblePath) ?? '/',
-        });
-        updateCameraPath({
-            ...cameraViewRef.current,
-            pos: {
-                top: bubble.top + (bubble.height - newHeight) / 2,
-                left: bubble.left + (bubble.width - newWidth) / 2,
-                height: newHeight,
-                width: newWidth,
-            },
-            path: getParentPath(bubblePath) ?? '/',
-        });
+            prevPos,
+        );
     };
 
-    const updateCameraPath = (cameraView: ViewCoord) => {
-        let { pos, path } = { ...cameraView };
+    /**
+     * cameraView에 대한 모든 책임
+     * camera를 path에 맞게 변경하고 vameraView를 설정
+     * animation 적용 여부 결정
+     */
+    const updateCameraView = (cameraView: ViewCoord, prevPosition?: Rect | undefined) => {
+        let path = cameraView.path;
+        let pos = { ...cameraView.pos };
+        let prevPos = prevPosition ? { ...prevPosition } : undefined;
         while (
             path != '/' &&
             (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100)
         ) {
             pos = bubble2globalWithRect(pos, findBubble(path));
+            if (prevPos) prevPos = bubble2globalWithRect(prevPos, findBubble(path));
             path = getParentPath(path) ?? '/';
         }
-
         let canUpdateCamera = true;
         while (canUpdateCamera) {
             canUpdateCamera = false;
@@ -148,18 +152,26 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                     pos.left + pos.width < child.left + child.width
                 ) {
                     pos = global2bubbleWithRect(pos, child);
+                    if (prevPos) prevPos = global2bubbleWithRect(prevPos, child);
                     path = child.path;
                     canUpdateCamera = true;
                     break;
                 }
             }
         }
-
-        setCameraView({
-            ...cameraView,
-            pos,
-            path,
-        });
+        if (prevPos) {
+            setCameraView({
+                size: cameraView.size,
+                path,
+                pos: prevPos,
+            });
+            viewTransitAnimation(prevPos, pos, 500);
+        } else
+            setCameraView({
+                size: cameraView.size,
+                path,
+                pos,
+            });
     };
 
     const reRender = () => {
@@ -437,7 +449,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 creationLayerRef,
                 movementLayerRef,
                 zoomBubble,
-                updateCameraPath,
+                updateCameraView,
                 reRender,
                 lineRenderer,
                 curveRenderer,

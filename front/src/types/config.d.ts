@@ -85,6 +85,6 @@ type Color =
     | '#5200A3'
     | '#300061';
 
-type ControlMode = 'move' | 'draw' | 'erase' | 'bubble';
+type ControlMode = 'move' | 'draw' | 'erase' | 'bubble' | 'none' | 'animate';
 
 type Theme = '하늘' | '분홍' | '연두' | '노랑' | '하양' | '검정';

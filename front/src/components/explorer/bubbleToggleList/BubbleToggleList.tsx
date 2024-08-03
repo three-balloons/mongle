@@ -3,6 +3,7 @@ import style from '@/components/explorer/bubbleToggleList/bubble-toggle-list.mod
 import { cn } from '@/util/cn';
 import { ReactComponent as ArrowIcon } from '@/assets/icon/button-right.svg';
 import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useConfigStore } from '@/store/configStore';
 
 type BubbleToggleListProps = {
     name: string;
@@ -12,9 +13,30 @@ type BubbleToggleListProps = {
 };
 
 export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
-    const { zoomBubble } = useRenderer();
+    const { zoomBubble, updateCameraView, getCameraView } = useRenderer();
+    const { mode } = useConfigStore((state) => state);
     const zoomAtBubble = (bubblePath: string) => {
-        if (bubblePath == '') return;
+        if (mode == 'animate') return;
+        if (bubblePath == '') {
+            const { y: height, x: width } = getCameraView().size;
+            updateCameraView(
+                {
+                    pos: {
+                        top: -height / 2,
+                        left: -width / 2,
+                        width: width,
+                        height: height,
+                    },
+                    size: {
+                        x: width,
+                        y: height,
+                    },
+                    path: '/',
+                },
+                getCameraView().pos,
+            );
+            return;
+        }
         zoomBubble(bubblePath);
     };
     return (
