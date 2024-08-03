@@ -1,4 +1,5 @@
 // import { getAllWorkspaceAPI } from '@/api/workspace';
+
 import { WorkspaceSettingModal } from '@/components/workspaceSettingModal/WorkspaceSettingModal';
 import { files } from '@/mock/files';
 import style from '@/pages/files/grid-view.module.css';

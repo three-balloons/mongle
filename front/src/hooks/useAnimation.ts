@@ -1,4 +1,3 @@
-import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { easeInOutCubic } from '@/util/transition/transtion';
@@ -10,8 +9,8 @@ import { useEffect, useRef } from 'react';
  */
 export const useAnimation = () => {
     const { setCameraView, cameraView } = useViewStore((state) => state);
-    const cameraViewRef = useRef<ViewCoord>(cameraView);
     const { mode, setMode } = useConfigStore((state) => state);
+    const cameraViewRef = useRef<ViewCoord>(cameraView);
     const modeRef = useRef<ControlMode>('none');
 
     useEffect(() => {

@@ -2,6 +2,7 @@ import { useAnimation } from '@/hooks/useAnimation';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
+import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import {
@@ -50,6 +51,8 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
     theme = '하늘',
 }) => {
     const { setCameraView } = useViewStore((state) => state);
+    const { isShowAnimation } = useConfigStore((state) => state);
+    const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
@@ -81,6 +84,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         useViewStore.subscribe(({ cameraView }) => {
             cameraViewRef.current = cameraView;
             reRender();
+        });
+        useConfigStore.subscribe(({ isShowAnimation }) => {
+            isShowAnimationRef.current = isShowAnimation;
         });
     }, []);
 
@@ -159,7 +165,8 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 }
             }
         }
-        if (prevPos) {
+        console.log(isShowAnimationRef.current);
+        if (prevPos && isShowAnimationRef.current) {
             setCameraView({
                 size: cameraView.size,
                 path,

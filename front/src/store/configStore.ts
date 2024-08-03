@@ -5,6 +5,7 @@ type State = {
     eraseConfig: EraseConfig;
     textConfig: TextConfig;
     mode: ControlMode;
+    isShowAnimation: boolean;
 };
 
 type Action = {
@@ -15,6 +16,7 @@ type Action = {
     setEraseMode: (eraseMode: EraseMode) => void;
     setEraseRadius: (radius: number) => void;
     setMode: (mode: ControlMode) => void;
+    setIsShowAnimation: (isShowAnimation: boolean) => void;
 };
 type Store = State & Action;
 
@@ -35,6 +37,7 @@ export const useConfigStore = createStore<Store, State>(
             mode: 'area',
         },
         mode: 'move',
+        isShowAnimation: true,
         setPenColor: (color) =>
             set((state) => ({
                 penConfig: {
@@ -78,6 +81,7 @@ export const useConfigStore = createStore<Store, State>(
                 },
             })),
         setMode: (mode) => set({ mode: mode }),
+        setIsShowAnimation: (isShowAnimation) => set({ isShowAnimation: isShowAnimation }),
     }),
     {
         name: 'configStorage',
@@ -86,6 +90,7 @@ export const useConfigStore = createStore<Store, State>(
             textConfig: state.textConfig,
             eraseConfig: state.eraseConfig,
             mode: state.mode,
+            isShowAnimation: state.isShowAnimation,
         }),
     },
 );
