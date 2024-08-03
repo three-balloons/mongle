@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
-import { useViewStore } from '@/store/viewStore';
+// import { useViewStore } from '@/store/viewStore';
 import { subVector2D } from '@/util/shapes/operator';
-import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useCamera } from '@/objects/camera/useCamera';
 
 //
 //
@@ -19,7 +19,7 @@ export const useHand = () => {
     const moveIntensityRef = useRef<Vector2D>({ x: 0, y: 0 });
     const startViewSizeRef = useRef<Vector2D>({ x: 0, y: 0 });
     // const startDistance = useRef<number | undefined>();
-    const { updateCameraView } = useRenderer();
+    const { updateCameraView } = useCamera();
 
     const grab = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         startPositionRef.current = { ...currentPosition };

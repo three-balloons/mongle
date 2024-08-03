@@ -36,3 +36,9 @@ interface Capsule {
     p2: Vector2D;
     radius: number;
 }
+
+interface Ellipse {
+    center: Vector2D;
+    width: number;
+    height: number;
+}

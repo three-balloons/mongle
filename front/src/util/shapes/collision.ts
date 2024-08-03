@@ -35,6 +35,34 @@ export const isCollisionPointWithRect = (point: Vector2D, rect: Rect): boolean =
     return false;
 };
 
+export const isCollisionPointWithCircle = (point: Vector2D, circle: Circle): boolean => {
+    const distanceSquared =
+        (point.x - circle.center.x) * (point.x - circle.center.x) +
+        (point.y - circle.center.y) * (point.y - circle.center.y);
+    return distanceSquared <= circle.radius * circle.radius;
+};
+
+export const isCollisionPointWithEllipse = (point: Vector2D, ellipse: Ellipse): boolean => {
+    const { x, y } = point;
+    const { center, width, height } = ellipse;
+    const { x: h, y: k } = center;
+    const a = width / 2;
+    const b = height / 2;
+    return ((x - h) * (x - h)) / (a * a) + ((y - k) * (y - k)) / (b * b) <= 1;
+};
+
+export const isCollisionPointWithCapsule = (point: Vector2D, capsule: Capsule): boolean => {
+    let x, y;
+
+    if (capsule.p1.x < capsule.p2.x) x = Math.max(capsule.p1.x, Math.min(capsule.p2.x, point.x));
+    else x = Math.max(capsule.p2.x, Math.min(capsule.p1.x, point.x));
+
+    if (capsule.p1.y < capsule.p2.y) y = Math.max(capsule.p1.y, Math.min(capsule.p2.y, point.y));
+    else y = Math.max(capsule.p2.y, Math.min(capsule.p1.y, point.y));
+
+    return isCollisionPointWithCircle(point, { center: { x: x, y: y }, radius: capsule.radius });
+};
+
 export const isCollisionCapsuleWithCircle = (capsule: Capsule, circle: Circle, thickness: number = 0) => {
     let x, y;
 

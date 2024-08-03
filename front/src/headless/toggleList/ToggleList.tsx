@@ -43,7 +43,13 @@ const ToggleListButton = ({ children, className }: ToggleListButtonProps) => {
     const { toggleOpen } = useToggleList();
 
     return (
-        <div className={cn(className)} onClick={toggleOpen}>
+        <div
+            className={cn(className)}
+            onClick={(event) => {
+                event.stopPropagation();
+                toggleOpen();
+            }}
+        >
             {children}
         </div>
     );

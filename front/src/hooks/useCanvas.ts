@@ -41,6 +41,7 @@ export const useCanvas = () => {
         identifyTouchRegion,
         bubblize,
         unbubblize,
+        finishMoveBubble,
     } = useBubbleGun();
 
     useEffect(() => {
@@ -137,6 +138,8 @@ export const useCanvas = () => {
             }
             if (isMoveBubbleRef.current) {
                 isMoveBubbleRef.current = false;
+                finishMoveBubble(getCameraView());
+                reRender();
             }
         }
     }, []);
