@@ -4,6 +4,7 @@ import { cn } from '@/util/cn';
 import { ReactComponent as ArrowIcon } from '@/assets/icon/button-right.svg';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
+import { useCamera } from '@/objects/camera/useCamera';
 
 type BubbleToggleListProps = {
     name: string;
@@ -13,7 +14,8 @@ type BubbleToggleListProps = {
 };
 
 export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
-    const { zoomBubble, updateCameraView, getCameraView } = useRenderer();
+    const { getCameraView } = useRenderer();
+    const { zoomBubble, updateCameraView } = useCamera();
     const { mode } = useConfigStore((state) => state);
     const zoomAtBubble = (bubblePath: string) => {
         if (mode == 'animate') return;
@@ -35,6 +37,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
                 },
                 getCameraView().pos,
             );
+
             return;
         }
         zoomBubble(bubblePath);

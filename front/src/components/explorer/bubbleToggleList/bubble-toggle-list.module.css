@@ -22,8 +22,8 @@
     justify-content: flex-start;
     width: 100%;
 }
-
 .title-text {
+    flex: 1 1;
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;

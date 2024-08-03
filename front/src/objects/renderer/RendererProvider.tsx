@@ -1,22 +1,14 @@
-import { useAnimation } from '@/hooks/useAnimation';
 import { useBubble } from '@/objects/bubble/useBubble';
+import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
-import {
-    bubble2globalWithCurve,
-    bubble2globalWithRect,
-    curve2View,
-    getThicknessRatio,
-    global2bubbleWithRect,
-    rect2View,
-    view2Rect,
-} from '@/util/coordSys/conversion';
+import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { getThemeMainColor } from '@/util/getThemeStyle';
-import { getParentPath, getPathDifferentDepth } from '@/util/path/path';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
+import { easeInOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
 export type RendererContextProps = {
@@ -25,34 +17,31 @@ export type RendererContextProps = {
     mainLayerRef: React.RefObject<HTMLCanvasElement>;
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
-    zoomBubble: (bubblePath: string) => void;
-    updateCameraView: (cameraView: ViewCoord, prevPosition?: Rect | undefined) => void;
+    bubbleTransitAnimation: (
+        bubble: Bubble,
+        startBubblePos: Vector2D,
+        endBubblePos: Vector2D,
+        duration?: number,
+    ) => void;
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
     renderer: (curves: Array<Curve>) => void;
     rectRender: (rect: Rect) => void;
     bubbleRender: (bubble: Bubble) => void;
-    movementBubbleRender: (bubble: Bubble) => void;
+    movementBubbleRender: () => void;
 };
 
 export const RendererContext = createContext<RendererContextProps | undefined>(undefined);
 
 type RendererProviderProps = {
     children: React.ReactNode;
-    height?: number;
-    width?: number;
     theme?: Theme;
 };
 
-export const RendererProvider: React.FC<RendererProviderProps> = ({
-    children,
-    height = 0,
-    width = 0,
-    theme = '하늘',
-}) => {
-    const { setCameraView } = useViewStore((state) => state);
+export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
     const { isShowAnimation } = useConfigStore((state) => state);
+    const { mode, setMode } = useConfigStore((state) => state);
     const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
@@ -60,30 +49,17 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
 
     const canvasImageRef = useRef<ImageData | null>(null);
 
-    const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
-    const { getBubbles, findBubble, descendant2child, getRatioWithCamera, getChildBubbles } = useBubble();
-    const { viewTransitAnimation } = useAnimation();
-    const { pushLog } = useLog();
+    // use for animation
+    const modeRef = useRef<ControlMode>('none');
 
-    const cameraViewRef = useRef<ViewCoord>({
-        pos: {
-            top: -height / 2,
-            left: -width / 2,
-            width: width,
-            height: height,
-        },
-        size: {
-            x: width,
-            y: height,
-        },
-        path: '/',
-    });
+    const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
+    const { pushLog } = useLog();
+    const { getCameraView } = useCamera();
 
     useEffect(() => {
-        setCameraView(cameraViewRef.current);
         // Rerenders when canvas view changes
-        useViewStore.subscribe(({ cameraView }) => {
-            cameraViewRef.current = cameraView;
+        useViewStore.subscribe(() => {
             reRender();
         });
         useConfigStore.subscribe(({ isShowAnimation }) => {
@@ -91,122 +67,30 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         });
     }, []);
 
-    const getCameraView = () => {
-        return cameraViewRef.current;
-    };
-
     const getMainLayer = () => {
         return mainLayerRef.current;
     };
 
-    // 카메라를 root로 올리고 parentBubble로 다시 내림
-    const zoomBubble = (bubblePath: string) => {
-        const bubble = findBubble(bubblePath);
-        if (bubble == undefined) return;
-
-        let newCameraPos = cameraViewRef.current.pos;
-        let cameraPath: string | undefined = cameraViewRef.current.path;
-
-        // const parentBubble = descendant2child(parentBubble, '/');
-        let ret: Rect = { ...newCameraPos };
-        while (cameraPath && cameraPath != '/') {
-            const cameraBubble = findBubble(cameraPath);
-            if (cameraBubble == undefined) return undefined;
-            ret.top = (cameraBubble.height * (100 + ret.top)) / 200 + cameraBubble.top;
-            ret.left = (cameraBubble.width * (100 + ret.left)) / 200 + cameraBubble.left;
-            ret.height = (cameraBubble.height * ret.height) / 200;
-            ret.width = (cameraBubble.width * ret.width) / 200;
-            cameraPath = getParentPath(cameraPath);
-        }
-        const parentPath = getParentPath(bubblePath);
-        if (parentPath != undefined) {
-            const parentBubble = findBubble(parentPath);
-            if (parentBubble) {
-                const bubbleView = descendant2child(parentBubble, '/');
-                ret = global2bubbleWithRect(ret, bubbleView);
+    const bubbleTransitAnimation = (
+        bubble: Bubble,
+        startBubblePos: Vector2D,
+        endBubblePos: Vector2D,
+        duration: number = 500,
+    ) => {
+        let time = 0;
+        modeRef.current = mode;
+        setMode('animate');
+        const intervalId = setInterval(() => {
+            const pos = easeInOutCubic(time / duration, startBubblePos, endBubblePos);
+            bubble.top = pos.y;
+            bubble.left = pos.x;
+            movementBubbleRender();
+            time += 30;
+            if (time >= duration) {
+                setMode(modeRef.current);
+                clearInterval(intervalId);
             }
-        }
-        const tmp = descendant2child(bubble, '/') as Bubble;
-        const visibleBubblePos = {
-            height: tmp.height,
-            width: tmp.width,
-            top: tmp.top,
-            left: tmp.left,
-        };
-        newCameraPos = { ...ret };
-        const prevPos = { ...newCameraPos };
-
-        const isLongHeight: boolean =
-            visibleBubblePos.width * cameraViewRef.current.size.y <
-            visibleBubblePos.height * cameraViewRef.current.size.x;
-        const newHeight = isLongHeight ? bubble.height : (bubble.width * newCameraPos.height) / newCameraPos.width;
-        const newWidth = isLongHeight ? (bubble.height * newCameraPos.width) / newCameraPos.height : bubble.width;
-        updateCameraView(
-            {
-                size: cameraViewRef.current.size,
-                pos: {
-                    top: bubble.top + (bubble.height - newHeight) / 2,
-                    left: bubble.left + (bubble.width - newWidth) / 2,
-                    height: newHeight,
-                    width: newWidth,
-                },
-                path: getParentPath(bubblePath) ?? '/',
-            },
-            prevPos,
-        );
-    };
-
-    /**
-     * cameraView에 대한 모든 책임
-     * camera를 path에 맞게 변경하고 vameraView를 설정
-     * animation 적용 여부 결정
-     */
-    const updateCameraView = (cameraView: ViewCoord, prevPosition?: Rect | undefined) => {
-        let path = cameraView.path;
-        let pos = { ...cameraView.pos };
-        let prevPos = prevPosition ? { ...prevPosition } : undefined;
-
-        while (
-            path != '/' &&
-            (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100)
-        ) {
-            pos = bubble2globalWithRect(pos, findBubble(path));
-            if (prevPos) prevPos = bubble2globalWithRect(prevPos, findBubble(path));
-            path = getParentPath(path) ?? '/';
-        }
-        let canUpdateCamera = true;
-        while (canUpdateCamera) {
-            canUpdateCamera = false;
-            const children = getChildBubbles(path);
-            for (const child of children) {
-                // TODO isInside 유틸함수 만들기
-                if (
-                    child.top < pos.top &&
-                    child.left < pos.left &&
-                    pos.top + pos.height < child.top + child.height &&
-                    pos.left + pos.width < child.left + child.width
-                ) {
-                    pos = global2bubbleWithRect(pos, child);
-                    if (prevPos) prevPos = global2bubbleWithRect(prevPos, child);
-                    path = child.path;
-                    canUpdateCamera = true;
-                    break;
-                }
-            }
-        }
-        if (prevPos && isShowAnimationRef.current) {
-            setCameraView({
-                size: cameraView.size,
-                path,
-                pos: prevPos,
-            });
-            viewTransitAnimation(prevPos, pos, 500);
-        } else
-            setCameraView({
-                size: cameraView.size,
-                path,
-                pos,
-            });
+        }, 30);
     };
 
     const reRender = () => {
@@ -215,10 +99,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         if (movementLayerRef.current) clearLayerRenderer(movementLayerRef.current);
         renderer(getCurves());
 
+        movementBubbleRender();
         getBubbles().forEach((bubble) => {
-            if (bubble.isBubblized) {
-                movementBubbleRender(bubble);
-            } else {
+            if (!bubble.isBubblized) {
                 bubbleRender(bubble);
             }
         });
@@ -247,7 +130,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         const context = canvas.getContext('2d');
         if (context) {
             applyPenConfig(context);
-            setThicknessWithRatio(context, getThicknessRatio(cameraViewRef.current));
+            setThicknessWithRatio(context, getThicknessRatio(getCameraView()));
             context.beginPath();
             context.moveTo(startPoint.x, startPoint.y);
             context.lineTo(endPoint.x, endPoint.y);
@@ -264,17 +147,18 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         }
         const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
-
+        const cameraView = getCameraView();
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             applyPenConfig(context);
+
             const parentBubble = findBubble(getNewCurvePath());
             let c = curve;
             if (parentBubble) {
-                const bubbleView = descendant2child(parentBubble, cameraViewRef.current.path);
+                const bubbleView = descendant2child(parentBubble, cameraView.path);
                 c = bubble2globalWithCurve(curve, bubbleView);
             }
-            const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
+            const beziers = catmullRom2Bezier(curve2View(c, cameraView));
             context.beginPath();
             // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
             if (beziers.length > 0) {
@@ -301,25 +185,26 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         }
         const canvas: HTMLCanvasElement = mainLayerRef.current;
         const context = canvas.getContext('2d');
+        const cameraView = getCameraView();
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             // TODO 버블을 먼저 찾고 버블 안에서 커브 넣기
             curves.forEach((curve) => {
                 if (!curve.isVisible) return;
                 applyPenConfig(context, curve.config);
-                setThicknessWithRatio(context, getThicknessRatio(cameraViewRef.current));
+                setThicknessWithRatio(context, getThicknessRatio(cameraView));
                 const parentBubble = findBubble(curve.path);
                 let c = curve.position;
                 if (parentBubble) {
-                    const bubbleView = descendant2child(parentBubble, cameraViewRef.current.path);
+                    const bubbleView = descendant2child(parentBubble, cameraView.path);
                     c = bubble2globalWithCurve(curve.position, bubbleView);
-                    const ratio = getRatioWithCamera(parentBubble, cameraViewRef.current);
-                    if (ratio && ratio * cameraViewRef.current.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
+                    const ratio = getRatioWithCamera(parentBubble, cameraView);
+                    if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
                         return;
                     }
                 }
 
-                const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
+                const beziers = catmullRom2Bezier(curve2View(c, cameraView));
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
                 if (beziers.length > 0) {
@@ -359,7 +244,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         if (!creationLayerRef.current) return;
         const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
-        const _rect: Rect = rect2View(rect, cameraViewRef.current);
+        const _rect: Rect = rect2View(rect, getCameraView());
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.beginPath(); // Start a new path
@@ -376,8 +261,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
      */
     const bubbleRender = (bubble: Bubble) => {
         if (!bubble.isVisible) return;
-        const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
-        if (ratio && ratio * cameraViewRef.current.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
+        const cameraView = getCameraView();
+        const ratio = getRatioWithCamera(bubble, cameraView);
+        if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
             return;
         }
         if (!mainLayerRef.current) {
@@ -385,7 +271,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         }
         const canvas: HTMLCanvasElement = mainLayerRef.current;
         const context = canvas.getContext('2d');
-        const bubbleView = descendant2child(bubble, cameraViewRef.current.path);
+        const bubbleView = descendant2child(bubble, cameraView.path);
         if (bubbleView == undefined) return;
         const rect: Rect = rect2View(
             {
@@ -394,7 +280,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 top: bubbleView.top,
                 left: bubbleView.left,
             },
-            cameraViewRef.current,
+            cameraView,
         );
         if (context) {
             context.beginPath(); // Start a new path
@@ -403,7 +289,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
             context.setLineDash([10, 10]);
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
-            setThicknessWithRatio(context, getThicknessRatio(cameraViewRef.current));
+            setThicknessWithRatio(context, getThicknessRatio(cameraView));
             // bubble.curves.forEach((curve) => {
             //     const c = bubble2globalWithCurve(curve.position, bubbleView);
             //     const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
@@ -428,50 +314,55 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         }
     };
 
-    const movementBubbleRender = (bubble: Bubble) => {
-        if (!bubble.isVisible) return;
-        const ratio = getRatioWithCamera(bubble, cameraViewRef.current);
-        if (ratio && ratio * cameraViewRef.current.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
-            return;
-        }
+    const movementBubbleRender = () => {
+        // TODO : useBubble에 movement, 고정, 안보이는 버블 분리 (성능개선)
+        const cameraView = getCameraView();
         if (!movementLayerRef.current) {
             return;
         }
         const canvas: HTMLCanvasElement = movementLayerRef.current;
         const context = canvas.getContext('2d');
-        const bubbleView = descendant2child(bubble, cameraViewRef.current.path);
-        if (bubbleView == undefined) return;
-        const rect: Rect = rect2View(
-            {
-                height: bubbleView.height,
-                width: bubbleView.width,
-                top: bubbleView.top,
-                left: bubbleView.left,
-            },
-            cameraViewRef.current,
-        );
         if (context) {
-            const radiusX = rect.width / 2;
-            const radiusY = rect.height / 2;
-            const x = rect.width / 2 + rect.left;
-            const y = rect.height / 2 + rect.top;
-            context.strokeStyle = getThemeMainColor(theme);
-            context.beginPath();
-            context.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
-            const gradient = context.createRadialGradient(
-                x - rect.width * 0.2,
-                y - rect.height * 0.2,
-                Math.min(radiusX, radiusY) * 0.2,
-                x,
-                y,
-                Math.max(radiusX, radiusY),
-            );
-            gradient.addColorStop(0, 'rgb(255, 255, 255)');
-            gradient.addColorStop(0.5, getThemeMainColor(theme, 0.5));
-            context.fillStyle = gradient;
-            context.fill();
-            context.strokeStyle = getThemeMainColor(theme);
-            context.stroke();
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            getBubbles().forEach((bubble) => {
+                if (!bubble.isBubblized || !bubble.isVisible) return;
+                const ratio = getRatioWithCamera(bubble, cameraView);
+                if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
+                    return;
+                }
+                const bubbleView = descendant2child(bubble, cameraView.path);
+                if (bubbleView == undefined) return;
+                const rect: Rect = rect2View(
+                    {
+                        height: bubbleView.height,
+                        width: bubbleView.width,
+                        top: bubbleView.top,
+                        left: bubbleView.left,
+                    },
+                    cameraView,
+                );
+                const radiusX = rect.width / 2;
+                const radiusY = rect.height / 2;
+                const x = rect.width / 2 + rect.left;
+                const y = rect.height / 2 + rect.top;
+                context.strokeStyle = getThemeMainColor(theme);
+                context.beginPath();
+                context.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
+                const gradient = context.createRadialGradient(
+                    x - rect.width * 0.2,
+                    y - rect.height * 0.2,
+                    Math.min(radiusX, radiusY) * 0.2,
+                    x,
+                    y,
+                    Math.max(radiusX, radiusY),
+                );
+                gradient.addColorStop(0, 'rgb(255, 255, 255)');
+                gradient.addColorStop(0.5, getThemeMainColor(theme, 0.5));
+                context.fillStyle = gradient;
+                context.fill();
+                context.strokeStyle = getThemeMainColor(theme);
+                context.stroke();
+            });
         }
     };
 
@@ -483,8 +374,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 mainLayerRef,
                 creationLayerRef,
                 movementLayerRef,
-                zoomBubble,
-                updateCameraView,
+                bubbleTransitAnimation,
                 reRender,
                 lineRenderer,
                 curveRenderer,

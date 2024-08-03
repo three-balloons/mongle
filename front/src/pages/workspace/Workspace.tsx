@@ -10,6 +10,7 @@ import { getThemeStyle } from '@/util/getThemeStyle';
 import { BubbleProvider } from '@/objects/bubble/BubbleProvider';
 import { RendererProvider } from '@/objects/renderer/RendererProvider';
 import { LogProvider } from '@/objects/log/LogProvider';
+import { CameraProvider } from '@/objects/camera/CameraProvider';
 
 type WorkspaceProps = {
     workspaceID: string;
@@ -38,13 +39,15 @@ export const Workspace = ({ workspaceID, workSpaceName }: WorkspaceProps) => {
             <BubbleProvider workspaceName={workSpaceName}>
                 <CurveProvider sensitivity={2}>
                     <LogProvider>
-                        <RendererProvider width={canvasSize.width} height={canvasSize.height} theme={theme}>
-                            <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                            <div className={cn(style.workspace)}>
-                                {isShowExplorer && <Explorer />}
-                                <Canvas width={canvasSize.width} height={canvasSize.height} />
-                            </div>
-                        </RendererProvider>
+                        <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                            <RendererProvider theme={theme}>
+                                <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                                <div className={cn(style.workspace)}>
+                                    {isShowExplorer && <Explorer />}
+                                    <Canvas width={canvasSize.width} height={canvasSize.height} />
+                                </div>
+                            </RendererProvider>
+                        </CameraProvider>
                     </LogProvider>
                 </CurveProvider>
             </BubbleProvider>
