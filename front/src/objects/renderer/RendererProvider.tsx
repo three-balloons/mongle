@@ -12,9 +12,10 @@ import {
     getThicknessRatio,
     global2bubbleWithRect,
     rect2View,
+    view2Rect,
 } from '@/util/coordSys/conversion';
 import { getThemeMainColor } from '@/util/getThemeStyle';
-import { getParentPath } from '@/util/path/path';
+import { getParentPath, getPathDifferentDepth } from '@/util/path/path';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { createContext, useEffect, useRef } from 'react';
 
@@ -98,21 +99,48 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         return mainLayerRef.current;
     };
 
+    // 카메라를 root로 올리고 parentBubble로 다시 내림
     const zoomBubble = (bubblePath: string) => {
         const bubble = findBubble(bubblePath);
         if (bubble == undefined) return;
+
+        let newCameraPos = cameraViewRef.current.pos;
+        let cameraPath: string | undefined = cameraViewRef.current.path;
+
+        // const parentBubble = descendant2child(parentBubble, '/');
+        let ret: Rect = { ...newCameraPos };
+        while (cameraPath && cameraPath != '/') {
+            const cameraBubble = findBubble(cameraPath);
+            if (cameraBubble == undefined) return undefined;
+            ret.top = (cameraBubble.height * (100 + ret.top)) / 200 + cameraBubble.top;
+            ret.left = (cameraBubble.width * (100 + ret.left)) / 200 + cameraBubble.left;
+            ret.height = (cameraBubble.height * ret.height) / 200;
+            ret.width = (cameraBubble.width * ret.width) / 200;
+            cameraPath = getParentPath(cameraPath);
+        }
         const parentPath = getParentPath(bubblePath);
-        let pos = cameraViewRef.current.pos;
-        let prevPos = { ...pos };
         if (parentPath != undefined) {
             const parentBubble = findBubble(parentPath);
-            pos = global2bubbleWithRect(cameraViewRef.current.pos, parentBubble);
-            prevPos = global2bubbleWithRect(prevPos, parentBubble);
+            if (parentBubble) {
+                const bubbleView = descendant2child(parentBubble, '/');
+                ret = global2bubbleWithRect(ret, bubbleView);
+            }
         }
+        const tmp = descendant2child(bubble, '/') as Bubble;
+        const visibleBubblePos = {
+            height: tmp.height,
+            width: tmp.width,
+            top: tmp.top,
+            left: tmp.left,
+        };
+        newCameraPos = { ...ret };
+        const prevPos = { ...newCameraPos };
+
         const isLongHeight: boolean =
-            bubble.width * cameraViewRef.current.size.y < bubble.height * cameraViewRef.current.size.x;
-        const newHeight = isLongHeight ? bubble.height : (bubble.width * pos.height) / pos.width;
-        const newWidth = isLongHeight ? (bubble.height * pos.width) / pos.height : bubble.width;
+            visibleBubblePos.width * cameraViewRef.current.size.y <
+            visibleBubblePos.height * cameraViewRef.current.size.x;
+        const newHeight = isLongHeight ? bubble.height : (bubble.width * newCameraPos.height) / newCameraPos.width;
+        const newWidth = isLongHeight ? (bubble.height * newCameraPos.width) / newCameraPos.height : bubble.width;
         updateCameraView(
             {
                 size: cameraViewRef.current.size,
@@ -137,6 +165,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
         let path = cameraView.path;
         let pos = { ...cameraView.pos };
         let prevPos = prevPosition ? { ...prevPosition } : undefined;
+
         while (
             path != '/' &&
             (pos.top < -100 || pos.left < -100 || pos.top + pos.height > 100 || pos.left + pos.width > 100)
@@ -165,7 +194,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({
                 }
             }
         }
-        console.log(isShowAnimationRef.current);
         if (prevPos && isShowAnimationRef.current) {
             setCameraView({
                 size: cameraView.size,
