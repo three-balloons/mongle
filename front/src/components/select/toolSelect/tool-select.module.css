@@ -17,8 +17,8 @@
     justify-content: flex-start;
 
     padding: 5px 10px;
-    border-left: 2px solid var(--color-gray-50);
-    border-right: 2px solid var(--color-gray-50);
+    border-left: 2px solid var(--color-gray-60);
+    border-right: 2px solid var(--color-gray-60);
     column-gap: 10px;
 
     overflow: scroll;

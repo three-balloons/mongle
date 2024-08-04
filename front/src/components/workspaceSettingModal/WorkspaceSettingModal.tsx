@@ -6,6 +6,7 @@ import { cn } from '@/util/cn';
 import { useState } from 'react';
 import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
+import { ReactComponent as DownIcon } from '@/assets/icon/button-down.svg';
 import { updateWorkspaceAPI } from '@/api/workspace';
 import { files } from '@/mock/files';
 import { useMutation } from '@tanstack/react-query';
@@ -38,13 +39,16 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
     };
     return (
         <Modal className={cn(className)}>
-            <Modal.Opener>{name}</Modal.Opener>
+            <Modal.Opener className={style.opener}>
+                <div className={style.openerName}>{name}</div>
+                <DownIcon className={style.iconDown} />
+            </Modal.Opener>
             <Modal.Overlay className={style.overlay} zIndex={0} />
             <Modal.Content className={style.content}>
                 {isNameChange ? (
                     <>
                         <input
-                            className={(style.name, style.input)}
+                            className={cn(style.name, style.input)}
                             type="text"
                             value={name}
                             placeholder="이름을 입력해주세요"
@@ -56,7 +60,7 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
                     </>
                 ) : (
                     <>
-                        <span className={style.name}>{name}</span>
+                        <div className={style.name}>{name}</div>
                         <ModifyIcon className={style.iconModify} onClick={() => setIsNameChange(true)} />
                     </>
                 )}

@@ -56,6 +56,6 @@
 .circle {
     margin: auto;
     border-radius: 50%;
-    border: 3px solid var(--color-gray-50);
+    border: 3px solid var(--color-gray-60);
     background-color: white;
 }

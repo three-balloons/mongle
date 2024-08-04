@@ -5,7 +5,7 @@ export const files: Array<Workspace> = [
         theme: '하늘',
     },
     {
-        name: 'test1',
+        name: '아주매우굉장히긴이름아주매우굉장히긴이름아주매우굉장히긴이름아주매우굉장히긴이름',
         id: '123567',
         theme: '노랑',
     },

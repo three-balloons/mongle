@@ -1,0 +1,12 @@
+.default {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+}
+
+.view {
+    width: 100%;
+    height: 100%;
+}
