@@ -10,19 +10,19 @@
 }
 
 .show-detail {
-    width: 30%;
+    width: max(160px, 25%);
     transition: 0.5s;
 }
 
 .hidden-detail {
-    width: 60px;
+    width: 50px;
     transition: 0.5s;
 }
 
 .details {
     height: 100%;
     width: 100%;
-    flex: 1;
+    flex: 1 1;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -62,7 +62,6 @@
 
 .item-hidden {
     width: 50px;
-    transition-delay: 0.5s;
 }
 
 .item-selected {

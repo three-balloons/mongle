@@ -16,13 +16,18 @@ type AppNavBarProps = {
 
 export const AppNavBar = ({ className, selectedOption, selectedHandler }: AppNavBarProps) => {
     const [isShowDetail, setIsShowDetail] = useState(false);
+
     return (
         <div className={cn(className, style.default, isShowDetail ? style.showDetail : style.hiddenDetail)}>
             <div className={style.details}>
-                <div className={style.item}>
-                    <MemuIcon className={style.iconBig} onClick={() => setIsShowDetail(!isShowDetail)} />
-                </div>
-                <div className={style.line} />
+                {window.innerWidth > 520 && (
+                    <>
+                        <div className={style.item}>
+                            <MemuIcon className={style.iconBig} onClick={() => setIsShowDetail(!isShowDetail)} />
+                        </div>
+                        <div className={style.line} />
+                    </>
+                )}
                 <div
                     className={cn(
                         style.item,
