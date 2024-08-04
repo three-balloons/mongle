@@ -41,7 +41,7 @@ type RendererProviderProps = {
 
 export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
     const { isShowAnimation } = useConfigStore((state) => state);
-    const { mode, setMode } = useConfigStore((state) => state);
+    const { setMode } = useConfigStore((state) => state);
     const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
@@ -62,8 +62,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         useViewStore.subscribe(() => {
             reRender();
         });
-        useConfigStore.subscribe(({ isShowAnimation }) => {
+        useConfigStore.subscribe(({ isShowAnimation, mode }) => {
             isShowAnimationRef.current = isShowAnimation;
+            modeRef.current = mode;
         });
     }, []);
 
@@ -78,7 +79,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         duration: number = 500,
     ) => {
         let time = 0;
-        modeRef.current = mode;
+        const prevMode = modeRef.current;
         setMode('animate');
         const intervalId = setInterval(() => {
             const pos = easeInOutCubic(time / duration, startBubblePos, endBubblePos);
@@ -87,7 +88,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             movementBubbleRender();
             time += 30;
             if (time >= duration) {
-                setMode(modeRef.current);
+                setMode(prevMode);
                 clearInterval(intervalId);
             }
         }, 30);

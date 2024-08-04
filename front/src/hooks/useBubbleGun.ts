@@ -175,9 +175,11 @@ export const useBubbleGun = () => {
             top: bubbleView.top,
             left: bubbleView.left,
         };
+        const parentPath = getParentPath(moveBubbleRef.current.path) ?? '/';
         const isCanMove = !getBubbles().find((bubble) => {
             if (!bubble.isVisible) return false;
             if (bubble == moveBubbleRef.current) return false;
+            if (bubble.path == parentPath) return false;
             const ratio = getRatioWithCamera(bubble, cameraView);
             if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
                 return false;

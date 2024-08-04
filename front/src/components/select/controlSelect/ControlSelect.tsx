@@ -9,12 +9,14 @@ import { useViewStore } from '@/store/viewStore';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
+import { useCamera } from '@/objects/camera/useCamera';
 
 export const ControlSelect = () => {
     const { cameraView } = useViewStore((state) => state);
     const { mode } = useConfigStore((state) => state);
     const { isUndoAvailable, isRedoAvailable, undo, redo } = useLog();
-    const { reRender, updateCameraView } = useRenderer();
+    const { reRender } = useRenderer();
+    const { updateCameraView } = useCamera();
     // TODO: 투터치 인터페이스 구현(줌/아웃 가능)
     const resizeView = (intensity: number) => {
         updateCameraView(
