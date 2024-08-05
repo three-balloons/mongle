@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ControlsRepository extends JpaRepository<Controls, Long> {
     List<Controls> findByCurveId(Long curveId);
+    void deleteByCurveId(Long curveId);
 }

@@ -10,9 +10,10 @@ import org.springframework.stereotype.Service;
 public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
 
-    public Workspace findByName(String name) {
-        return workspaceRepository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("Not Found " + name));
+
+    public Workspace findWorkspaceById(Long id) {
+        return workspaceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Not Found " + id));
     }
 
 }

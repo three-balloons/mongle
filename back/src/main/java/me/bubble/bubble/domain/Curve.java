@@ -59,4 +59,15 @@ public class Curve {
         this.bubble = bubble;
     }
 
+    public void update(String color, int b_width, int b_height, int b_top, int b_left,
+                       String path, int thickness, Bubble bubble) {
+        this.color = color;
+        this.b_width = b_width;
+        this.b_height = b_height;
+        this.b_top = b_top;
+        this.b_left = b_left;
+        this.path = path;
+        this.thickness = thickness;
+        this.bubble = bubble;
+    }
 }
