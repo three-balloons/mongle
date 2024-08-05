@@ -4,7 +4,7 @@ interface Curve {
     path: string;
     config: PenConfig;
     isVisible: boolean;
-    id: number | undefined;
+    id: string | undefined;
 }
 
 interface Bubble extends Rect {

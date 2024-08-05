@@ -20,7 +20,7 @@ export const appRouter = createBrowserRouter([
                         {({ params }) => (
                             <Workspace
                                 workspaceID={params.workspaceID ?? ''}
-                                workSpaceName={params.workspaceName ?? '제목없음'}
+                                workspaceName={params.workspaceName ?? '제목없음'}
                             />
                         )}
                     </Routed>

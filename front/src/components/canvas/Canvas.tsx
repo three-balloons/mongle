@@ -7,16 +7,31 @@ import { getViewCoordinate } from '@/util/canvas/canvas';
 import { addVector2D } from '@/util/shapes/operator';
 import { useEraser } from '@/hooks/useEraser';
 import { useRenderer } from '@/objects/renderer/useRenderer';
+// import { useQuery } from '@tanstack/react-query';
+// import { getBubbleAPI } from '@/api/bubble';
+// import { useBubble } from '@/objects/bubble/useBubble';
 
 type CanvasProps = {
     width: number;
     height: number;
+    workspaceId: string;
 };
 
-export const Canvas = ({ width, height }: CanvasProps) => {
+export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     const { isEraseRef, touchDown, touch, touchUp } = useCanvas();
     const { mainLayerRef, creationLayerRef, movementLayerRef, reRender } = useRenderer();
+    // const { addBubble } = useBubble();
     const { earseRadiusRef } = useEraser();
+
+    // const bubbleQuery = useQuery({
+    //     queryKey: ['bubble'],
+    //     queryFn: () => {
+    //         return getBubbleAPI(workspaceId, '/');
+    //     },
+    //     enabled: true,
+    //     refetchOnWindowFocus: false,
+    //     refetchOnMount: false,
+    // });
 
     useEffect(() => {
         reRender();
@@ -86,6 +101,10 @@ export const Canvas = ({ width, height }: CanvasProps) => {
             canvas.removeEventListener('touchmove', handleMouseMove);
         };
     }, []);
+
+    // if (bubbleQuery.isLoading) return <>fgfgf</>;
+    // if (bubbleQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
+    // const bubbles = bubbleQuery.data; // bubble 구조 잡고 수정
     return (
         <div>
             <canvas ref={creationLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>

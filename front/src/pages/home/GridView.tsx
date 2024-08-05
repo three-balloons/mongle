@@ -1,7 +1,5 @@
-// import { getAllWorkspaceAPI } from '@/api/workspace';
-
+import { getAllWorkspaceAPI } from '@/api/workspace';
 import { WorkspaceSettingModal } from '@/components/workspaceSettingModal/WorkspaceSettingModal';
-import { files } from '@/mock/files';
 import style from '@/pages/home/grid-view.module.css';
 import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
@@ -14,8 +12,7 @@ export const GridView = () => {
     const workspacesQuery = useQuery({
         queryKey: ['workspaces'],
         queryFn: () => {
-            return files;
-            // return getAllWorkspaceAPI();
+            return getAllWorkspaceAPI();
         },
     });
 

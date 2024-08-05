@@ -8,7 +8,6 @@ import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { ReactComponent as DownIcon } from '@/assets/icon/button-down.svg';
 import { updateWorkspaceAPI } from '@/api/workspace';
-import { files } from '@/mock/files';
 import { useMutation } from '@tanstack/react-query';
 
 type WorkspaceSettingModalProps = {
@@ -26,17 +25,12 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
     const saveHandler = () => {
         updateWorkspace(workspace.id, {
             onSuccess: () => {
-                files.forEach((file) => {
-                    if (file.id == workspace.id) {
-                        file.name = name;
-                        file.theme = theme;
-                    }
-                });
+                console.log('저장 성공');
             },
         });
-
         return;
     };
+
     return (
         <Modal className={cn(className)}>
             <Modal.Opener className={style.opener}>
