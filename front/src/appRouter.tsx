@@ -1,4 +1,4 @@
-import { Files } from '@/pages/files/Files';
+import { Home } from '@/pages/home/Home';
 import { MainLayout } from '@/pages/layout/mainLayout';
 import { Workspace } from '@/pages/workspace/Workspace';
 import { Routed } from '@/Routed';
@@ -28,11 +28,11 @@ export const appRouter = createBrowserRouter([
             },
             {
                 path: 'files',
-                element: <Files />,
+                element: <Home />,
             },
             {
                 path: '/',
-                element: <Files />,
+                element: <Home />,
             },
         ],
     },

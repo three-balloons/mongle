@@ -16,6 +16,11 @@ export const isVector3D = (obj: unknown): obj is Vector3D => {
     return false;
 };
 
+export const isCircle = (obj: unknown): obj is Circle => {
+    if (obj && isPoint((obj as Circle).center) && typeof (obj as Circle).radius === 'number') return true;
+    return false;
+};
+
 export const isRect = (obj: unknown): obj is Rect => {
     if (
         obj &&
@@ -28,7 +33,25 @@ export const isRect = (obj: unknown): obj is Rect => {
     return false;
 };
 
-export const isCircle = (obj: unknown): obj is Circle => {
-    if (obj && isPoint((obj as Circle).center) && typeof (obj as Circle).radius === 'number') return true;
-    return false;
+export const isCurve = (obj: unknown): obj is Curve => {
+    return (
+        obj !== null &&
+        typeof obj === 'object' &&
+        typeof (obj as Curve).position === 'object' && // Curve2D 타입 확인
+        typeof (obj as Curve).path === 'string' &&
+        typeof (obj as Curve).config === 'object' && // PenConfig 타입 확인
+        typeof (obj as Curve).isVisible === 'boolean' &&
+        (typeof (obj as Curve).id === 'number' || (obj as Curve).id === undefined)
+    );
+};
+
+export const isBubble = (obj: unknown): obj is Bubble => {
+    return (
+        isRect(obj) &&
+        typeof (obj as Bubble).path === 'string' &&
+        Array.isArray((obj as Bubble).curves) &&
+        (obj as Bubble).curves.every(isCurve) &&
+        typeof (obj as Bubble).isBubblized === 'boolean' &&
+        typeof (obj as Bubble).isVisible === 'boolean'
+    );
 };

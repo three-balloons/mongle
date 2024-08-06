@@ -1,29 +1,67 @@
 import ToggleList from '@/headless/toggleList/ToggleList';
 import style from '@/components/explorer/bubbleToggleList/bubble-toggle-list.module.css';
 import { cn } from '@/util/cn';
-import arrow from '@/assets/icon/button-right.svg';
+import { ReactComponent as ArrowIcon } from '@/assets/icon/button-right.svg';
+import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useConfigStore } from '@/store/configStore';
+import { useCamera } from '@/objects/camera/useCamera';
 
 type BubbleToggleListProps = {
     name: string;
-    children: Array<BubbleToggleListProps>;
+    path: string;
+    children: Array<BubbleTreeNode>;
     className?: string;
 };
 
-export const BubbleToggleList = ({ name, children, className }: BubbleToggleListProps) => {
+export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
+    const { getCameraView } = useRenderer();
+    const { zoomBubble, updateCameraView } = useCamera();
+    const { mode } = useConfigStore((state) => state);
+    const zoomAtBubble = (bubblePath: string) => {
+        if (mode == 'animate') return;
+        if (bubblePath == '') {
+            const { y: height, x: width } = getCameraView().size;
+            updateCameraView(
+                {
+                    pos: {
+                        top: -height / 2,
+                        left: -width / 2,
+                        width: width,
+                        height: height,
+                    },
+                    size: {
+                        x: width,
+                        y: height,
+                    },
+                    path: '/',
+                },
+                getCameraView().pos,
+            );
+
+            return;
+        }
+        zoomBubble(bubblePath);
+    };
     return (
         <ToggleList className={cn(style.default, className)}>
             {({ open }: { open: boolean }) => (
                 <>
                     <ToggleList.Button className={cn(style.title)}>
-                        <img src={arrow} className={cn(style.toggleButton, open ? style.rotated : style.idle)} />
-                        <span className={cn(style.titleText)}>{name}</span>
+                        <ArrowIcon className={cn(style.toggleButton, open ? style.rotated : style.idle)} />
+                        <span className={cn(style.titleText)} onClick={() => zoomAtBubble(path)}>
+                            {name}
+                        </span>
                     </ToggleList.Button>
                     <ToggleList.Content>
                         {children.length > 0 &&
                             children.map((child, index) => {
                                 if (child.children.length == 0)
                                     return (
-                                        <div key={index} className={cn(style.title, style.marginLeft16)}>
+                                        <div
+                                            key={index}
+                                            className={cn(style.title, style.marginLeft16)}
+                                            onClick={() => zoomAtBubble(path + '/' + child.name)}
+                                        >
                                             {child.name}
                                         </div>
                                     );
@@ -32,6 +70,7 @@ export const BubbleToggleList = ({ name, children, className }: BubbleToggleList
                                         key={index}
                                         name={child.name}
                                         children={child.children}
+                                        path={path + '/' + child.name}
                                         className={style.marginLeft}
                                     />
                                 );

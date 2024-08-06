@@ -1,4 +1,3 @@
-// TODO: path를 고려할 것
 // import { isCollisionPointWithRect } from '@/util/shapes/collision';
 // import { findBubble } from '@/util/bubble/bubble';
 
@@ -23,9 +22,6 @@
  *
  */
 
-/**
- * TODO canvasPath와 cameraView 합치기
- */
 export const point2View = (point: Point, cameraView: ViewCoord): Vector2D => {
     // if (!isCollisionPointWithRect(point, cameraView.pos)) return undefined;
     const { left, top, width, height } = cameraView.pos;

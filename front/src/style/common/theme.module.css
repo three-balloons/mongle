@@ -47,12 +47,12 @@
 }
 
 .theme-black {
-    --color-primary-100: #0a0a0a;
+    --color-primary-100: #1a1a1a;
     --color-primary-75: #1f1f1f;
     --color-primary-50: #2e2e2e;
     --color-primary-25: #404040;
 
-    --color-neutral-100: #030303;
+    --color-neutral-100: #232323;
     --color-neutral-50: #3b3b3b;
     --color-background: var(--color-neutral-100);
     --color-text: var(--color-white);

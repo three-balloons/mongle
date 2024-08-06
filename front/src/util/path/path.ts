@@ -1,5 +1,6 @@
 export const pathToList = (path: string): Array<string> => {
-    return path.split('/').slice(0, -1);
+    if (path == '/') return [''];
+    return path.split('/');
 };
 
 export const getPathDepth = (path: string): number => {
@@ -19,6 +20,7 @@ export const getPathDifferentDepth = (parentPath: string, childPath: string): nu
 
 export const getParentPath = (path: string): string | undefined => {
     if (path == '/') return undefined;
-    const paths = path.split('/').slice(0, -1);
-    return paths.slice(0, -1).join('/') + '/';
+    const paths = path.split('/');
+    const ret = paths.slice(0, -1).join('/');
+    return ret == '' ? '/' : ret;
 };

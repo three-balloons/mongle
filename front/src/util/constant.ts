@@ -1,0 +1,1 @@
+export const MINIMUN_RENDERED_BUBBLE_SIZE = 30;

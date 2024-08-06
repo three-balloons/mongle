@@ -1,8 +1,12 @@
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
+import { useLog } from '@/objects/log/useLog';
+import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useConfigStore } from '@/store/configStore';
+import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
-import { isCollisionPointWithRect } from '@/util/shapes/collision';
+import { isCollisionPointWithEllipse, isCollisionPointWithRect, isCollisionWithRect } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 
@@ -15,18 +19,28 @@ export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');
     const bubbleIdRef = useRef<number>(0);
+    const startMoveBubblePosRef = useRef<Vector2D | undefined>();
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
     const {
         updateCreatingBubble,
         addBubble,
         getCreatingBubble,
+        getBubbles,
+        getRatioWithCamera,
         findBubble,
         descendant2child,
         view2BubbleWithVector2D,
         getBubbleInTree,
+        getChildBubbles,
     } = useBubble();
     const { getCurvesWithPath } = useCurve();
+    const { bubbleTransitAnimation } = useRenderer();
+
+    /* logs */
+    const { pushLog } = useLog();
+
+    const { isShowAnimation } = useConfigStore((state) => state);
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
             {
@@ -64,12 +78,17 @@ export const useBubbleGun = () => {
 
     const finishCreateBubble = useCallback((cameraView: ViewCoord) => {
         const bubbleRect = getCreatingBubble();
+        if (bubbleRect.height < MINIMUN_RENDERED_BUBBLE_SIZE || bubbleRect.width < MINIMUN_RENDERED_BUBBLE_SIZE) {
+            console.error('생성하려는 버블의 크기가 너무 작습니다');
+            return;
+        }
+        const name = bubbleIdRef.current.toString();
+
         const bubble: Bubble = {
             ...bubbleRect,
-            path: createdBubblePathRef.current + bubbleIdRef.current.toString() + '/',
+            path: createdBubblePathRef.current == '/' ? '/' + name : createdBubblePathRef.current + '/' + name,
+            name: name,
             curves: [],
-            children: [],
-            parent: undefined,
             isBubblized: false,
             isVisible: true,
         };
@@ -82,9 +101,28 @@ export const useBubbleGun = () => {
             bubble.top = rect.top;
             bubble.left = rect.left;
         }
+        const childrenPaths = getChildBubbles(createdBubblePathRef.current)
+            .filter((child) => {
+                // isInside 유틸함수 만들기
+                if (
+                    bubble.top < child.top &&
+                    bubble.left < child.left &&
+                    child.top + child.height < bubble.top + bubble.height &&
+                    child.left + child.width < bubble.left + bubble.width
+                )
+                    return true;
+            })
+            .map((child) => child.path);
+        addBubble(bubble, childrenPaths);
+        pushLog({ type: 'create', object: bubble });
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
-        addBubble(bubble);
+        updateCreatingBubble({
+            top: 0,
+            left: 0,
+            height: 0,
+            width: 0,
+        });
     }, []);
 
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
@@ -102,7 +140,7 @@ export const useBubbleGun = () => {
             pos = view2BubbleWithVector2D(pos, cameraView, parentPath);
         }
         moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
-
+        startMoveBubblePosRef.current = subVector2D(pos, moveBubbleOffsetRef.current);
         moveBubbleRef.current = bubble;
     }, []);
 
@@ -123,6 +161,49 @@ export const useBubbleGun = () => {
             if (moveBubbleOffsetRef.current) {
                 moveBubbleRef.current.top = y;
                 moveBubbleRef.current.left = x;
+            }
+        }
+    }, []);
+
+    const finishMoveBubble = useCallback((cameraView: ViewCoord) => {
+        if (!moveBubbleRef.current) return;
+        const bubbleView = descendant2child(moveBubbleRef.current, cameraView.path);
+        if (bubbleView == undefined) return;
+        const moveRect: Rect = {
+            height: bubbleView.height,
+            width: bubbleView.width,
+            top: bubbleView.top,
+            left: bubbleView.left,
+        };
+        const parentPath = getParentPath(moveBubbleRef.current.path) ?? '/';
+        const isCanMove = !getBubbles().find((bubble) => {
+            if (!bubble.isVisible) return false;
+            if (bubble == moveBubbleRef.current) return false;
+            if (bubble.path == parentPath) return false;
+            const ratio = getRatioWithCamera(bubble, cameraView);
+            if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
+                return false;
+            }
+            const bubbleView = descendant2child(bubble, cameraView.path);
+            if (bubbleView == undefined) return false;
+            return isCollisionWithRect(moveRect, {
+                height: bubbleView.height,
+                width: bubbleView.width,
+                top: bubbleView.top,
+                left: bubbleView.left,
+            });
+        });
+        console.log(isCanMove);
+        if (!isCanMove && startMoveBubblePosRef.current) {
+            if (isShowAnimation)
+                bubbleTransitAnimation(
+                    moveBubbleRef.current,
+                    { x: moveBubbleRef.current.left, y: moveBubbleRef.current.top },
+                    { x: startMoveBubblePosRef.current.x, y: startMoveBubblePosRef.current.y },
+                );
+            else {
+                moveBubbleRef.current.left = startMoveBubblePosRef.current.x;
+                moveBubbleRef.current.top = startMoveBubblePosRef.current.y;
             }
         }
     }, []);
@@ -150,31 +231,63 @@ export const useBubbleGun = () => {
                     },
                     cameraView,
                 );
-                if (
-                    isCollisionPointWithRect(position, {
-                        top: rect.top - rect.height * 0.05,
-                        left: rect.left - rect.width * 0.05,
-                        width: rect.width * 1.1,
-                        height: rect.height * 1.1,
-                    })
-                )
+                if (bubble.isBubblized) {
                     if (
-                        isCollisionPointWithRect(position, {
-                            top: rect.top + rect.height * 0.05,
-                            left: rect.left + rect.width * 0.05,
-                            width: rect.width * 0.9,
-                            height: rect.height * 0.9,
+                        isCollisionPointWithEllipse(position, {
+                            center: {
+                                y: rect.top + rect.height / 2,
+                                x: rect.left + rect.width / 2,
+                            },
+                            height: rect.height * 1.1,
+                            width: rect.width * 1.1,
                         })
                     )
-                        return {
-                            region: 'inside',
-                            bubble: bubble,
-                        };
-                    else
-                        return {
-                            region: 'border',
-                            bubble: bubble,
-                        };
+                        if (
+                            isCollisionPointWithEllipse(position, {
+                                center: {
+                                    y: rect.top + rect.height / 2,
+                                    x: rect.left + rect.width / 2,
+                                },
+                                height: rect.height * 0.9,
+                                width: rect.width * 0.9,
+                            })
+                        )
+                            return {
+                                region: 'inside',
+                                bubble: bubble,
+                            };
+                        else
+                            return {
+                                region: 'border',
+                                bubble: bubble,
+                            };
+                } else {
+                    if (
+                        isCollisionPointWithRect(position, {
+                            top: rect.top - rect.height * 0.05,
+                            left: rect.left - rect.width * 0.05,
+                            width: rect.width * 1.1,
+                            height: rect.height * 1.1,
+                        })
+                    )
+                        if (
+                            isCollisionPointWithRect(position, {
+                                top: rect.top + rect.height * 0.05,
+                                left: rect.left + rect.width * 0.05,
+                                width: rect.width * 0.9,
+                                height: rect.height * 0.9,
+                            })
+                        )
+                            return {
+                                region: 'inside',
+                                bubble: bubble,
+                            };
+                        else
+                            return {
+                                region: 'border',
+                                bubble: bubble,
+                            };
+                }
             }
         }
         return {
@@ -220,6 +333,7 @@ export const useBubbleGun = () => {
         finishCreateBubble,
         startMoveBubble,
         moveBubble,
+        finishMoveBubble,
         identifyTouchRegion,
         bubblize,
         unbubblize,

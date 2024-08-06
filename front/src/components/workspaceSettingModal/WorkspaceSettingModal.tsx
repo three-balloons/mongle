@@ -5,30 +5,50 @@ import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
 import { useState } from 'react';
 import Select from '@/headless/select/Select';
-import modify from '@/assets/icon/modify.svg';
+import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
+import { ReactComponent as DownIcon } from '@/assets/icon/button-down.svg';
+import { updateWorkspaceAPI } from '@/api/workspace';
+import { files } from '@/mock/files';
+import { useMutation } from '@tanstack/react-query';
 
 type WorkspaceSettingModalProps = {
-    workSpaceName: string;
+    workspace: Workspace;
     className: string;
 };
-export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSettingModalProps) => {
+export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSettingModalProps) => {
     const [isNameChange, setIsNameChange] = useState(false);
-    const [name, setName] = useState(workSpaceName);
-    const [theme, setTheme] = useState<Theme>('하늘');
+    const [name, setName] = useState(workspace.name);
+    const [theme, setTheme] = useState<Theme>(workspace.theme);
 
+    const { mutate: updateWorkspace } = useMutation({
+        mutationFn: (id: string) => updateWorkspaceAPI(id),
+    });
     const saveHandler = () => {
-        // TODO 저장 구현하기
+        updateWorkspace(workspace.id, {
+            onSuccess: () => {
+                files.forEach((file) => {
+                    if (file.id == workspace.id) {
+                        file.name = name;
+                        file.theme = theme;
+                    }
+                });
+            },
+        });
+
         return;
     };
     return (
         <Modal className={cn(className)}>
-            <Modal.Opener>{name}</Modal.Opener>
+            <Modal.Opener className={style.opener}>
+                <div className={style.openerName}>{name}</div>
+                <DownIcon className={style.iconDown} />
+            </Modal.Opener>
             <Modal.Overlay className={style.overlay} zIndex={0} />
             <Modal.Content className={style.content}>
                 {isNameChange ? (
                     <>
                         <input
-                            className={(style.name, style.input)}
+                            className={cn(style.name, style.input)}
                             type="text"
                             value={name}
                             placeholder="이름을 입력해주세요"
@@ -40,8 +60,8 @@ export const WorkspaceSettingModal = ({ workSpaceName, className }: WorkspaceSet
                     </>
                 ) : (
                     <>
-                        <span className={style.name}>{name}</span>
-                        <img className={style.iconModify} src={modify} onClick={() => setIsNameChange(true)}></img>
+                        <div className={style.name}>{name}</div>
+                        <ModifyIcon className={style.iconModify} onClick={() => setIsNameChange(true)} />
                     </>
                 )}
 

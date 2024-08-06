@@ -6,9 +6,7 @@ import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/
 import { useConfigStore } from '@/store/configStore';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
-
-//
-// features:
+import { useLog } from '@/objects/log/useLog';
 
 type CurveAndEraser = {
     curve: Curve;
@@ -30,6 +28,9 @@ export const useEraser = () => {
     const { view2BubbleWithVector2D, getBubbles, removeBubble, getDescendantBubbles } = useBubble();
     const { identifyTouchRegion } = useBubbleGun();
 
+    /* logs */
+    const { pushLog } = useLog();
+
     useEffect(() => {
         useConfigStore.subscribe(({ eraseConfig }) => {
             earseModeRef.current = eraseConfig.mode;
@@ -40,7 +41,9 @@ export const useEraser = () => {
     const erase = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         if (earseModeRef.current == 'area') eraseArea(cameraView, currentPosition);
         else if (earseModeRef.current == 'stroke') eraseStroke(cameraView, currentPosition);
-        else eraseBubble(cameraView, currentPosition);
+        else {
+            eraseBubble(cameraView, currentPosition);
+        }
     }, []);
 
     const eraseArea = (cameraView: ViewCoord, currentPosition: Vector2D) => {
@@ -67,6 +70,7 @@ export const useEraser = () => {
             const temp = markCurveWithEraser(eraser, curve);
             removeCurve(curve);
             addCurve(temp);
+            // TODO update curve
         });
     };
 
@@ -89,7 +93,10 @@ export const useEraser = () => {
             }),
         );
         curveWithErasers.forEach(({ curve, eraser }) => {
-            if (isIntersectCurveWithEraser(eraser, curve)) removeCurve(curve);
+            if (isIntersectCurveWithEraser(eraser, curve)) {
+                removeCurve(curve);
+                pushLog({ type: 'delete', object: curve });
+            }
         });
     };
 
@@ -100,11 +107,19 @@ export const useEraser = () => {
             setEraseMode('area');
             if (bubble) {
                 removeCurvesWithPath(bubble.path);
-                getDescendantBubbles(bubble.path).forEach((descendant) => {
+                const descendants = getDescendantBubbles(bubble.path);
+                descendants.forEach((descendant) => {
                     removeCurvesWithPath(descendant.path);
                     removeBubble(descendant);
                 });
-
+                // TODO  한 번에 삭제 추가할 수 있도록 할 것
+                pushLog({
+                    type: 'delete',
+                    object: bubble,
+                    options: {
+                        childrenPaths: descendants.map((descendant) => descendant.path),
+                    },
+                });
                 removeBubble(bubble);
             }
         }
@@ -147,6 +162,7 @@ export const useEraser = () => {
             config: config,
             position: curve.position,
             isVisible: curve.isVisible,
+            id: curve.id,
         };
     };
 

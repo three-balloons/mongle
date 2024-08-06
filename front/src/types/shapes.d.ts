@@ -17,9 +17,6 @@ type Line2D = [Vector2D, Vector2D];
 type Curve2D = Array<Point>;
 type Curve3D = Array<Vector3D>;
 
-// TODO: penConfig 추가할 것
-type Curve = { position: Curve2D; path: string; config: PenConfig; isVisible: boolean };
-
 // rectangle
 interface Rect {
     top: number;
@@ -40,11 +37,8 @@ interface Capsule {
     radius: number;
 }
 
-interface Bubble extends Rect {
-    path: string;
-    curves: Array<Curve>;
-    children: Array<Bubble>;
-    parent: Bubble | undefined;
-    isBubblized: boolean;
-    isVisible: boolean;
+interface Ellipse {
+    center: Vector2D;
+    width: number;
+    height: number;
 }

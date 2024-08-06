@@ -4,4 +4,6 @@ type APIExceptionCode =
     | 'NO_PARENT'
     | 'ALREADY_EXEIST'
     | 'FAIL_EXEIT'
-    | 'NO_EXEIST_BUBBLE';
+    | 'NO_EXEIST_BUBBLE'
+    | 'NOT_EXIST'
+    | 'ALREADY_EXIST';

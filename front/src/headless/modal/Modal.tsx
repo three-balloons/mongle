@@ -1,4 +1,4 @@
-import React, { MouseEvent } from 'react';
+import React from 'react';
 import { ModalProvider, useModal } from '@/headless/modal/ModalProvider';
 import { cn } from '@/util/cn';
 

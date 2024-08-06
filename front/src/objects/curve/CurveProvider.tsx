@@ -10,7 +10,7 @@ export type CurveContextProps = {
     clearAllCurves: () => void;
     getDrawingCurve: () => Curve2D;
     addControlPoint: (pos: Point, force?: boolean) => boolean;
-    addNewCurve: (thicknessRatio?: number) => void;
+    addNewCurve: (thicknessRatio?: number) => Curve;
     addCurve: (curve: Curve) => void;
     removeCurve: (curve: Curve) => void;
     removeCurvesWithPath: (path: string) => void;
@@ -64,18 +64,17 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         }
     };
 
-    const addNewCurve = (thicknessRatio: number = 1) => {
-        curvesRef.current = [
-            ...curvesRef.current,
-            {
-                position: newCurveRef.current,
-                path: newCurvePathRef.current,
-
-                config: { ...penConfigRef.current, thickness: penConfigRef.current.thickness / thicknessRatio },
-                isVisible: true,
-            },
-        ];
+    const addNewCurve = (thicknessRatio: number = 1): Curve => {
+        const newCurve: Curve = {
+            position: newCurveRef.current,
+            path: newCurvePathRef.current,
+            config: { ...penConfigRef.current, thickness: penConfigRef.current.thickness / thicknessRatio },
+            isVisible: true,
+            id: undefined,
+        };
+        curvesRef.current = [...curvesRef.current, newCurve];
         newCurveRef.current = [];
+        return newCurve;
     };
 
     const addCurve = (curve: Curve) => {
@@ -106,6 +105,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
                 path: newCurvePathRef.current,
                 config: penConfigRef.current,
                 isVisible: true,
+                id: undefined,
             },
         ];
     };
