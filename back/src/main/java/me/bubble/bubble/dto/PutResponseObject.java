@@ -1,8 +1,10 @@
 package me.bubble.bubble.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class PutResponseObject {
     private final Long id;
     private final boolean successYn;

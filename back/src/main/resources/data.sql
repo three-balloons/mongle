@@ -1,3 +1,11 @@
+SET foreign_key_checks = 0;
+TRUNCATE TABLE users;
+TRUNCATE TABLE workspace;
+TRUNCATE TABLE bubble;
+TRUNCATE TABLE curve;
+TRUNCATE TABLE controls;
+SET foreign_key_checks = 1;
+
 INSERT INTO Users (email, password, name, image_path) VALUES
 ('alice@example.com', 'password1', 'Alice Johnson', 'path/to/alice.jpg'),
 ('bob@example.com', 'password2', 'Bob Smith', 'path/to/bob.jpg'),
@@ -55,4 +63,3 @@ INSERT INTO Controls (x, y, visible, curve_id) VALUES
 (190, 200, true, 5),
 (210, 220, true, 6),
 (230, 240, true, 6);
-

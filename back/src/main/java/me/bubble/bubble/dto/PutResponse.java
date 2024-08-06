@@ -1,11 +1,13 @@
 package me.bubble.bubble.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collections;
 import java.util.List;
 
 @Getter
+@Setter
 public class PutResponse {
     private final List<PutResponseObject> delete;
     private final List<PutResponseObject> update;

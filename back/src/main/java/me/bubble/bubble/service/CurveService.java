@@ -1,5 +1,6 @@
 package me.bubble.bubble.service;
 
+import me.bubble.bubble.domain.Controls;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.bubble.bubble.domain.Bubble;
@@ -25,5 +26,25 @@ public class CurveService {
                 .orElseThrow(() -> new CurveNotFoundException("Curve with id " + id + " not found"));
 
         curveRepository.delete(curve);
+    }
+
+    public Curve findCurveById (Long id) {
+        Curve curve = curveRepository.findById(id)
+                .orElseThrow(() -> new CurveNotFoundException("Curve with id " + id + " not found"));
+
+        return curve;
+    }
+
+    @Transactional
+    public Curve updateCurve(Long id, String color, int b_width, int b_height, int b_top, int b_left,
+                             String path, int thickness, Bubble bubble) {
+        Curve curve = curveRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Curve not found"));
+        curve.update(color, b_width, b_height, b_top, b_left, path, thickness, bubble);
+        return curveRepository.save(curve);
+    }
+
+    public Curve saveCurve(Curve curve) {
+        return curveRepository.save(curve);
     }
 }
