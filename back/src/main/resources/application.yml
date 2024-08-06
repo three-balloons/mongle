@@ -1,16 +1,25 @@
 #스프링 부트 서버가 실행되면 자동으로 로딩
 spring:
+  config:
+    import: optional:file:.env[.properties]
   jpa:
-    show-sql: true #전송 쿼리 확인
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
     defer-datasource-initialization: true #테이블 생성 후에 data.sql 실행
+  sql:
+    init:
+      mode: always
   datasource:
-    url: jdbc:h2:mem:testdb
-  h2:
-    console:
-      enabled: true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
 
 springdoc:
   swagger-ui: # swagger
