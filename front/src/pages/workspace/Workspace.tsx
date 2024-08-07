@@ -12,7 +12,7 @@ import { LogProvider } from '@/objects/log/LogProvider';
 import { CameraProvider } from '@/objects/camera/CameraProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWorkspaceAPI } from '@/api/workspace';
-import { getBubbleAPI } from '@/api/bubble';
+// import { getBubbleAPI } from '@/api/bubble';
 
 type WorkspaceProps = {
     workspaceID: string;

@@ -19,7 +19,7 @@ type CanvasProps = {
 
 export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     const { isEraseRef, touchDown, touch, touchUp } = useCanvas();
-    const { mainLayerRef, creationLayerRef, movementLayerRef, reRender } = useRenderer();
+    const { mainLayerRef, creationLayerRef, movementLayerRef, interfaceLayerRef, reRender } = useRenderer();
     // const { addBubble } = useBubble();
     const { earseRadiusRef } = useEraser();
 
@@ -38,12 +38,11 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     }, [width, height]);
 
     const [position, setPosition] = useState<Vector2D>({ x: 0, y: 0 });
-
     useEffect(() => {
-        if (!mainLayerRef.current) {
+        if (!interfaceLayerRef.current) {
             return;
         }
-        const canvas: HTMLCanvasElement = mainLayerRef.current;
+        const canvas: HTMLCanvasElement = interfaceLayerRef.current;
         canvas.addEventListener('mousedown', touchDown);
         canvas.addEventListener('mousemove', touch);
         canvas.addEventListener('mouseup', touchUp);
@@ -67,15 +66,15 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     }, [touchDown, touch, touchUp]);
 
     useEffect(() => {
-        if (!mainLayerRef.current) return;
-        const canvas: HTMLCanvasElement = mainLayerRef.current;
+        if (!interfaceLayerRef.current) return;
+        const canvas: HTMLCanvasElement = interfaceLayerRef.current;
         const CanvasOffset: Vector2D = {
             x: canvas.offsetLeft,
             y: canvas.offsetTop,
         };
         const handleMouseMove = (event: MouseEvent | TouchEvent) => {
-            if (!mainLayerRef.current) return;
-            const pos: Vector2D = getViewCoordinate(event, mainLayerRef.current);
+            if (!interfaceLayerRef.current) return;
+            const pos: Vector2D = getViewCoordinate(event, interfaceLayerRef.current);
             if (
                 pos &&
                 isEraseRef.current &&
@@ -107,14 +106,15 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     // const bubbles = bubbleQuery.data; // bubble 구조 잡고 수정
     return (
         <div>
-            <canvas ref={creationLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>
+            <canvas ref={mainLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>
             <canvas ref={movementLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
-            <canvas ref={mainLayerRef} className={cn(style.mainLayer)} width={width} height={height}></canvas>
-
+            <canvas ref={creationLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
+            <canvas ref={interfaceLayerRef} className={cn(style.topLayer)} width={width} height={height}></canvas>
             {isEraseRef.current && (
                 <div
                     className={style.eraser}
                     style={{
+                        // TODO eraser이미지를 interfaceLayer로 옮기기
                         left: position.x - earseRadiusRef.current,
                         top: position.y - earseRadiusRef.current,
                         width: `${earseRadiusRef.current * 2}px`,

@@ -17,6 +17,7 @@ export type RendererContextProps = {
     mainLayerRef: React.RefObject<HTMLCanvasElement>;
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
+    interfaceLayerRef: React.RefObject<HTMLCanvasElement>;
     bubbleTransitAnimation: (
         bubble: Bubble,
         startBubblePos: Vector2D,
@@ -46,6 +47,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
+    const interfaceLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
 
     const canvasImageRef = useRef<ImageData | null>(null);
 
@@ -342,23 +344,38 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     },
                     cameraView,
                 );
-                const radiusX = rect.width / 2;
-                const radiusY = rect.height / 2;
-                const x = rect.width / 2 + rect.left;
-                const y = rect.height / 2 + rect.top;
+                const x = Math.min(rect.width + rect.left, rect.left);
+                const y = Math.min(rect.height + rect.top, rect.top);
+                const cornerRadius = Math.floor(Math.min(rect.width, rect.height) / 10);
                 context.strokeStyle = getThemeMainColor(theme);
+
                 context.beginPath();
-                context.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
-                const gradient = context.createRadialGradient(
-                    x - rect.width * 0.2,
-                    y - rect.height * 0.2,
-                    Math.min(radiusX, radiusY) * 0.2,
-                    x,
-                    y,
-                    Math.max(radiusX, radiusY),
+                context.moveTo(x + cornerRadius, y);
+                context.lineTo(x + rect.width - cornerRadius, y);
+                context.quadraticCurveTo(x + rect.width, y, x + rect.width, y + cornerRadius);
+                context.lineTo(x + rect.width, y + rect.height - cornerRadius);
+                context.quadraticCurveTo(
+                    x + rect.width,
+                    y + rect.height,
+                    x + rect.width - cornerRadius,
+                    y + rect.height,
                 );
-                gradient.addColorStop(0, 'rgb(255, 255, 255)');
-                gradient.addColorStop(0.5, getThemeMainColor(theme, 0.5));
+                context.lineTo(x + cornerRadius, y + rect.height);
+                context.quadraticCurveTo(x, y + rect.height, x, y + rect.height - cornerRadius);
+                context.lineTo(x, y + cornerRadius);
+                context.quadraticCurveTo(x, y, x + cornerRadius, y);
+                context.closePath();
+
+                const gradient = context.createRadialGradient(
+                    x + rect.width * 0.4,
+                    y + rect.height * 0.4,
+                    Math.min(rect.width, rect.height) * 0.1,
+                    x + rect.width * 0.4,
+                    y + rect.height * 0.4,
+                    Math.max(rect.width, rect.height) * 0.5,
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                gradient.addColorStop(0.9, getThemeMainColor(theme, 0.5));
                 context.fillStyle = gradient;
                 context.fill();
                 context.strokeStyle = getThemeMainColor(theme);
@@ -375,6 +392,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 mainLayerRef,
                 creationLayerRef,
                 movementLayerRef,
+                interfaceLayerRef,
                 bubbleTransitAnimation,
                 reRender,
                 lineRenderer,
