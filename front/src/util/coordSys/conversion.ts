@@ -126,7 +126,7 @@ export const bubble2globalWithRect = (rect: Rect, bubble: Bubble | undefined): R
 /**
  * rect과 bubble은 좌표계가 같음 => rect을 bubble의 좌표계 안으로 넣음
  */
-export const global2bubbleWithRect = (rect: Rect, bubble: Bubble | undefined): Rect => {
+export const global2bubbleWithRect = (rect: Rect, bubble: Bubble | Rect | undefined): Rect => {
     if (bubble == undefined) return rect;
     else
         return {

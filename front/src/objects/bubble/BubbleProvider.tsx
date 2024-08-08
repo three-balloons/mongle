@@ -72,16 +72,10 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                             const path = parentPath === '/' ? '/' + child.name : parentPath + '/' + child.name;
                             const isNewNodeChild = childrenPaths.find((childPath) => childPath == path);
                             if (isNewNodeChild && child.this) {
-                                // children의 path 업데이트
-                                child.this.path =
-                                    parentPath === '/'
-                                        ? '/' + newNode.name + '/' + child.name
-                                        : parentPath + '/' + newNode.name + '/' + child.name;
-
                                 const parentBubble = prevNode.this;
                                 const pos = global2bubbleWithRect(
                                     bubble2globalWithRect(child.this as Rect, parentBubble),
-                                    newNode.this,
+                                    bubble2globalWithRect(newNode.this as Rect, parentBubble),
                                 );
                                 // refernce 유지
                                 child.this.top = pos.top;
@@ -92,6 +86,18 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                             return !isNewNodeChild;
                         });
                         prevNode.children.push(newNode);
+                        // 하위의 path 업데이트
+                        const updateDescendantPath = (node: BubbleTreeNode) => {
+                            if (!node.this) return;
+                            const path = node.this.path;
+                            for (const child of node.children) {
+                                if (child.this) {
+                                    child.this.path = path + '/' + child.this.name;
+                                    updateDescendantPath(child);
+                                }
+                            }
+                        };
+                        updateDescendantPath(newNode);
                     }
                 }
                 return bubbleTreeRoot;
@@ -131,6 +137,17 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                         ...prevNode.children.filter((child) => child != currentNode),
                         ...currentNode.children,
                     ];
+                    const updateDescendantPath = (node: BubbleTreeNode) => {
+                        if (!node.this) return;
+                        const path = node.this.path;
+                        for (const child of node.children) {
+                            if (child.this) {
+                                child.this.path = path + '/' + child.this.name;
+                                updateDescendantPath(child);
+                            }
+                        }
+                    };
+                    updateDescendantPath(prevNode);
                 }
                 return bubbleTreeRoot;
             };

@@ -92,6 +92,7 @@ export const useBubbleGun = () => {
             isBubblized: false,
             isVisible: true,
         };
+
         const parentBubble = findBubble(createdBubblePathRef.current);
         if (parentBubble) {
             const bubbleView = descendant2child(parentBubble, cameraView.path);
@@ -114,6 +115,7 @@ export const useBubbleGun = () => {
             })
             .map((child) => child.path);
         addBubble(bubble, childrenPaths);
+
         pushLog({ type: 'create', object: bubble });
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
@@ -193,7 +195,6 @@ export const useBubbleGun = () => {
                 left: bubbleView.left,
             });
         });
-        console.log(isCanMove);
         if (!isCanMove && startMoveBubblePosRef.current) {
             if (isShowAnimation)
                 bubbleTransitAnimation(
