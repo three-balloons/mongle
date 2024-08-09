@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { APIException } from '@/api/exceptions';
 import { getAccessTokenAPI } from '@/api/auth';
+import logo from '@/assets/img/mongle-logo.png';
 
 type LoginForm = {
     id: string;
@@ -48,8 +49,9 @@ export const Login = () => {
 
     return (
         <div className={style.defualt}>
-            <h1>몽글</h1>
-            <div>몽글몽글한 손필기 노트!</div>
+            <img src={logo} className={style.logo}></img>
+            {/* <div>몽글몽글한 손필기 노트!</div> */}
+            <div>손글씨로 담아낸 몽글몽글한 순간</div>
             <div className={style.loginWrapper}>
                 <button
                     onClick={() => window.location.assign(GOOGLE_LOGIN_URL)}

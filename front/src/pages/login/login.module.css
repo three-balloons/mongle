@@ -7,6 +7,11 @@
     align-items: center;
 }
 
+.logo {
+    width: calc(30%);
+    margin-bottom: 12px;
+}
+
 .icon {
     width: 24px;
     height: 24px;
@@ -14,11 +19,11 @@
 }
 
 .login-wrapper {
-    margin-top: 60px;
     display: flex;
     flex-direction: column;
-    width: 60%;
-    gap: 20px;
+    max-width: 80%;
+    width: 400px;
+    gap: 12px;
     text-align: center;
 }
 
@@ -36,6 +41,7 @@
     span {
         text-align: center;
         flex: 1 1;
+        color: var(--color-black);
     }
 }
 
@@ -64,17 +70,18 @@
     flex-direction: column;
     text-align: left;
     border-radius: 8px;
-    padding: 10px;
+    padding: 6px;
     background-color: var(--color-gray-20);
     border: 1px solid var(--color-gray-20);
     label {
+        padding-left: 4px;
         font-size: 10px;
     }
 
     input {
         border: none;
-        height: 20px;
-        font-size: 16px;
+        height: 16px;
+        font-size: 14px;
         background-color: #00000000;
     }
 
