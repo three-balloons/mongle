@@ -25,14 +25,10 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "image_path")
-    private String image_path;
-
     @Builder
     public User(String email, String password, String name, String image_path) {
         this.email = email;
         this.password = password;
         this.name = name;
-        this.image_path = image_path;
     }
 }

@@ -3,63 +3,51 @@ TRUNCATE TABLE users;
 TRUNCATE TABLE workspace;
 TRUNCATE TABLE bubble;
 TRUNCATE TABLE curve;
-TRUNCATE TABLE controls;
 SET foreign_key_checks = 1;
 
-INSERT INTO Users (email, password, name, image_path) VALUES
-('alice@example.com', 'password1', 'Alice Johnson', 'path/to/alice.jpg'),
-('bob@example.com', 'password2', 'Bob Smith', 'path/to/bob.jpg'),
-('carol@example.com', 'password3', 'Carol White', 'path/to/carol.jpg'),
-('dave@example.com', 'password4', 'Dave Brown', 'path/to/dave.jpg'),
-('eve@example.com', 'password5', 'Eve Davis', 'path/to/eve.jpg');
+INSERT INTO Users (id, email, password, name) VALUES
+(1, 'alice@example.com', 'password1', 'Alice Johnson'),
+(2, 'bob@example.com', 'password2', 'Bob Smith'),
+(3, 'carol@example.com', 'password3', 'Carol White'),
+(4, 'dave@example.com', 'password4', 'Dave Brown'),
+(5, 'eve@example.com', 'password5', 'Eve Davis');
 
-INSERT INTO Workspace (name, user_id) VALUES
-('Workspace1', 1),
-('Workspace2', 1),
-('Workspace3', 2),
-('Workspace4', 3),
-('Workspace5', 4),
-('Workspace6', 5);
+--기존의 UUID: 36자의 문자열 (데이터 32자 + '-' 4자), 16바이트의 바이너리 형식으로 저장
+INSERT INTO workspace (id, name, theme, created_at, deleted_at, user_id) VALUES
+(UUID_TO_BIN(UUID()), 'Workspace 1', 'Light', CURRENT_TIMESTAMP, NULL, 1),
+(UUID_TO_BIN(UUID()), 'Workspace 2', 'Dark', CURRENT_TIMESTAMP, NULL, 2),
+(UUID_TO_BIN(UUID()), 'Workspace 3', 'Colorful', CURRENT_TIMESTAMP, NULL, 3);
 
-INSERT INTO Bubble (top, leftmost, width, height, path, path_depth, bubblized, visible, workspace_id) VALUES
-(100, 200, 50, 50, '/ws1', 1, false, true, 1),
-(150, 250, 60, 60, '/ws1/A', 2, false, true, 1),
-(200, 300, 70, 70, '/ws1/A/B', 3, false, true, 1),
-(250, 350, 80, 80, '/ws1/A/B/C', 4, false, true, 1),
-(300, 400, 90, 90, '/ws1/A/B/C/D', 5, false, true, 1),
-(350, 450, 100, 100, '/ws1/A/B/C/D/E', 6, false, true, 1),
-(500,1000, 100, 200, '/ws1/A/B/C/D/E/F', 7, false, true, 1),
-(100, 200, 50, 50, '/ws2', 1, false, true, 1),
-(150, 250, 60, 60, '/ws2/A', 2, false, true, 1),
-(200, 300, 70, 70, '/ws2/A/B', 3, false, true, 1),
-(200, 300, 70, 70, '/ws2/A/C', 3, false, true, 1),
-(250, 350, 80, 80, '/ws2/A/B/C', 4, false, true, 1),
-(300, 400, 90, 90, '/ws2/A/B/C/D', 5, false, true, 1);
+-- Insert bubbles : 워크스페이스로부터 UUID를 가져와서 넣어준다.
+SET @first_workspace_id = (
+    SELECT id
+    FROM workspace
+    ORDER BY id ASC
+    LIMIT 1
+);
+INSERT INTO bubble (id, name, top, leftmost, width, height, path, path_depth, bubblized, visible, workspace_id) VALUES
+(1, '/ws1', 10, 20, 100, 50, '/ws1', 1, TRUE, TRUE, @first_workspace_id),
+(2, '/ws1/A', 30, 40, 150, 75, '/ws1/A', 2, FALSE, TRUE, @first_workspace_id),
+(3, '/ws1/B', 50, 60, 200, 100, '/ws1/B', 2, TRUE, FALSE, @first_workspace_id),
+(4, '/ws1/C', 10, 20, 100, 50, '/ws1/C', 2, TRUE, TRUE, @first_workspace_id),
+(5, '/ws1/D', 30, 40, 150, 75, '/ws1/D', 2, FALSE, TRUE, @first_workspace_id),
+(6, '/ws1/E', 50, 60, 200, 100, '/ws1/E', 2, TRUE, FALSE, @first_workspace_id),
+(7, '/ws1/A/Afirst', 10, 20, 100, 50, '/ws1/A/Afirst', 3, TRUE, TRUE, @first_workspace_id),
+(8, '/ws1/A/Asecond', 30, 40, 150, 75, '/ws1/A/Asecond', 3, FALSE, TRUE, @first_workspace_id),
+(9, '/ws1/B/Bfirst', 50, 60, 200, 100, '/ws1/B/Bfirst', 3, TRUE, FALSE, @first_workspace_id),
+(10, '/ws1/B/Bsecond', 10, 20, 100, 50, '/ws1/B/Bsecond', 3, TRUE, TRUE, @first_workspace_id),
+(11, '/ws1/B/Bthird', 30, 40, 150, 75, '/ws1/B/Bthird', 3, FALSE, TRUE, @first_workspace_id),
+(12, '/ws1/B/Bfirst/BBfirst', 50, 60, 200, 100, '/ws1/B/Bfirst/BBfirst', 4, TRUE, FALSE, @first_workspace_id),
+(13, '/ws1/B/Bfirst/BBsecond', 10, 20, 100, 50, '/ws1/B/Bfirst/BBsecond', 4, TRUE, TRUE, @first_workspace_id),
+(14, '/ws1/B/Bfirst/BBfirst/BBB', 30, 40, 150, 75, '/ws1/B/Bfirst/BBfirst/BBB', 5, FALSE, TRUE, @first_workspace_id),
+(15, '/ws1/B/Bfirst/BBsecond/BBBR', 50, 60, 200, 100, '/ws1/B/Bfirst/BBsecond/BBBR', 5, TRUE, FALSE, @first_workspace_id);
 
-INSERT INTO Curve (color, b_width, b_height, b_top, b_left, path, thickness, bubble_id) VALUES
-('#AAAAAA', 50, 50, 100, 200, '/ws1', 5, 1),
-('#BBBBBB', 60, 60, 150, 250, '/ws1', 4, 1),
-('#CCCCCC', 70, 70, 200, 300, '/ws1/A/B', 3, 3),
-('#DDDDDD', 80, 80, 250, 350, '/ws1/A/B/C/D', 2, 5),
-('#EEEEEE', 90, 90, 300, 400, '/ws2/A', 1, 9),
-('#FFFFFF', 100, 100, 350, 450, '/ws2/A/B', 5, 10);
 
-INSERT INTO Controls (x, y, visible, curve_id) VALUES
-(10, 20, true, 1),
-(30, 40, true, 1),
-(10, 20, true, 1),
-(30, 40, true, 1),
-(10, 20, true, 1),
-(30, 40, true, 1),
-(10, 20, true, 1),
-(30, 40, true, 1),
-(50, 60, true, 2),
-(70, 80, true, 2),
-(90, 100, true, 3),
-(110, 120, true, 3),
-(130, 140, true, 4),
-(150, 160, true, 4),
-(170, 180, true, 5),
-(190, 200, true, 5),
-(210, 220, true, 6),
-(230, 240, true, 6);
+-- Insert curves
+INSERT INTO curve (id, color, thickness, control_point, bubble_id) VALUES
+(1, 'Red', 2, "0A141F", 1),
+(2, 'Blue', 3, "0A141F", 1),
+(3, 'Green', 4, "0A141F", 2),
+(4, 'Yellow', 5, "0A141F", 3),
+(5, 'Purple', 6, "0A141F", 4);
+
