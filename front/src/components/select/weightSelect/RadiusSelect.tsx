@@ -27,7 +27,7 @@ export const RadiusSelect = () => {
                         className={style.option}
                         value={<RadiusOption radius={10} />}
                         onSelect={() => {
-                            setEraseRadius(10);
+                            setEraseRadius(8);
                         }}
                     >
                         <RadiusOption radius={10} />
@@ -36,7 +36,7 @@ export const RadiusSelect = () => {
                         className={style.option}
                         value={<RadiusOption radius={20} />}
                         onSelect={() => {
-                            setEraseRadius(26);
+                            setEraseRadius(16);
                         }}
                     >
                         <RadiusOption radius={20} />
@@ -45,7 +45,7 @@ export const RadiusSelect = () => {
                         className={style.option}
                         value={<RadiusOption radius={30} />}
                         onSelect={() => {
-                            setEraseRadius(40);
+                            setEraseRadius(26);
                         }}
                     >
                         <RadiusOption radius={30} />

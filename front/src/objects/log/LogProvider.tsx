@@ -1,6 +1,6 @@
 import { useBubble } from '@/objects/bubble/useBubble';
-import { useCurve } from '@/objects/curve/useCurve';
-import { isBubble, isCurve } from '@/util/shapes/typeGuard';
+// import { useCurve } from '@/objects/curve/useCurve';
+import { isBubble /*isCurve*/ } from '@/util/shapes/typeGuard';
 import { createContext, useReducer } from 'react';
 
 export type LogContextProps = {
@@ -58,7 +58,7 @@ const LogReducer = (state: LogState, action: LogAction): LogState => {
 
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     const { addBubble, removeBubble } = useBubble();
-    const { addCurve, removeCurve } = useCurve();
+    // const { addCurve, removeCurve } = useCurve();
     const [state, dispatch] = useReducer(LogReducer, {
         logStack: [],
         redoStack: [],
@@ -72,10 +72,10 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         const log = state.logStack[state.logStack.length - 1];
         if (log.type == 'create') {
             if (isBubble(log.object)) removeBubble(log.object);
-            else if (isCurve(log.object)) removeCurve(log.object);
+            // else if (isCurve(log.object)) removeCurve(log.object);
         } else if (log.type == 'delete') {
             if (isBubble(log.object) && log.options) addBubble(log.object, log.options.childrenPaths);
-            else if (isCurve(log.object)) addCurve(log.object);
+            // else if (isCurve(log.object)) addCurve(log.object);
         }
         dispatch({ type: 'UNDO' });
     };
@@ -88,10 +88,10 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         const log = state.redoStack[state.redoStack.length - 1];
         if (log.type == 'create') {
             if (isBubble(log.object) && log.options) addBubble(log.object, log.options.childrenPaths);
-            else if (isCurve(log.object)) addCurve(log.object);
+            // else if (isCurve(log.object)) addCurve(log.object);
         } else if (log.type == 'delete') {
             if (isBubble(log.object)) removeBubble(log.object);
-            else if (isCurve(log.object)) removeCurve(log.object);
+            // else if (isCurve(log.object)) removeCurve(log.object);
         }
         dispatch({ type: 'REDO' });
     };

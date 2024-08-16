@@ -1,5 +1,4 @@
 import { useBubble } from '@/objects/bubble/useBubble';
-import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
@@ -13,7 +12,6 @@ import { useCallback, useRef } from 'react';
 /**
  * functions about bubble
  * features: create bubble, bubblize, unbubblize, move bubble
- * @returns
  */
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
@@ -34,7 +32,6 @@ export const useBubbleGun = () => {
         getBubbleInTree,
         getChildBubbles,
     } = useBubble();
-    const { getCurvesWithPath } = useCurve();
     const { bubbleTransitAnimation } = useRenderer();
 
     /* logs */
@@ -42,6 +39,7 @@ export const useBubbleGun = () => {
 
     const { isShowAnimation } = useConfigStore((state) => state);
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
+        console.log(currentPosition, 'pos');
         const pos = view2Point(
             {
                 x: currentPosition.x,
@@ -78,7 +76,8 @@ export const useBubbleGun = () => {
 
     const finishCreateBubble = useCallback((cameraView: ViewCoord) => {
         const bubbleRect = getCreatingBubble();
-        if (bubbleRect.height < MINIMUN_RENDERED_BUBBLE_SIZE || bubbleRect.width < MINIMUN_RENDERED_BUBBLE_SIZE) {
+        const { height, width } = rect2View(bubbleRect, cameraView);
+        if (height < MINIMUN_RENDERED_BUBBLE_SIZE || width < MINIMUN_RENDERED_BUBBLE_SIZE) {
             console.error('생성하려는 버블의 크기가 너무 작습니다');
             return;
         }
@@ -268,7 +267,7 @@ export const useBubbleGun = () => {
 
     const bubblize = (bubble: Bubble) => {
         bubble.isBubblized = true;
-        getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = false));
+        bubble.curves.forEach((curve) => (curve.isVisible = false));
 
         const node = getBubbleInTree(bubble);
         if (node == undefined) return;
@@ -279,7 +278,7 @@ export const useBubbleGun = () => {
 
     const unbubblize = (bubble: Bubble) => {
         bubble.isBubblized = false;
-        getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = true));
+        bubble.curves.forEach((curve) => (curve.isVisible = true));
         const node = getBubbleInTree(bubble);
         if (node == undefined) return;
         for (const child of node.children) {
@@ -289,7 +288,7 @@ export const useBubbleGun = () => {
 
     const _setIsVisibleAll = (bubble: Bubble, isVisible: boolean) => {
         bubble.isVisible = isVisible;
-        if (!bubble.isBubblized) getCurvesWithPath(bubble.path).forEach((curve) => (curve.isVisible = isVisible));
+        if (!bubble.isBubblized) bubble.curves.forEach((curve) => (curve.isVisible = isVisible));
         const node = getBubbleInTree(bubble);
         if (node == undefined) return;
         for (const child of node.children) {

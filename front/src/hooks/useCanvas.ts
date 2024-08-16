@@ -59,8 +59,8 @@ export const useCanvas = () => {
         if (currentPosition) {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 const { bubble } = identifyTouchRegion(getCameraView(), currentPosition, getBubbles());
-
-                startDrawing(getCameraView(), currentPosition, bubble?.path);
+                if (bubble === undefined) console.error('버블 밖에서는 라인을 그릴 수 없습니다');
+                else startDrawing(getCameraView(), currentPosition, bubble.path);
                 isPaintingRef.current = true;
             } else if (isEraseRef.current == false && modeRef.current == 'erase') {
                 isEraseRef.current = true;

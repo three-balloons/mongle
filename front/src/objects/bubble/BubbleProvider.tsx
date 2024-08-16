@@ -299,6 +299,10 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         dispatch({ type: 'REMOVE_BUBBLE_IN_TREE', payload: { bubble } });
     };
 
+    /**
+     *
+     * path 밑의 모든 bubble을 가져옴
+     */
     const getDescendantBubbles = (path: string) => {
         const pathList = pathToList(path);
         let currentNode: BubbleTreeNode | undefined = state.bubbleTree;

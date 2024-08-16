@@ -3,14 +3,12 @@ import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
 import { ReactComponent as EraserIcon } from '@/assets/icon/eraser.svg';
 import { useBubble } from '@/objects/bubble/useBubble';
-import { useCurve } from '@/objects/curve/useCurve';
 import Modal from '@/headless/modal/Modal';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 
 export const EraserModal = () => {
     const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
     const { clearAllBubbles } = useBubble();
-    const { clearAllCurves } = useCurve();
     const { reRender } = useRenderer();
 
     return (
@@ -60,7 +58,6 @@ export const EraserModal = () => {
                     className={cn(style.clear)}
                     onClick={() => {
                         clearAllBubbles();
-                        clearAllCurves();
                         reRender();
                     }}
                 >

@@ -38,7 +38,6 @@ export const isCurve = (obj: unknown): obj is Curve => {
         obj !== null &&
         typeof obj === 'object' &&
         typeof (obj as Curve).position === 'object' && // Curve2D 타입 확인
-        typeof (obj as Curve).path === 'string' &&
         typeof (obj as Curve).config === 'object' && // PenConfig 타입 확인
         typeof (obj as Curve).isVisible === 'boolean' &&
         (typeof (obj as Curve).id === 'number' || (obj as Curve).id === undefined)

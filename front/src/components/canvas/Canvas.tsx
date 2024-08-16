@@ -115,10 +115,10 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
                     className={style.eraser}
                     style={{
                         // TODO eraser이미지를 interfaceLayer로 옮기기
-                        left: position.x - earseRadiusRef.current,
-                        top: position.y - earseRadiusRef.current,
-                        width: `${earseRadiusRef.current * 2}px`,
-                        height: `${earseRadiusRef.current * 2}px`,
+                        left: `${position.x - earseRadiusRef.current * 1.7}px`,
+                        top: `${position.y - earseRadiusRef.current * 1.7}px`,
+                        width: `${earseRadiusRef.current * 3.4}px`,
+                        height: `${earseRadiusRef.current * 3.4}px`,
                     }}
                 ></div>
             )}
