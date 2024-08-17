@@ -24,7 +24,11 @@ const PARAMS = {
 export const KAKAO_LOGIN_URL = `${AUTHORIZE_URI}?${stringify(PARAMS)}`;
 
 const kakaoLogin = async (code: string) => {
-    const { accessToken } = await getAccessTokenAPI({ provider: 'KAKAO', code: code });
+    const { accessToken } = await getAccessTokenAPI({
+        provider: 'KAKAO',
+        code: code,
+        redirect_uri: `${window.location.origin}/login/kakao`,
+    });
     return {
         accessToken,
     };

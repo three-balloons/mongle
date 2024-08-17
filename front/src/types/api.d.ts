@@ -11,4 +11,4 @@ type APIExceptionCode =
     | 'SIGN_UP_NEEDED'
     | 'MEMBER_EXISTS';
 
-type Provider = 'KAKAO' | 'GOOGLE' | 'PASS';
+type Provider = 'KAKAO' | 'GOOGLE';

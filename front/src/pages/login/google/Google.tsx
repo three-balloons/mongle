@@ -23,7 +23,11 @@ const PARAMS = {
 export const GOOGLE_LOGIN_URL = `${AUTHORIZE_URI}?${stringify(PARAMS)}`;
 
 const googleLogin = async (code: string) => {
-    const { accessToken } = await getAccessTokenAPI({ provider: 'GOOGLE', code: code });
+    const { accessToken } = await getAccessTokenAPI({
+        provider: 'GOOGLE',
+        code: code,
+        redirect_uri: `${window.location.origin}/login/google`,
+    });
     return {
         accessToken,
     };

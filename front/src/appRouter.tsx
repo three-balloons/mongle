@@ -6,7 +6,6 @@ import { Login } from '@/pages/login/Login';
 import { Workspace } from '@/pages/workspace/Workspace';
 import { Routed } from '@/Routed';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
-import { Pass } from '@/pages/login/pass/Pass';
 import { Signup } from '@/pages/signup/Signup';
 
 export const appRouter = createBrowserRouter([
@@ -46,18 +45,6 @@ export const appRouter = createBrowserRouter([
                     {
                         path: 'google',
                         element: <Google />,
-                    },
-                    {
-                        path: 'pass',
-                        element: (
-                            <Routed>
-                                {({ searchParam }) => {
-                                    const state = searchParam.get('state');
-                                    if (state == null) return <Pass />;
-                                    return;
-                                }}
-                            </Routed>
-                        ),
                     },
                     {
                         path: 'signup',
