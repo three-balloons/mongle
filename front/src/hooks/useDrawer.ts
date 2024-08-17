@@ -47,7 +47,7 @@ export const useDrawer = () => {
                 );
 
                 const position = view2BubbleWithVector2D(currentPos, cameraView, getNewCurvePath());
-                if (addControlPoint({ ...position, isVisible: true }, true))
+                if (addControlPoint({ ...position, isVisible: true }))
                     lineRenderer(positionRef.current, currentPosition);
             }
             positionRef.current = currentPosition;
@@ -63,7 +63,7 @@ export const useDrawer = () => {
                 addControlPoint({ ...position, isVisible: true }, true);
             }
             const newCurve = addNewCurve(getThicknessRatio(cameraView));
-            pushLog({ type: 'create', object: newCurve });
+            pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
         },
 
         [addNewCurve],

@@ -10,6 +10,7 @@ export type BubbleContextProps = {
     getBubbles: () => Array<Bubble>;
     addBubble: (bubble: Bubble, childrenPaths: Array<string>) => void;
     removeBubble: (bubble: Bubble) => void;
+    updateBubble: (path: string, bubble: Bubble) => void;
     findBubble: (path: string) => Bubble | undefined;
 
     /* 좌표 변환 */
@@ -72,16 +73,10 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                             const path = parentPath === '/' ? '/' + child.name : parentPath + '/' + child.name;
                             const isNewNodeChild = childrenPaths.find((childPath) => childPath == path);
                             if (isNewNodeChild && child.this) {
-                                // children의 path 업데이트
-                                child.this.path =
-                                    parentPath === '/'
-                                        ? '/' + newNode.name + '/' + child.name
-                                        : parentPath + '/' + newNode.name + '/' + child.name;
-
                                 const parentBubble = prevNode.this;
                                 const pos = global2bubbleWithRect(
                                     bubble2globalWithRect(child.this as Rect, parentBubble),
-                                    newNode.this,
+                                    bubble2globalWithRect(newNode.this as Rect, parentBubble),
                                 );
                                 // refernce 유지
                                 child.this.top = pos.top;
@@ -92,6 +87,18 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                             return !isNewNodeChild;
                         });
                         prevNode.children.push(newNode);
+                        // 하위의 path 업데이트
+                        const updateDescendantPath = (node: BubbleTreeNode) => {
+                            if (!node.this) return;
+                            const path = node.this.path;
+                            for (const child of node.children) {
+                                if (child.this) {
+                                    child.this.path = path + '/' + child.this.name;
+                                    updateDescendantPath(child);
+                                }
+                            }
+                        };
+                        updateDescendantPath(newNode);
                     }
                 }
                 return bubbleTreeRoot;
@@ -120,17 +127,43 @@ const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): BubbleStat
                             prevNode.this,
                         );
                         if (child.this) {
+                            // child.this = {
+                            //     ...child.this,
+                            //     top: pos.top,
+                            //     left: pos.left,
+                            //     height: pos.height,
+                            //     width: pos.width,
+                            //     path: parentPath === '/' ? parentPath + child.name : parentPath + '/' + child.name,
+                            // };
+                            // const tmp = child.this;
+                            // tmp.top = pos.top;
+                            // tmp.left = pos.left;
+                            // tmp.height = pos.height;
+                            // tmp.width = pos.width;
+                            // tmp.path = parentPath === '/' ? parentPath + child.name : parentPath + '/' + child.name;
+                            // TODO tree와 bubble의 동기화가 늦음
                             child.this.top = pos.top;
                             child.this.left = pos.left;
                             child.this.height = pos.height;
                             child.this.width = pos.width;
-                            child.this.path = parentPath + '/' + child.name;
+                            child.this.path =
+                                parentPath === '/' ? parentPath + child.name : parentPath + '/' + child.name;
                         }
                     });
                     prevNode.children = [
                         ...prevNode.children.filter((child) => child != currentNode),
                         ...currentNode.children,
                     ];
+                    const updateDescendantPath = (node: BubbleTreeNode) => {
+                        const path = node.this?.path ?? '';
+                        for (const child of node.children) {
+                            if (child.this) {
+                                child.this.path = path + '/' + child.this.name;
+                                updateDescendantPath(child);
+                            }
+                        }
+                    };
+                    updateDescendantPath(prevNode);
                 }
                 return bubbleTreeRoot;
             };
@@ -185,10 +218,21 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         _addBubbleInTree(bubble, childrenPaths);
     };
 
-    // children 정보 필요 없음
     const removeBubble = (bubbleToRemove: Bubble) => {
         bubblesRef.current = [...bubblesRef.current.filter((bubble) => bubble !== bubbleToRemove)];
         _removeBubbleInTree(bubbleToRemove);
+    };
+
+    /**
+     * path에 해당하는 bubble을 찾아 update(주소 변환 X)
+     * @param path 변환시킬 bubble의 path
+     * @param bubble 변환시킬 내용
+     */
+    const updateBubble = (path: string, bubble: Bubble) => {
+        const remove = findBubble(path);
+        const childrenPaths = getChildBubbles(path).map((child) => child.path);
+        if (remove) removeBubble(remove);
+        addBubble(bubble, childrenPaths);
     };
 
     const findBubble = (path: string): Bubble | undefined => {
@@ -282,6 +326,10 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
         dispatch({ type: 'REMOVE_BUBBLE_IN_TREE', payload: { bubble } });
     };
 
+    /**
+     *
+     * path 밑의 모든 bubble을 가져옴
+     */
     const getDescendantBubbles = (path: string) => {
         const pathList = pathToList(path);
         let currentNode: BubbleTreeNode | undefined = state.bubbleTree;
@@ -335,6 +383,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children, worksp
                 getCreatingBubble,
                 addBubble,
                 removeBubble,
+                updateBubble,
                 updateCreatingBubble,
                 findBubble,
                 descendant2child,

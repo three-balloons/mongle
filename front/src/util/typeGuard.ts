@@ -38,7 +38,6 @@ export const isCurve = (obj: unknown): obj is Curve => {
         obj !== null &&
         typeof obj === 'object' &&
         typeof (obj as Curve).position === 'object' && // Curve2D 타입 확인
-        typeof (obj as Curve).path === 'string' &&
         typeof (obj as Curve).config === 'object' && // PenConfig 타입 확인
         typeof (obj as Curve).isVisible === 'boolean' &&
         (typeof (obj as Curve).id === 'number' || (obj as Curve).id === undefined)
@@ -55,3 +54,15 @@ export const isBubble = (obj: unknown): obj is Bubble => {
         typeof (obj as Bubble).isVisible === 'boolean'
     );
 };
+
+export const isLogBubble = (logElement: LogElement): logElement is LogBubble => {
+    return 'object' in logElement && isBubble(logElement.object);
+};
+
+export const isLogCurve = (logElement: LogElement): logElement is LogCurve => {
+    return 'object' in logElement && isCurve(logElement.object);
+};
+
+// export const isLogCamera = (logElement: LogElement): logElement is LogCamera => {
+//     return logElement.type === 'move' && 'object' in logElement;
+// };

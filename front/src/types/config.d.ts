@@ -1,7 +1,6 @@
 type PenConfig = {
     color: Color;
     thickness: number;
-    alpha: number;
 };
 
 type TextConfig = {

@@ -1,6 +1,6 @@
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
-import { isBubble, isCurve } from '@/util/shapes/typeGuard';
+import { isLogBubble, isLogCurve } from '@/util/typeGuard';
 import { createContext, useReducer } from 'react';
 
 export type LogContextProps = {
@@ -8,7 +8,7 @@ export type LogContextProps = {
     isRedoAvailable: boolean;
     undo: () => void;
     redo: () => void;
-    pushLog: (log: LogElement) => void;
+    pushLog: (log: LogGroup) => void;
 };
 
 export const LogContext = createContext<LogContextProps | undefined>(undefined);
@@ -16,20 +16,22 @@ export const LogContext = createContext<LogContextProps | undefined>(undefined);
 type LogProviderProps = {
     children: React.ReactNode;
 };
-type LogElement = {
-    type: 'update' | 'create' | 'delete';
-    object: Bubble | Curve;
-    options?: {
-        childrenPaths: Array<string>;
-    };
-};
+/**
+ * update
+ * => 이전 object를 저장 => 교체
+ *
+ * create
+ * => 만든 object를 저장 => 삭제
+ *
+ * delete
+ * => 삭제한 object를 저장 => 복구
+ *
+ * move
+ * => 이동한 cameraView를 저장 교체
+ *
+ */
 
-type LogState = {
-    logStack: Array<LogElement>;
-    redoStack: Array<LogElement>;
-};
-
-export type LogAction = { type: 'UNDO' } | { type: 'REDO' } | { type: 'PUSH_LOG'; payload: { log: LogElement } };
+export type LogAction = { type: 'UNDO' } | { type: 'REDO' } | { type: 'PUSH_LOG'; payload: { log: LogGroup } };
 
 const LogReducer = (state: LogState, action: LogAction): LogState => {
     switch (action.type) {
@@ -57,7 +59,7 @@ const LogReducer = (state: LogState, action: LogAction): LogState => {
 };
 
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
-    const { addBubble, removeBubble } = useBubble();
+    const { addBubble, removeBubble, getBubbles } = useBubble();
     const { addCurve, removeCurve } = useCurve();
     const [state, dispatch] = useReducer(LogReducer, {
         logStack: [],
@@ -69,15 +71,25 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
      */
     const undo = () => {
         if (state.logStack.length == 0) return;
-        const log = state.logStack[state.logStack.length - 1];
-        if (log.type == 'create') {
-            if (isBubble(log.object)) removeBubble(log.object);
-            else if (isCurve(log.object)) removeCurve(log.object);
-        } else if (log.type == 'delete') {
-            if (isBubble(log.object) && log.options) addBubble(log.object, log.options.childrenPaths);
-            else if (isCurve(log.object)) addCurve(log.object);
-        }
+        const logGroup = state.logStack[state.logStack.length - 1];
+        logGroup.forEach((log) => {
+            if (log.type == 'create') {
+                if (isLogBubble(log)) {
+                    removeBubble(log.object);
+                } else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
+            } else if (log.type == 'delete') {
+                if (isLogBubble(log)) addBubble(log.object, log.options.childrenPaths);
+                else if (isLogCurve(log)) addCurve(log.options.path, log.object);
+            }
+            // else if (log.type == 'update') {
+            //     if (isLogBubble(log)) {
+            //         updateBubble(log.object.path, log.object);
+            //     } else if (isLogCurve(log)) addCurve(log.options.path, log.object);
+            // }
+        });
+        console.log(getBubbles());
         dispatch({ type: 'UNDO' });
+        console.log(getBubbles());
     };
 
     /**
@@ -85,18 +97,22 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
      */
     const redo = () => {
         if (state.redoStack.length == 0) return;
-        const log = state.redoStack[state.redoStack.length - 1];
-        if (log.type == 'create') {
-            if (isBubble(log.object) && log.options) addBubble(log.object, log.options.childrenPaths);
-            else if (isCurve(log.object)) addCurve(log.object);
-        } else if (log.type == 'delete') {
-            if (isBubble(log.object)) removeBubble(log.object);
-            else if (isCurve(log.object)) removeCurve(log.object);
-        }
+        const logGroup = state.redoStack[state.redoStack.length - 1];
+        logGroup.forEach((log) => {
+            if (log.type == 'create') {
+                if (isLogBubble(log)) {
+                    addBubble(log.object, log.options.childrenPaths);
+                } else if (isLogCurve(log)) addCurve(log.options.path, log.object);
+            } else if (log.type == 'delete') {
+                if (isLogBubble(log)) removeBubble(log.object);
+                else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
+            }
+        });
+
         dispatch({ type: 'REDO' });
     };
 
-    const pushLog = (log: LogElement) => {
+    const pushLog = (log: LogGroup) => {
         dispatch({ type: 'PUSH_LOG', payload: { log } });
     };
 

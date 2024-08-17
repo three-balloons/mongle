@@ -17,6 +17,7 @@ export type RendererContextProps = {
     mainLayerRef: React.RefObject<HTMLCanvasElement>;
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
+    interfaceLayerRef: React.RefObject<HTMLCanvasElement>;
     bubbleTransitAnimation: (
         bubble: Bubble,
         startBubblePos: Vector2D,
@@ -26,7 +27,7 @@ export type RendererContextProps = {
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
-    renderer: (curves: Array<Curve>) => void;
+    renderer: () => void;
     rectRender: (rect: Rect) => void;
     bubbleRender: (bubble: Bubble) => void;
     movementBubbleRender: () => void;
@@ -46,13 +47,12 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
-
-    const canvasImageRef = useRef<ImageData | null>(null);
+    const interfaceLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
 
     // use for animation
     const modeRef = useRef<ControlMode>('none');
 
-    const { getNewCurvePath, getCurves, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
     const { getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
     const { pushLog } = useLog();
     const { getCameraView } = useCamera();
@@ -98,23 +98,15 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         // TODO 좌표 보정하기
         if (creationLayerRef.current) clearLayerRenderer(creationLayerRef.current);
         if (movementLayerRef.current) clearLayerRenderer(movementLayerRef.current);
-        renderer(getCurves());
+        renderer();
 
         movementBubbleRender();
-        getBubbles().forEach((bubble) => {
-            if (!bubble.isBubblized) {
-                bubbleRender(bubble);
-            }
-        });
     };
 
     const clearLayerRenderer = (canvas: HTMLCanvasElement) => {
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            if (mainLayerRef.current == canvas) {
-                canvasImageRef.current = context.getImageData(0, 0, canvas.width, canvas.height);
-            }
         }
     };
 
@@ -180,61 +172,28 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         }
     };
 
-    const renderer = (curves: Array<Curve>) => {
+    const renderer = () => {
         if (!mainLayerRef.current) {
             return;
         }
         const canvas: HTMLCanvasElement = mainLayerRef.current;
         const context = canvas.getContext('2d');
-        const cameraView = getCameraView();
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            // TODO 버블을 먼저 찾고 버블 안에서 커브 넣기
-            curves.forEach((curve) => {
-                if (!curve.isVisible) return;
-                applyPenConfig(context, curve.config);
-                setThicknessWithRatio(context, getThicknessRatio(cameraView));
-                const parentBubble = findBubble(curve.path);
-                let c = curve.position;
-                if (parentBubble) {
-                    const bubbleView = descendant2child(parentBubble, cameraView.path);
-                    c = bubble2globalWithCurve(curve.position, bubbleView);
-                    const ratio = getRatioWithCamera(parentBubble, cameraView);
-                    if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
-                        return;
-                    }
+            console.log('getBubbles', getBubbles());
+            const bubbles = [...getBubbles()];
+            for (const bubble of bubbles) {
+                if (!bubble.isBubblized) {
+                    console.log(bubble);
+                    bubbleRender(bubble);
                 }
-
-                const beziers = catmullRom2Bezier(curve2View(c, cameraView));
-                context.beginPath();
-                // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-                if (beziers.length > 0) {
-                    let isSweep = true;
-                    for (let i = 0; i < beziers.length; i++) {
-                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
-                        if (beziers[i].start.isVisible) {
-                            context.bezierCurveTo(
-                                beziers[i].cp1.x,
-                                beziers[i].cp1.y,
-                                beziers[i].cp2.x,
-                                beziers[i].cp2.y,
-                                beziers[i].end.x,
-                                beziers[i].end.y,
-                            );
-                            isSweep = false;
-                        }
-                    }
-                    // TODO sweep 로직 다른 곳으로 옮기기
-                    if (isSweep) {
-                        removeCurve(curve);
-                        pushLog({ type: 'delete', object: curve });
-                    }
-                }
-                context.stroke();
-            });
-
-            const data = context.getImageData(0, 0, canvas.width, canvas.height);
-            canvasImageRef.current = data;
+            }
+            // bubbles.forEach((bubble) => {
+            //     if (!bubble.isBubblized) {
+            //         console.log(bubble);
+            //         bubbleRender(bubble);
+            //     }
+            // });
         }
     };
 
@@ -290,33 +249,44 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             context.setLineDash([10, 10]);
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
-            setThicknessWithRatio(context, getThicknessRatio(cameraView));
-            // bubble.curves.forEach((curve) => {
-            //     const c = bubble2globalWithCurve(curve.position, bubbleView);
-            //     const beziers = catmullRom2Bezier(curve2View(c, cameraViewRef.current));
-            //     applyPenConfig(context, curve.config);
-            //     context.beginPath();
-            //     // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-            //     if (beziers.length > 0) {
-            //         for (let i = 0; i < beziers.length; i++) {
-            //             context.moveTo(beziers[i].start.x, beziers[i].start.y);
-            //             context.bezierCurveTo(
-            //                 beziers[i].cp1.x,
-            //                 beziers[i].cp1.y,
-            //                 beziers[i].cp2.x,
-            //                 beziers[i].cp2.y,
-            //                 beziers[i].end.x,
-            //                 beziers[i].end.y,
-            //             );
-            //         }
-            //     }
-            //     context.stroke();
-            // });
+            context.font = '12px serif';
+            context.fillText(bubble.name, rect.left, rect.top - 8);
+            bubble.curves.forEach((curve) => {
+                const c = bubble2globalWithCurve(curve.position, bubbleView);
+
+                const beziers = catmullRom2Bezier(curve2View(c, cameraView));
+                applyPenConfig(context, curve.config);
+                setThicknessWithRatio(context, getThicknessRatio(cameraView));
+                context.beginPath();
+                // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
+                if (beziers.length > 0) {
+                    let isSweep = true;
+                    for (let i = 0; i < beziers.length; i++) {
+                        context.moveTo(beziers[i].start.x, beziers[i].start.y);
+                        if (beziers[i].start.isVisible) {
+                            context.bezierCurveTo(
+                                beziers[i].cp1.x,
+                                beziers[i].cp1.y,
+                                beziers[i].cp2.x,
+                                beziers[i].cp2.y,
+                                beziers[i].end.x,
+                                beziers[i].end.y,
+                            );
+                            isSweep = false;
+                        }
+                    }
+                    // TODO sweep 로직 다른 곳으로 옮기기
+                    if (isSweep) {
+                        removeCurve(bubble.path, curve);
+                        pushLog([{ type: 'delete', object: curve, options: { path: bubble.path } }]);
+                    }
+                }
+                context.stroke();
+            });
         }
     };
 
     const movementBubbleRender = () => {
-        // TODO : useBubble에 movement, 고정, 안보이는 버블 분리 (성능개선)
         const cameraView = getCameraView();
         if (!movementLayerRef.current) {
             return;
@@ -342,23 +312,38 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     },
                     cameraView,
                 );
-                const radiusX = rect.width / 2;
-                const radiusY = rect.height / 2;
-                const x = rect.width / 2 + rect.left;
-                const y = rect.height / 2 + rect.top;
+                const x = Math.min(rect.width + rect.left, rect.left);
+                const y = Math.min(rect.height + rect.top, rect.top);
+                const cornerRadius = Math.floor(Math.min(rect.width, rect.height) / 10);
                 context.strokeStyle = getThemeMainColor(theme);
+
                 context.beginPath();
-                context.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
-                const gradient = context.createRadialGradient(
-                    x - rect.width * 0.2,
-                    y - rect.height * 0.2,
-                    Math.min(radiusX, radiusY) * 0.2,
-                    x,
-                    y,
-                    Math.max(radiusX, radiusY),
+                context.moveTo(x + cornerRadius, y);
+                context.lineTo(x + rect.width - cornerRadius, y);
+                context.quadraticCurveTo(x + rect.width, y, x + rect.width, y + cornerRadius);
+                context.lineTo(x + rect.width, y + rect.height - cornerRadius);
+                context.quadraticCurveTo(
+                    x + rect.width,
+                    y + rect.height,
+                    x + rect.width - cornerRadius,
+                    y + rect.height,
                 );
-                gradient.addColorStop(0, 'rgb(255, 255, 255)');
-                gradient.addColorStop(0.5, getThemeMainColor(theme, 0.5));
+                context.lineTo(x + cornerRadius, y + rect.height);
+                context.quadraticCurveTo(x, y + rect.height, x, y + rect.height - cornerRadius);
+                context.lineTo(x, y + cornerRadius);
+                context.quadraticCurveTo(x, y, x + cornerRadius, y);
+                context.closePath();
+
+                const gradient = context.createRadialGradient(
+                    x + rect.width * 0.4,
+                    y + rect.height * 0.4,
+                    Math.min(rect.width, rect.height) * 0.1,
+                    x + rect.width * 0.4,
+                    y + rect.height * 0.4,
+                    Math.max(rect.width, rect.height) * 0.5,
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                gradient.addColorStop(0.9, getThemeMainColor(theme, 0.5));
                 context.fillStyle = gradient;
                 context.fill();
                 context.strokeStyle = getThemeMainColor(theme);
@@ -375,6 +360,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 mainLayerRef,
                 creationLayerRef,
                 movementLayerRef,
+                interfaceLayerRef,
                 bubbleTransitAnimation,
                 reRender,
                 lineRenderer,
