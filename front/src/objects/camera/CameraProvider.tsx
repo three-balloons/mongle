@@ -3,7 +3,7 @@ import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithRect, global2bubbleWithRect } from '@/util/coordSys/conversion';
 import { getParentPath } from '@/util/path/path';
-import { easeInOutCubic } from '@/util/transition/transtion';
+import { easeInCubic, easeInOutCubic, easeOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
 export type CameraContextProps = {
@@ -156,7 +156,7 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
                 path,
                 pos: prevPos,
             });
-            viewTransitAnimation(prevPos, pos, 500);
+            viewTransitAnimation(prevPos, pos, 600);
         } else
             setCameraView({
                 size: cameraView.size,
@@ -169,11 +169,26 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
         let time = 0;
         modeRef.current = mode;
         setMode('animate');
+        const top = Math.min(startViewPos.top, endViewPos.top);
+        const left = Math.min(startViewPos.left, endViewPos.left);
+        const middleViewPos: Rect = {
+            top: top,
+            left: left,
+            height: Math.max(startViewPos.top + startViewPos.height, endViewPos.top + endViewPos.height) - top,
+            width: Math.max(startViewPos.left + startViewPos.width, endViewPos.left + endViewPos.width) - left,
+        };
         const intervalId = setInterval(() => {
-            const pos = easeInOutCubic(time / duration, startViewPos, endViewPos);
+            let pos: Rect;
+            if (time < duration / 2) {
+                pos = easeOutCubic(time / duration, startViewPos, middleViewPos);
+            } else {
+                pos = easeInCubic(time / duration, middleViewPos, endViewPos);
+            }
+
             setCameraView({ ...cameraViewRef.current, pos: pos });
             time += 30;
             if (time >= duration) {
+                setCameraView({ ...cameraViewRef.current, pos: endViewPos });
                 setMode(modeRef.current);
                 clearInterval(intervalId);
             }
