@@ -7,13 +7,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import me.bubble.bubble.domain.Bubble;
-import me.bubble.bubble.domain.Controls;
 import me.bubble.bubble.domain.Curve;
 import me.bubble.bubble.domain.Workspace;
 import me.bubble.bubble.dto.*;
 import me.bubble.bubble.exception.CurveNotFoundException;
 import me.bubble.bubble.service.BubbleService;
-import me.bubble.bubble.service.ControlsService;
 import me.bubble.bubble.service.CurveService;
 import me.bubble.bubble.service.WorkspaceService;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor // 빈 자동 주입 (final이 붙거나 @NotNull이 붙은 필드 대상) (생성자 주입)
 @RestController //HTTP Response Body의 객체 데이터를 JSON 형식으로 반환
@@ -29,9 +28,8 @@ public class BubbleApiController {
     private final BubbleService bubbleService;
     private final CurveService curveService;
     private final WorkspaceService workspaceService;
-    private final ControlsService controlsService;
 
-    @GetMapping("/api/bubble/{workspaceId}")
+    @GetMapping("api/bubble/{workspaceId}")
     @Operation(summary = "버블에 대한 정보 가져오기", description = "해당 버블과 그 버블에 포함된 버블, 커브 가져오기 (depth만큼)")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200(Inappropriate depth)", description = "code: \"Inappropriate depth\", message: \"깊이가 부적절합니다.\"", content = @Content(mediaType = "application/json")),
@@ -41,26 +39,37 @@ public class BubbleApiController {
             @Parameter(name = "path", description = "버블의 path (필수)", example = "/ws1/A", required = true),
             @Parameter(name = "depth", description = "탐색을 원하는 깊이 (선택, default = 1, 1~5 사이)", example = "3"),
     })
-    public ApiResponse<List<BubbleResponse>> findBubblesFromWorkspace (@PathVariable Long workspaceId,
+    public ApiResponse<List<BubbleResponse>> findBubblesFromWorkspace (@PathVariable UUID workspaceId,
                                                                        @RequestParam(required = true) String path,
-                                                                       @RequestParam(required = false, defaultValue = "1") int depth) {
+                                                                       @RequestParam(required = false, defaultValue = "1") int depth)
+    {
         if (depth < 1 || depth > 5) {
             return ApiResponse.<List<BubbleResponse>>builder()
-                    .code("Inappropriate depth")
+                    .code("INAPPROPRIATE_DEPTH")
                     .message("깊이가 부적절합니다.")
                     .data(null)
                     .build();
         } else {
-
-            Bubble bubble = bubbleService.findByPathAndWorkspaceId(path, workspaceId);
-            List<BubbleResponse> bubbleResponse = buildBubbleResponseList(bubble, depth, workspaceId);
-
+            List<Bubble> bubbles = bubbleService.getBubblesByWorkspaceAndPathAndPathDepth(workspaceId, path, depth);
+            List<BubbleResponse> bubbleResponse = new ArrayList<>();
+            for (Bubble bubble: bubbles) {
+                bubbleResponse.add(buildBubbleResponse(bubble));
+            }
             return ApiResponse.<List<BubbleResponse>>builder()
                     .code("OK")
                     .message("")
                     .data(bubbleResponse)
                     .build();
         }
+    }
+
+    private BubbleResponse buildBubbleResponse(Bubble bubble) {
+        List<CurveResponse> curveResponses = new ArrayList<>();
+
+        for (Curve curve : curveService.findCurvesByBubble(bubble)) {
+            curveResponses.add(new CurveResponse(curve));
+        }
+        return new BubbleResponse(bubble, curveResponses);
     }
 
     @DeleteMapping("/api/bubble/{workspaceId}")
@@ -71,12 +80,12 @@ public class BubbleApiController {
     @Parameters({
             @Parameter(name = "path", description = "버블의 path (필수)", example = "/ws1/A", required = true)
     })
-    public ApiResponse<Object> deleteBubbleFromWorkspace(@PathVariable Long workspaceId,
+    public ApiResponse<Object> deleteBubbleFromWorkspace(@PathVariable UUID workspaceId,
                                                          @RequestParam(required = true) String path){
 
         if (path.endsWith("/")) {
             return ApiResponse.<Object>builder()
-                    .code("Bad Request.")
+                    .code("BAD_REQUEST")
                     .message("잘못된 path.")
                     .data(null)
                     .build();
@@ -101,7 +110,7 @@ public class BubbleApiController {
             @Parameter(name = "depth", description = "탐색을 원하는 깊이 (선택, default = -1 (선택, 최대 깊이로 계산해서 반환)", example = "3"),
     })
     // <?>: 어떤 자료형의 객체도 매개변수로 받겠다는 의미
-    public ApiResponse<?> getBubbleTreeFromWorkspace(@PathVariable Long workspaceId,
+    public ApiResponse<?> getBubbleTreeFromWorkspace(@PathVariable UUID workspaceId,
                                                      @RequestParam(required = false, defaultValue = "/") String path,
                                                      @RequestParam(required = false, defaultValue = "-1") int depth)
     // RequestedParam 내부에는 정적이 값이 들어가야해서 음수로 설정 후 밑에서 음수일 경우 기본값을 바꿔주는 형식으로 구현
@@ -145,6 +154,34 @@ public class BubbleApiController {
         }
     }
 
+    private List<BubbleTreeResponse> buildBubbleTreeResponseList(Bubble bubble, int depth, UUID workspaceId) {
+        if (depth == 0 || bubble == null) {
+            return Collections.emptyList();
+        }
+
+        List<BubbleTreeResponse> bubbleTreeResponses = new ArrayList<>();
+        bubbleTreeResponses.add(buildBubbleTreeResponse(bubble, depth, workspaceId));
+
+        return bubbleTreeResponses;
+    }
+
+    private BubbleTreeResponse buildBubbleTreeResponse(Bubble bubble, int depth, UUID workspaceId) {
+        if (depth == 0 || bubble == null) {
+            return new BubbleTreeResponse(bubble.getName(), null);
+        }
+
+        List<BubbleTreeResponse> childrenResponses = new ArrayList<>();
+        for (Bubble child : bubbleService.findChildrenByBubbleAndWorkspaceId(bubble, workspaceId)) {
+            childrenResponses.add(buildBubbleTreeResponse(child, depth-1, workspaceId));
+        }
+//        '/' 기준 마지막 글자 추출
+//        String tempPath = bubble.getPath();
+//        int lastSlashIndex = tempPath.lastIndexOf('/');
+//        tempPath = tempPath.substring(lastSlashIndex + 1);
+
+        return new BubbleTreeResponse(bubble.getName(), childrenResponses);
+    }
+
     @PostMapping("/api/bubble/{workspaceId}")
     @Operation(summary = "버블 생성하기", description = "버블 생성하기")
     @ApiResponses(value = {
@@ -156,32 +193,33 @@ public class BubbleApiController {
     @Parameters({
             @Parameter(name = "path", description = "버블의 path (필수)", example = "/ws1/A", required = true)
     })
-    public ApiResponse<BubbleResponse> AddBubble (@PathVariable Long workspaceId,
+    public ApiResponse<BubbleResponse> AddBubble (@PathVariable UUID workspaceId,
                                                   @RequestParam(required = true) String path,
                                                   @RequestBody BubbleAddRequest request) {
         // 해당 workspace 가져온다.
         Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
-        
+
         if (path.lastIndexOf('/') == -1 || path.endsWith("/")) { // request의 path가 hhh같은 경우와 /로 끝나는 경우
             return ApiResponse.<BubbleResponse>builder()
-                    .code("Bad Request.")
+                    .code("BAD_REQUEST")
                     .message("잘못된 path.")
                     .data(null)
                     .build();
         }
         String tempString = path.substring(0, path.lastIndexOf('/')); //path 파싱해서 마지막 / 전까지 문자열 가져온다.
 
-        if (tempString.isEmpty()) { // /ws1 이런 식으로 위의 부모가 없는 버블일 경우.
+        if (tempString.isEmpty()) { // /ws1 이런 식으로 위의 부모가 없는 버블일 경우 (1단계 버블일 경우).
             try { //예외처리 (이미 존재하는 버블일 경우), 그렇지 않으면 새로운 버블 생성
                 Bubble existingBubble = bubbleService.findByPathAndWorkspaceId(path, workspaceId);
                 return ApiResponse.<BubbleResponse>builder()
-                        .code("Already Exist.")
+                        .code("ALREADY_EXIST")
                         .message("이미 존재하는 버블입니다.")
                         .data(null)
                         .build();
             } catch (IllegalArgumentException ex) {
                 // 버블이 존재하지 않는 경우 새로운 버블을 생성
                 Bubble bubble = Bubble.builder()
+                        .name(request.getName())
                         .top(request.getTop())
                         .leftmost(request.getLeft())
                         .width(request.getWidth())
@@ -189,13 +227,13 @@ public class BubbleApiController {
                         .path(path)
                         .pathDepth(1)
                         .workspace(workspace)
-                        .visible(true)
-                        .bubblized(false)
+                        .bubblized(request.isBubblized())
+                        .visible(request.isVisible())
                         .build();
 
                 Bubble savedBubble = bubbleService.saveBubble(bubble);
 
-                BubbleResponse bubbleResponse = new BubbleResponse(savedBubble, null, null);
+                BubbleResponse bubbleResponse = new BubbleResponse(savedBubble,null);
                 return ApiResponse.<BubbleResponse>builder()
                         .code("OK")
                         .message("")
@@ -210,13 +248,14 @@ public class BubbleApiController {
                 try { //예외처리 (이미 존재하는 버블일 경우), 그렇지 않으면 새로운 버블 생성
                     Bubble existingBubble = bubbleService.findByPathAndWorkspaceId(path, workspaceId);
                     return ApiResponse.<BubbleResponse>builder()
-                            .code("Already Exist.")
+                            .code("ALREADY_EXIST")
                             .message("이미 존재하는 버블입니다.")
                             .data(null)
                             .build();
                 } catch (IllegalArgumentException ex) {
                     // 버블이 존재하지 않는 경우 새로운 버블을 생성
                     Bubble bubble = Bubble.builder()
+                            .name(request.getName())
                             .top(request.getTop())
                             .leftmost(request.getLeft())
                             .width(request.getWidth())
@@ -224,13 +263,13 @@ public class BubbleApiController {
                             .path(path)
                             .pathDepth(parentBubble.getPathDepth()+ 1)
                             .workspace(workspace)
-                            .visible(true)
-                            .bubblized(false)
+                            .bubblized(request.isBubblized())
+                            .visible(request.isVisible())
                             .build();
 
                     Bubble savedBubble = bubbleService.saveBubble(bubble);
 
-                    BubbleResponse bubbleResponse = new BubbleResponse(savedBubble, null, null);
+                    BubbleResponse bubbleResponse = new BubbleResponse(savedBubble,null);
                     return ApiResponse.<BubbleResponse>builder()
                             .code("OK")
                             .message("")
@@ -239,7 +278,7 @@ public class BubbleApiController {
                 }
             } catch (IllegalArgumentException ex) {
                 return ApiResponse.<BubbleResponse>builder()
-                        .code("No Parent.")
+                        .code("NO_PARENT")
                         .message("부모 버블이 존재하지 않습니다.")
                         .data(null)
                         .build();
@@ -248,8 +287,8 @@ public class BubbleApiController {
 
     }
 
-    @PutMapping("/api/bubble/{workspaceId}") // 추가 개발 필요
-    @Operation(summary = "버블 업데이트", description = "버블에 포함된 커브 수정하기")
+    @PutMapping("/api/bubble/{workspaceId}/curve")
+    @Operation(summary = "버블 속 커브 업데이트", description = "버블에 포함된 커브 수정하기")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200(Fail Exist)", description = "code: \"FAIL_EXIST\", message: \"저장에 실패한 코드가 존재합니다.\"", content = @Content(mediaType = "application/json")),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200(OK)", description = "code: \"OK\", message: \"\"", content = @Content(mediaType = "application/json"))
@@ -257,7 +296,7 @@ public class BubbleApiController {
     @Parameters({
             @Parameter(name = "path", description = "버블의 path (필수)", example = "/ws1/A", required = true)
     })
-    public ApiResponse<PutResponse> PutBubble (@PathVariable Long workspaceId,
+    public ApiResponse<PutResponse> PutBubble (@PathVariable UUID workspaceId,
                                                @RequestParam(required = true) String path,
                                                @RequestBody PutRequest request) {
         try {
@@ -288,37 +327,12 @@ public class BubbleApiController {
                 CurveResponse modifiedCurve = update.getCurve();
                 try {
                     Curve curve = curveService.findCurveById(modifiedCurveId); // 실제 커브 객체 가져오기
-
-                    controlsService.deleteControlsByCurveId(update.getId()); //controlPoint 먼저 삭제
-                    int x_min = Integer.MAX_VALUE;
-                    int y_min = Integer.MAX_VALUE;
-                    int x_max = Integer.MIN_VALUE;
-                    int y_max = Integer.MIN_VALUE;
-
-                    for (ControlsResponse position: modifiedCurve.getPosition()) {
-                        int x = position.getX();
-                        int y = position.getY();
-
-                        if (x < x_min)
-                            x_min = x;
-                        if (x > x_max)
-                            x_max = x;
-                        if (y < y_min)
-                            y_min = y;
-                        if (y > y_max)
-                            y_max = y;
-
-                        controlsService.createAndSaveControls(x, y,
-                                position.isVisible(), curve);
+                    String controlPoint = "";
+                    for (ControlPoint control: modifiedCurve.getPosition()) {
+                        controlPoint = controlPoint + control.toBinaryString();
                     }
-                    int b_left = x_min;
-                    int b_top = y_min;
-                    int b_width = x_max - x_min;
-                    int b_height = y_max - y_min;
-
                     curve = curveService.updateCurve(modifiedCurveId, modifiedCurve.getConfig().getColor(),
-                            b_width, b_height, b_top, b_left, modifiedCurve.getPath(), modifiedCurve.getConfig().getThickness(),
-                            bubble);
+                            modifiedCurve.getConfig().getThickness(), bubble, controlPoint);
 
                     PutResponseObject putResponseObject = new PutResponseObject(update.getId(), true);
                     updateList.add(putResponseObject);
@@ -334,48 +348,20 @@ public class BubbleApiController {
             for (PutCreateRequest create: request.getCreate()) {
                 try {
                     CurveResponse modifiedCurve = create.getCurve();
-                    int x_min = Integer.MAX_VALUE;
-                    int y_min = Integer.MAX_VALUE;
-                    int x_max = Integer.MIN_VALUE;
-                    int y_max = Integer.MIN_VALUE;
-                    for (ControlsResponse position : modifiedCurve.getPosition()) {
-                        int x = position.getX();
-                        int y = position.getY();
 
-                        if (x < x_min)
-                            x_min = x;
-                        if (x > x_max)
-                            x_max = x;
-                        if (y < y_min)
-                            y_min = y;
-                        if (y > y_max)
-                            y_max = y;
+                    String controlPoint = "";
+                    for (ControlPoint control: modifiedCurve.getPosition()) {
+                        controlPoint = controlPoint + control.toBinaryString();
                     }
-                    int b_left = x_min;
-                    int b_top = y_min;
-                    int b_width = x_max - x_min;
-                    int b_height = y_max - y_min;
-
                     Curve curve = Curve.builder()
                             .color(modifiedCurve.getConfig().getColor())
-                            .b_width(b_width)
-                            .b_height(b_height)
-                            .b_top(b_top)
-                            .b_left(b_left)
-                            .path(modifiedCurve.getPath())
                             .thickness(modifiedCurve.getConfig().getThickness())
                             .bubble(bubble)
+                            .controlPoint(controlPoint)
                             .build();
 
                     Curve savedCurve = curveService.saveCurve(curve);
 
-                    for (ControlsResponse position : modifiedCurve.getPosition()) {
-                        int x = position.getX();
-                        int y = position.getY();
-
-                        controlsService.createAndSaveControls(x, y,
-                                position.isVisible(), savedCurve);
-                    }
                     PutResponseObject putResponseObject = new PutResponseObject(savedCurve.getId(), true);
                     createList.add(putResponseObject);
                 } catch (Exception ex) {
@@ -402,66 +388,115 @@ public class BubbleApiController {
         }
     }
 
-
-        private List<BubbleTreeResponse> buildBubbleTreeResponseList(Bubble bubble, int depth, Long workspaceId) {
-        if (depth == 0 || bubble == null) {
-            return Collections.emptyList();
-        }
-
-        List<BubbleTreeResponse> bubbleTreeResponses = new ArrayList<>();
-        bubbleTreeResponses.add(buildBubbleTreeResponse(bubble, depth, workspaceId));
-
-        return bubbleTreeResponses;
-    }
-
-    private BubbleTreeResponse buildBubbleTreeResponse(Bubble bubble, int depth, Long workspaceId) {
-        if (depth == 0 || bubble == null) {
-            return new BubbleTreeResponse("", Collections.emptyList());
-        }
-
-        List<BubbleTreeResponse> childrenResponses = new ArrayList<>();
-        for (Bubble child : bubbleService.findChildrenByBubbleAndWorkspaceId(bubble, workspaceId)) {
-            childrenResponses.add(buildBubbleTreeResponse(child, depth-1, workspaceId));
-        }
-
-        // /기준 마지막 글자 추출
-        String tempPath = bubble.getPath();
-        int lastSlashIndex = tempPath.lastIndexOf('/');
-        tempPath = tempPath.substring(lastSlashIndex + 1);
-
-        return new BubbleTreeResponse(tempPath, childrenResponses);
-    }
-
-    private List<BubbleResponse> buildBubbleResponseList(Bubble bubble, int depth, Long workspaceId) {
-        if (depth == 0 || bubble == null) {
-            return Collections.emptyList();
-        }
-
-        List<BubbleResponse> bubbleResponses = new ArrayList<>();
-        bubbleResponses.add(buildBubbleResponse(bubble, depth, workspaceId));
-
-        return bubbleResponses;
-    }
-
-    private BubbleResponse buildBubbleResponse(Bubble bubble, int depth, Long workspaceId) {
-        if (depth == 0 || bubble == null) {
-            return new BubbleResponse(bubble, Collections.emptyList(), Collections.emptyList());
-        }
-
-        List<BubbleResponse> childrenResponses = new ArrayList<>();
-        for (Bubble child : bubbleService.findChildrenByBubbleAndWorkspaceId(bubble, workspaceId)) {
-            childrenResponses.add(buildBubbleResponse(child, depth - 1, workspaceId));
-        }
-
-        List<CurveResponse> curveResponses = new ArrayList<>();
-
-        for (Curve curve : curveService.findCurvesByBubble(bubble)) {
-            List<ControlsResponse> positions = new ArrayList<>();
-            for (Controls controls: controlsService.findByCurveId(curve.getId())) {
-                positions.add(new ControlsResponse(controls));
+    @PutMapping("/api/bubble/{workspaceId}/move")
+    @Operation(summary = "버블 위치 옮기기", description = "버블의 위치 옮기기")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200(OK)", description = "code: \"OK\", message: \"\"", content = @Content(mediaType = "application/json"))
+    })
+    @Parameters({
+            @Parameter(name = "oldPath", description = "버블의 기존 path (필수)", example = "/ws1/A", required = true)
+    })
+    public ApiResponse<Object> PutMoveBubble (@PathVariable UUID workspaceId,
+                                               @RequestParam(required = true) String oldPath,
+                                               @RequestBody PutMoveRequest request) {
+        try {
+            Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
+            Bubble bubble = bubbleService.findByPathAndWorkspaceId(oldPath, workspaceId);
+            if (request.getNewPath().isEmpty()) {
+                bubbleService.updateBubble(bubble.getId(), request.getName(), request.getTop(), request.getLeft(),
+                        request.getWidth(), request.getHeight(), oldPath, bubble.getPathDepth(), request.isBubblized(),
+                        request.isVisible(), workspace);
+            } else {
+                bubbleService.updateBubblePaths(workspace, oldPath, request.getNewPath());
+                bubbleService.updateBubble(bubble.getId(), request.getName(), request.getTop(), request.getLeft(),
+                        request.getWidth(), request.getHeight(), request.getNewPath(), countOccurrences(request.getNewPath(), '/'),
+                        request.isBubblized(), request.isVisible(), workspace);
             }
-            curveResponses.add(new CurveResponse(curve, positions));
+
+
+            return ApiResponse.<Object>builder() // Workspace는 적절히 주어진다고 가정.
+                    .code("OK")
+                    .message("")
+                    .data(null)
+                    .build();
+
+        } catch (IllegalArgumentException ex) {
+            return ApiResponse.<Object>builder() // Workspace는 적절히 주어진다고 가정.
+                    .code("BUBBLE_NOT_FOUND")
+                    .message("해당 버블을 찾지 못하였습니다.")
+                    .data(null)
+                    .build();
         }
-        return new BubbleResponse(bubble, childrenResponses, curveResponses);
     }
+    private int countOccurrences (String str,char character){
+        return (int) str.chars().filter(ch -> ch == character).count();
+    }
+
+//
+////    기존의 GET, 재귀적으로 호출하는 형태
+////    @GetMapping("/api/bubble/{workspaceId}")
+////    @Operation(summary = "버블에 대한 정보 가져오기", description = "해당 버블과 그 버블에 포함된 버블, 커브 가져오기 (depth만큼)")
+////    @ApiResponses(value = {
+////            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200(Inappropriate depth)", description = "code: \"Inappropriate depth\", message: \"깊이가 부적절합니다.\"", content = @Content(mediaType = "application/json")),
+////            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200(OK)", description = "code: \"OK\", message: \"\" ", content = @Content(mediaType = "application/json"))
+////    })
+////    @Parameters({
+////            @Parameter(name = "path", description = "버블의 path (필수)", example = "/ws1/A", required = true),
+////            @Parameter(name = "depth", description = "탐색을 원하는 깊이 (선택, default = 1, 1~5 사이)", example = "3"),
+////    })
+////    public ApiResponse<List<BubbleResponse>> findBubblesFromWorkspace (@PathVariable Long workspaceId,
+////                                                                       @RequestParam(required = true) String path,
+////                                                                       @RequestParam(required = false, defaultValue = "1") int depth) {
+////        if (depth < 1 || depth > 5) {
+////            return ApiResponse.<List<BubbleResponse>>builder()
+////                    .code("Inappropriate depth")
+////                    .message("깊이가 부적절합니다.")
+////                    .data(null)
+////                    .build();
+////        } else {
+////
+////            Bubble bubble = bubbleService.findByPathAndWorkspaceId(path, workspaceId);
+////            List<BubbleResponse> bubbleResponse = buildBubbleResponseList(bubble, depth, workspaceId);
+////
+////            return ApiResponse.<List<BubbleResponse>>builder()
+////                    .code("OK")
+////                    .message("")
+////                    .data(bubbleResponse)
+////                    .build();
+////        }
+////    }
+//
+//
+//    private List<BubbleResponse> buildBubbleResponseList(Bubble bubble, int depth, Long workspaceId) {
+//        if (depth == 0 || bubble == null) {
+//            return Collections.emptyList();
+//        }
+//
+//        List<BubbleResponse> bubbleResponses = new ArrayList<>();
+//        bubbleResponses.add(buildBubbleResponse(bubble, depth, workspaceId));
+//
+//        return bubbleResponses;
+//    }
+////
+////    private BubbleResponse buildBubbleResponse(Bubble bubble, int depth, Long workspaceId) {
+////        if (depth == 0 || bubble == null) {
+////            return new BubbleResponse(bubble, Collections.emptyList(), Collections.emptyList());
+////        }
+////
+////        List<BubbleResponse> childrenResponses = new ArrayList<>();
+////        for (Bubble child : bubbleService.findChildrenByBubbleAndWorkspaceId(bubble, workspaceId)) {
+////            childrenResponses.add(buildBubbleResponse(child, depth - 1, workspaceId));
+////        }
+////
+////        List<CurveResponse> curveResponses = new ArrayList<>();
+////
+////        for (Curve curve : curveService.findCurvesByBubble(bubble)) {
+////            List<ControlsResponse> positions = new ArrayList<>();
+////            for (Controls controls: controlsService.findByCurveId(curve.getId())) {
+////                positions.add(new ControlsResponse(controls));
+////            }
+////            curveResponses.add(new CurveResponse(curve, positions));
+////        }
+////        return new BubbleResponse(bubble, childrenResponses, curveResponses);
+////    }
 }

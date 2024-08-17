@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,23 +24,11 @@ public class Curve {
     @Column(name = "color")
     private String color;
 
-    @Column(name = "b_width")
-    private int b_width;
-
-    @Column(name = "b_height")
-    private int b_height;
-
-    @Column(name = "b_top")
-    private int b_top;
-
-    @Column(name = "b_left")
-    private int b_left;
-
-    @Column(name = "path")
-    private String path;
-
     @Column(name = "thickness")
     private int thickness;
+
+    @Column(name = "control_point")
+    private String controlPoint;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bubble_id")
@@ -47,27 +36,17 @@ public class Curve {
     private Bubble bubble;
 
     @Builder
-    public Curve(String color, int b_width, int b_height, int b_top, int b_left,
-                 String path, int thickness, Bubble bubble) {
+    public Curve(String color, int thickness, Bubble bubble, String controlPoint) {
         this.color = color;
-        this.b_width = b_width;
-        this.b_height = b_height;
-        this.b_top = b_top;
-        this.b_left = b_left;
-        this.path = path;
         this.thickness = thickness;
         this.bubble = bubble;
+        this.controlPoint = controlPoint;
     }
 
-    public void update(String color, int b_width, int b_height, int b_top, int b_left,
-                       String path, int thickness, Bubble bubble) {
+    public void update(String color, int thickness, Bubble bubble, String controlPoint) {
         this.color = color;
-        this.b_width = b_width;
-        this.b_height = b_height;
-        this.b_top = b_top;
-        this.b_left = b_left;
-        this.path = path;
         this.thickness = thickness;
         this.bubble = bubble;
+        this.controlPoint = controlPoint;
     }
 }

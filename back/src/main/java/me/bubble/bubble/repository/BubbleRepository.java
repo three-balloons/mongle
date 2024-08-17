@@ -3,15 +3,17 @@ package me.bubble.bubble.repository;
 import me.bubble.bubble.domain.Bubble;
 import me.bubble.bubble.domain.Workspace;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface BubbleRepository extends JpaRepository<Bubble, Long> {
-    Optional<Bubble> findByPathAndWorkspaceId(String path, Long workspaceId);
-    List<Bubble> findByPathDepthAndPathStartingWithAndWorkspaceId(int pathDepth, String path, Long workspaceId);
-    void deleteByPathStartingWithAndWorkspaceId(String path, Long workspaceId);
-    Bubble findTopByWorkspaceIdOrderByPathDepthDesc(Long workspaceId);
-    List<Bubble> findByPathDepthAndWorkspaceId(int pathDepth, Long workspaceId);
+    Optional<Bubble> findByPathAndWorkspaceId(String path, UUID workspaceId);
+    List<Bubble> findByPathDepthAndPathStartingWithAndWorkspaceId(int pathDepth, String path, UUID workspaceId);
+    void deleteByPathStartingWithAndWorkspaceId(String path, UUID workspaceId);
+    Bubble findTopByWorkspaceIdOrderByPathDepthDesc(UUID workspaceId);
+    List<Bubble> findByPathDepthAndWorkspaceId(int pathDepth, UUID workspaceId);
+    List<Bubble> findByWorkspaceIdAndPathStartsWithAndPathDepthLessThanEqualOrderByPathDepthAsc(UUID workspaceId, String path, int pathDepth);
+    List<Bubble> findByWorkspaceAndPathStartingWith(Workspace workspace, String path);
 }
