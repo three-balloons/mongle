@@ -1,5 +1,5 @@
 import { getSquaredDistance } from '@/util/shapes/operator';
-import { isRect, isCircle } from '@/util/shapes/typeGuard';
+import { isRect, isCircle } from '@/util/typeGuard';
 
 export const isCollisionRectWithCircle = (rect: Rect, circle: Circle): boolean => {
     const { x: circleX, y: circleY } = circle.center;

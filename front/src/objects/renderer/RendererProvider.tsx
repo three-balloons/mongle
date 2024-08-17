@@ -49,8 +49,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
     const interfaceLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
 
-    const canvasImageRef = useRef<ImageData | null>(null);
-
     // use for animation
     const modeRef = useRef<ControlMode>('none');
 
@@ -109,9 +107,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            if (mainLayerRef.current == canvas) {
-                canvasImageRef.current = context.getImageData(0, 0, canvas.width, canvas.height);
-            }
         }
     };
 
@@ -185,57 +180,20 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            getBubbles().forEach((bubble) => {
+            console.log('getBubbles', getBubbles());
+            const bubbles = [...getBubbles()];
+            for (const bubble of bubbles) {
                 if (!bubble.isBubblized) {
+                    console.log(bubble);
                     bubbleRender(bubble);
                 }
-            });
-            // TODO 버블을 먼저 찾고 버블 안에서 커브 넣기
-            // curves.forEach((curve) => {
-            //     if (!curve.isVisible) return;
-            //     applyPenConfig(context, curve.config);
-            //     setThicknessWithRatio(context, getThicknessRatio(cameraView));
-            //     const parentBubble = findBubble(curve.path);
-            //     let c = curve.position;
-            //     if (parentBubble) {
-            //         const bubbleView = descendant2child(parentBubble, cameraView.path);
-            //         c = bubble2globalWithCurve(curve.position, bubbleView);
-            //         const ratio = getRatioWithCamera(parentBubble, cameraView);
-            //         if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
-            //             return;
-            //         }
+            }
+            // bubbles.forEach((bubble) => {
+            //     if (!bubble.isBubblized) {
+            //         console.log(bubble);
+            //         bubbleRender(bubble);
             //     }
-
-            //     const beziers = catmullRom2Bezier(curve2View(c, cameraView));
-            //     context.beginPath();
-            //     // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
-            //     if (beziers.length > 0) {
-            //         let isSweep = true;
-            //         for (let i = 0; i < beziers.length; i++) {
-            //             context.moveTo(beziers[i].start.x, beziers[i].start.y);
-            //             if (beziers[i].start.isVisible) {
-            //                 context.bezierCurveTo(
-            //                     beziers[i].cp1.x,
-            //                     beziers[i].cp1.y,
-            //                     beziers[i].cp2.x,
-            //                     beziers[i].cp2.y,
-            //                     beziers[i].end.x,
-            //                     beziers[i].end.y,
-            //                 );
-            //                 isSweep = false;
-            //             }
-            //         }
-            //         // TODO sweep 로직 다른 곳으로 옮기기
-            //         if (isSweep) {
-            //             removeCurve(curve);
-            //             pushLog({ type: 'delete', object: curve });
-            //         }
-            //     }
-            //     context.stroke();
             // });
-
-            const data = context.getImageData(0, 0, canvas.width, canvas.height);
-            canvasImageRef.current = data;
         }
     };
 
@@ -320,7 +278,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     // TODO sweep 로직 다른 곳으로 옮기기
                     if (isSweep) {
                         removeCurve(bubble.path, curve);
-                        pushLog({ type: 'delete', object: curve });
+                        pushLog([{ type: 'delete', object: curve, options: { path: bubble.path } }]);
                     }
                 }
                 context.stroke();
@@ -329,7 +287,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     };
 
     const movementBubbleRender = () => {
-        // TODO : useBubble에 movement, 고정, 안보이는 버블 분리 (성능개선)
         const cameraView = getCameraView();
         if (!movementLayerRef.current) {
             return;

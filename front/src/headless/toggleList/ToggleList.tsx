@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode } from 'react';
 import { ToggleListProvider, useToggleList } from '@/headless/toggleList/ToggleListProvider';
 import { cn } from '@/util/cn';
-import { isFunction } from '@/util/shapes/typeGuard';
+import { isFunction } from '@/util/typeGuard';
 
 type ToggleListProps = {
     children: React.ReactNode | (({ open }: { open: boolean }) => React.ReactNode);

@@ -39,7 +39,6 @@ export const useBubbleGun = () => {
 
     const { isShowAnimation } = useConfigStore((state) => state);
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
-        console.log(currentPosition, 'pos');
         const pos = view2Point(
             {
                 x: currentPosition.x,
@@ -112,10 +111,27 @@ export const useBubbleGun = () => {
                 )
                     return true;
             })
-            .map((child) => child.path);
-        addBubble(bubble, childrenPaths);
+            .map((child) => {
+                return child.path;
+            });
 
-        pushLog({ type: 'create', object: bubble });
+        const createBubbleLog: LogGroup = [];
+        // childrenPaths.forEach((childPath) => {
+        //     const child = findBubble(childPath);
+        //     if (child) {
+        //         const grandChildrenPaths = getChildBubbles(childPath).map((child) => child.path);
+        //         createBubbleLog.push({
+        //             type: 'update',
+        //             object: child,
+        //             options: { childrenPaths: grandChildrenPaths },
+        //         });
+        //     }
+        // });
+        createBubbleLog.push({ type: 'create', object: bubble, options: { childrenPaths: childrenPaths } });
+
+        addBubble(bubble, childrenPaths);
+        pushLog(createBubbleLog);
+
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
         updateCreatingBubble({

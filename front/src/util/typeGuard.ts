@@ -54,3 +54,15 @@ export const isBubble = (obj: unknown): obj is Bubble => {
         typeof (obj as Bubble).isVisible === 'boolean'
     );
 };
+
+export const isLogBubble = (logElement: LogElement): logElement is LogBubble => {
+    return 'object' in logElement && isBubble(logElement.object);
+};
+
+export const isLogCurve = (logElement: LogElement): logElement is LogCurve => {
+    return 'object' in logElement && isCurve(logElement.object);
+};
+
+// export const isLogCamera = (logElement: LogElement): logElement is LogCamera => {
+//     return logElement.type === 'move' && 'object' in logElement;
+// };

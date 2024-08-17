@@ -63,7 +63,7 @@ export const useDrawer = () => {
                 addControlPoint({ ...position, isVisible: true }, true);
             }
             const newCurve = addNewCurve(getThicknessRatio(cameraView));
-            pushLog({ type: 'create', object: newCurve });
+            pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
         },
 
         [addNewCurve],

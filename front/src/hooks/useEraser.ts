@@ -26,7 +26,14 @@ export const useEraser = () => {
     const earseModeRef = useRef<EraseMode>(eraseConfig.mode);
     const earseRadiusRef = useRef<number>(eraseConfig.radius);
     const { addCurve, removeCurve, removeCurvesWithPath } = useCurve();
-    const { view2BubbleWithVector2D, getBubbles, removeBubble, getDescendantBubbles, getRatioWithCamera } = useBubble();
+    const {
+        view2BubbleWithVector2D,
+        getBubbles,
+        removeBubble,
+        getChildBubbles,
+        getDescendantBubbles,
+        getRatioWithCamera,
+    } = useBubble();
     const { identifyTouchRegion } = useBubbleGun();
 
     /* logs */
@@ -113,7 +120,7 @@ export const useEraser = () => {
         curveWithErasers.forEach(({ path, curve, eraser }) => {
             if (isIntersectCurveWithEraser(eraser, curve)) {
                 removeCurve(path, curve);
-                pushLog({ type: 'delete', object: curve });
+                pushLog([{ type: 'delete', object: curve, options: { path: path } }]);
             }
         });
     };
@@ -124,21 +131,26 @@ export const useEraser = () => {
             // TODO 경고 창 띄우고 지우기
             setEraseMode('area');
             if (bubble) {
-                removeCurvesWithPath(bubble.path);
-                const descendants = getDescendantBubbles(bubble.path);
-                descendants.forEach((descendant) => {
-                    removeCurvesWithPath(descendant.path);
-                    removeBubble(descendant);
-                });
+                const eraseLog: LogGroup = [];
+                const ereaseChildBubble = (bubble: Bubble) => {
+                    const children = getChildBubbles(bubble.path);
+                    eraseLog.push({
+                        type: 'delete',
+                        object: bubble,
+                        options: {
+                            childrenPaths: children.map((child) => child.path),
+                        },
+                    });
+                    children.forEach((child) => {
+                        ereaseChildBubble(child);
+                    });
+                    removeCurvesWithPath(bubble.path);
+                    removeBubble(bubble);
+                };
+                ereaseChildBubble(bubble);
                 // TODO  한 번에 삭제 추가할 수 있도록 할 것
-                pushLog({
-                    type: 'delete',
-                    object: bubble,
-                    options: {
-                        childrenPaths: descendants.map((descendant) => descendant.path),
-                    },
-                });
-                removeBubble(bubble);
+                // removeBubble(bubble);
+                pushLog(eraseLog);
             }
         }
     };
