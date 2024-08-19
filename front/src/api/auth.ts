@@ -19,17 +19,18 @@ export const getAccessTokenAPI = async ({ provider, code, redirect_uri }: GetAcc
         if (IS_MOCK) {
             const res = mockedAccessToken.data as GetAccessTokenRes;
             return res;
+        } else {
+            const res = await bubbleAPI.post<
+                GetAccessTokenReq,
+                GetAccessTokenRes,
+                'INAPPROPRIATE_PAYLOAD' | 'SIGN_UP_NEEDED' | 'NOT_MATCH_PASSWORD'
+            >(`/auth/access`, {
+                provider: provider,
+                code: code,
+                redirect_uri: redirect_uri,
+            });
+            return res;
         }
-        const res = await bubbleAPI.post<
-            GetAccessTokenReq,
-            GetAccessTokenRes,
-            'INAPPROPRIATE_PAYLOAD' | 'SIGN_UP_NEEDED' | 'NOT_MATCH_PASSWORD'
-        >(`/auth/access`, {
-            provider: provider,
-            code: code,
-            redirect_uri: redirect_uri,
-        });
-        return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (
