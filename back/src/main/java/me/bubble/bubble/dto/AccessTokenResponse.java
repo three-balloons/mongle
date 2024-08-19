@@ -1,6 +1,8 @@
 package me.bubble.bubble.dto;
 
+import lombok.Getter;
 
+@Getter
 public class AccessTokenResponse {
     private final String accessToken;
 

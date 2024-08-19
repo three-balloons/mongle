@@ -8,17 +8,16 @@ import me.bubble.bubble.domain.User;
 import me.bubble.bubble.dto.*;
 import me.bubble.bubble.service.AuthService;
 import me.bubble.bubble.service.UserService;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
 public class AuthApiController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -27,8 +26,15 @@ public class AuthApiController {
     public ApiResponse<AccessTokenResponse> getAccessToken(@RequestBody AccessTokenRequest request) {
         if (request.getProvider().equals("KAKAO")) {
             String oAuthId = authService.getKakaoOAuthId(request.getCode(), request.getRedirect_uri());
-            String accessToken = jwtTokenProvider.generateToken(oAuthId);
 
+
+            System.out.println("OAuthId"+ oAuthId);
+
+
+
+
+            String accessToken = jwtTokenProvider.generateToken(oAuthId);
+            System.out.println("AccessToken" + accessToken);
             AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
 
             return ApiResponse.<AccessTokenResponse>builder()
