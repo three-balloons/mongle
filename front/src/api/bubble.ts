@@ -5,16 +5,7 @@ import { mockedBubbleTree } from '@/mock/tree';
 const IS_MOCK = import.meta.env.VITE_IS_MOCK;
 
 type GetBubbleRes = {
-    path: string;
-    name: string;
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-    isVisible: boolean;
-    isBubblized: boolean;
-    curves: Array<Curve>;
-    children: Array<GetBubbleRes>;
+    bubbles: Array<Bubble>;
 };
 
 export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = 1) => {
