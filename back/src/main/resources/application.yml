@@ -20,6 +20,14 @@ spring:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+
 
 springdoc:
   swagger-ui: # swagger
@@ -33,3 +41,7 @@ springdoc:
 
   paths-to-match:
     - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴
+
+jwt:
+  issuer: ${JWT_ISSUER}
+  secret_key: ${JWT_SECRET_KEY}

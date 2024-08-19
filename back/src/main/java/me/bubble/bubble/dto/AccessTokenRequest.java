@@ -5,9 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AddUserRequest {
+public class AccessTokenRequest {
     private String provider;
-    private String email;
-    private String name;
-    private String password;
+    private String code;
+    private String redirect_uri;
 }
