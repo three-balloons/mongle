@@ -3,13 +3,13 @@ import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithRect, global2bubbleWithRect } from '@/util/coordSys/conversion';
 import { getParentPath } from '@/util/path/path';
-import { easeInOutCubic } from '@/util/transition/transtion';
+import { easeInCubic, easeOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
 export type CameraContextProps = {
     setCameraView: (cameraView: ViewCoord) => void;
     getCameraView: () => ViewCoord;
-    zoomBubble: (bubblePath: string) => void;
+    zoomBubble: (bubblePath: string) => ViewCoord | undefined;
     updateCameraView: (cameraView: ViewCoord, prevPosition?: Rect | undefined) => void;
 };
 
@@ -97,19 +97,18 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
             visibleBubblePos.height * cameraViewRef.current.size.x;
         const newHeight = isLongHeight ? bubble.height : (bubble.width * newCameraPos.height) / newCameraPos.width;
         const newWidth = isLongHeight ? (bubble.height * newCameraPos.width) / newCameraPos.height : bubble.width;
-        updateCameraView(
-            {
-                size: cameraViewRef.current.size,
-                pos: {
-                    top: bubble.top + (bubble.height - newHeight) / 2,
-                    left: bubble.left + (bubble.width - newWidth) / 2,
-                    height: newHeight,
-                    width: newWidth,
-                },
-                path: getParentPath(bubblePath) ?? '/',
+        const newCameraView: ViewCoord = {
+            size: cameraViewRef.current.size,
+            pos: {
+                top: bubble.top + (bubble.height - newHeight) / 2,
+                left: bubble.left + (bubble.width - newWidth) / 2,
+                height: newHeight,
+                width: newWidth,
             },
-            prevPos,
-        );
+            path: getParentPath(bubblePath) ?? '/',
+        };
+        updateCameraView(newCameraView, prevPos);
+        return newCameraView;
     };
 
     /**
@@ -156,7 +155,7 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
                 path,
                 pos: prevPos,
             });
-            viewTransitAnimation(prevPos, pos, 500);
+            viewTransitAnimation(prevPos, pos, 600);
         } else
             setCameraView({
                 size: cameraView.size,
@@ -169,11 +168,26 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
         let time = 0;
         modeRef.current = mode;
         setMode('animate');
+        const top = Math.min(startViewPos.top, endViewPos.top);
+        const left = Math.min(startViewPos.left, endViewPos.left);
+        const middleViewPos: Rect = {
+            top: top,
+            left: left,
+            height: Math.max(startViewPos.top + startViewPos.height, endViewPos.top + endViewPos.height) - top,
+            width: Math.max(startViewPos.left + startViewPos.width, endViewPos.left + endViewPos.width) - left,
+        };
         const intervalId = setInterval(() => {
-            const pos = easeInOutCubic(time / duration, startViewPos, endViewPos);
+            let pos: Rect;
+            if (time < duration / 2) {
+                pos = easeOutCubic(time / duration, startViewPos, middleViewPos);
+            } else {
+                pos = easeInCubic(time / duration, middleViewPos, endViewPos);
+            }
+
             setCameraView({ ...cameraViewRef.current, pos: pos });
             time += 30;
             if (time >= duration) {
+                setCameraView({ ...cameraViewRef.current, pos: endViewPos });
                 setMode(modeRef.current);
                 clearInterval(intervalId);
             }

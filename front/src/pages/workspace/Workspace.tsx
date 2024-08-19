@@ -15,10 +15,10 @@ import { getWorkspaceAPI } from '@/api/workspace';
 // import { getBubbleAPI } from '@/api/bubble';
 
 type WorkspaceProps = {
-    workspaceID: string;
+    workspaceId: string;
     workspaceName: string;
 };
-export const Workspace = ({ workspaceID, workspaceName }: WorkspaceProps) => {
+export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
@@ -26,7 +26,7 @@ export const Workspace = ({ workspaceID, workspaceName }: WorkspaceProps) => {
     const workspaceQuery = useQuery({
         queryKey: ['workspace'],
         queryFn: () => {
-            return getWorkspaceAPI(workspaceID);
+            return getWorkspaceAPI(workspaceId);
         },
     });
 
@@ -46,10 +46,10 @@ export const Workspace = ({ workspaceID, workspaceName }: WorkspaceProps) => {
 
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
-            <BubbleProvider workspaceName={workspaceName}>
+            <BubbleProvider workspaceName={workspaceName} workspaceId={workspaceId}>
                 <CurveProvider sensitivity={2}>
-                    <LogProvider>
-                        <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                    <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                        <LogProvider>
                             <RendererProvider theme={workspace.theme}>
                                 <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
                                 <div className={cn(style.workspace)}>
@@ -57,12 +57,12 @@ export const Workspace = ({ workspaceID, workspaceName }: WorkspaceProps) => {
                                     <Canvas
                                         width={canvasSize.width}
                                         height={canvasSize.height}
-                                        workspaceId={workspaceID}
+                                        workspaceId={workspaceId}
                                     />
                                 </div>
                             </RendererProvider>
-                        </CameraProvider>
-                    </LogProvider>
+                        </LogProvider>
+                    </CameraProvider>
                 </CurveProvider>
             </BubbleProvider>
         </div>

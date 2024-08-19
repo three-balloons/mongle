@@ -59,7 +59,8 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
 
     useEffect(() => {
         // Rerenders when canvas view changes
-        useViewStore.subscribe(() => {
+        useViewStore.subscribe(({ isReadyToShow }) => {
+            if (!isReadyToShow) return;
             reRender();
         });
         useConfigStore.subscribe(({ isShowAnimation, mode }) => {
@@ -180,11 +181,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            console.log('getBubbles', getBubbles());
             const bubbles = [...getBubbles()];
             for (const bubble of bubbles) {
                 if (!bubble.isBubblized) {
-                    console.log(bubble);
                     bubbleRender(bubble);
                 }
             }
@@ -250,6 +249,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
             context.setLineDash([]);
             context.font = '12px serif';
+            context.fillStyle = 'black';
             context.fillText(bubble.name, rect.left, rect.top - 8);
             bubble.curves.forEach((curve) => {
                 const c = bubble2globalWithCurve(curve.position, bubbleView);

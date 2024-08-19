@@ -1,9 +1,6 @@
-import { signInAPI } from '@/api/auth';
-import { APIException } from '@/api/exceptions';
 import style from '@/pages/signup/signup.module.css';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/util/cn';
-import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,36 +9,21 @@ type SignUpForm = {
     password: string;
 };
 
+/**
+ * 현재 사용되지 않는 페이지
+ * 추후 소셜로그인 후 추가 정보 입력 페이지로 사용
+ */
 export const Signup = () => {
     const [signupForm, setLoginForm] = useState<SignUpForm>({ id: '', password: '' });
     const idInputRef = useRef<HTMLInputElement>(null);
     const passwordInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
-    const { login, loginWithDemo } = useAuthStore((state) => state);
+    const { loginWithDemo } = useAuthStore((state) => state);
 
     const useDemoHandler = () => {
         loginWithDemo();
-        navigate('/workspace');
+        navigate('/workspace/demo');
     };
-
-    const signInMutation = useMutation({
-        mutationFn: async ({ id, password }: { id: string; password: string }) => {
-            const { accessToken } = await signInAPI({ provider: 'PASS', id: id, password: password });
-            return { accessToken };
-        },
-        onSuccess({ accessToken }) {
-            login(accessToken);
-            navigate('/home');
-        },
-        onError(error) {
-            if (error instanceof APIException) {
-                if (error.code === 'MEMBER_EXISTS ') {
-                    console.error('이미 존재하는 회원입니다. 다시 시도해 주세요');
-                    return navigate('/signup');
-                }
-            } else throw error;
-        },
-    });
 
     return (
         <div className={style.defualt}>
@@ -93,15 +75,6 @@ export const Signup = () => {
                             }}
                         />
                     </div>
-                    <button
-                        onClick={() => {
-                            if (signInMutation.status !== 'idle') return;
-                            signInMutation.mutate({ id: signupForm.id, password: signupForm.password });
-                        }}
-                        className={cn(style.loginButtonPass)}
-                    >
-                        회원가입
-                    </button>
                 </div>
                 <div className={cn(style.options)}>
                     <div className={cn(style.option)}>
