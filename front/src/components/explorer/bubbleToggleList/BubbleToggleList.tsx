@@ -5,6 +5,7 @@ import { ReactComponent as ArrowIcon } from '@/assets/icon/button-right.svg';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
 import { useCamera } from '@/objects/camera/useCamera';
+import { useLog } from '@/objects/log/useLog';
 
 type BubbleToggleListProps = {
     name: string;
@@ -16,31 +17,32 @@ type BubbleToggleListProps = {
 export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
     const { getCameraView } = useRenderer();
     const { zoomBubble, updateCameraView } = useCamera();
+    const { pushLog } = useLog();
     const { mode } = useConfigStore((state) => state);
     const zoomAtBubble = (bubblePath: string) => {
         if (mode == 'animate') return;
+        const originView = { ...getCameraView() };
         if (bubblePath == '') {
             const { y: height, x: width } = getCameraView().size;
-            updateCameraView(
-                {
-                    pos: {
-                        top: -height / 2,
-                        left: -width / 2,
-                        width: width,
-                        height: height,
-                    },
-                    size: {
-                        x: width,
-                        y: height,
-                    },
-                    path: '/',
+            const newView = {
+                pos: {
+                    top: -height / 2,
+                    left: -width / 2,
+                    width: width,
+                    height: height,
                 },
-                getCameraView().pos,
-            );
-
+                size: {
+                    x: width,
+                    y: height,
+                },
+                path: '/',
+            };
+            updateCameraView(newView, originView.pos);
+            pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
             return;
         }
-        zoomBubble(bubblePath);
+        const newView = zoomBubble(bubblePath);
+        if (newView) pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
     };
     return (
         <ToggleList className={cn(style.default, className)}>

@@ -3,13 +3,13 @@ import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithRect, global2bubbleWithRect } from '@/util/coordSys/conversion';
 import { getParentPath } from '@/util/path/path';
-import { easeInCubic, easeInOutCubic, easeOutCubic } from '@/util/transition/transtion';
+import { easeInCubic, easeOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
 export type CameraContextProps = {
     setCameraView: (cameraView: ViewCoord) => void;
     getCameraView: () => ViewCoord;
-    zoomBubble: (bubblePath: string) => void;
+    zoomBubble: (bubblePath: string) => ViewCoord | undefined;
     updateCameraView: (cameraView: ViewCoord, prevPosition?: Rect | undefined) => void;
 };
 
@@ -97,19 +97,18 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
             visibleBubblePos.height * cameraViewRef.current.size.x;
         const newHeight = isLongHeight ? bubble.height : (bubble.width * newCameraPos.height) / newCameraPos.width;
         const newWidth = isLongHeight ? (bubble.height * newCameraPos.width) / newCameraPos.height : bubble.width;
-        updateCameraView(
-            {
-                size: cameraViewRef.current.size,
-                pos: {
-                    top: bubble.top + (bubble.height - newHeight) / 2,
-                    left: bubble.left + (bubble.width - newWidth) / 2,
-                    height: newHeight,
-                    width: newWidth,
-                },
-                path: getParentPath(bubblePath) ?? '/',
+        const newCameraView: ViewCoord = {
+            size: cameraViewRef.current.size,
+            pos: {
+                top: bubble.top + (bubble.height - newHeight) / 2,
+                left: bubble.left + (bubble.width - newWidth) / 2,
+                height: newHeight,
+                width: newWidth,
             },
-            prevPos,
-        );
+            path: getParentPath(bubblePath) ?? '/',
+        };
+        updateCameraView(newCameraView, prevPos);
+        return newCameraView;
     };
 
     /**

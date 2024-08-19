@@ -25,7 +25,9 @@ export const useEraser = () => {
     const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
     const earseModeRef = useRef<EraseMode>(eraseConfig.mode);
     const earseRadiusRef = useRef<number>(eraseConfig.radius);
-    const { addCurve, removeCurve, removeCurvesWithPath } = useCurve();
+    const earseLog = useRef<LogGroup>([]);
+    const earseAreaCurves = useRef<Array<{ origin: Curve; earsed: Curve; isModified: boolean }>>([]);
+    const { removeCurve, removeCurvesWithPath } = useCurve();
     const {
         view2BubbleWithVector2D,
         getBubbles,
@@ -46,12 +48,30 @@ export const useEraser = () => {
         });
     }, []);
 
+    const startErase = useCallback((cameraView: ViewCoord) => {
+        earseLog.current = [];
+        // TODO 영역지우개일때 log 반영
+        if (earseModeRef.current == 'area') {
+            const descendants = getDescendantBubbles(cameraView.path);
+            earseAreaCurves.current = descendants.flatMap((descendant) =>
+                descendant.curves.map((curve) => {
+                    return { origin: { ...curve }, earsed: curve, isModified: false };
+                }),
+            );
+        }
+    }, []);
+
     const erase = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
         if (earseModeRef.current == 'area') eraseArea(cameraView, currentPosition);
         else if (earseModeRef.current == 'stroke') eraseStroke(cameraView, currentPosition);
         else {
             eraseBubble(cameraView, currentPosition);
         }
+    }, []);
+
+    const endErase = useCallback(() => {
+        if (earseLog.current.length == 0) return;
+        pushLog([...earseLog.current]);
     }, []);
 
     const eraseArea = (cameraView: ViewCoord, currentPosition: Vector2D) => {
@@ -84,9 +104,13 @@ export const useEraser = () => {
         // 지워주면 됨 => log가 생기면 log씌움
         curveWithErasers.forEach(({ path, curve, eraser }) => {
             const temp = markCurveWithEraser(eraser, curve);
-            removeCurve(path, curve);
-            addCurve(path, temp);
+            // removeCurve(path, curve);
+            // addCurve(path, temp);
             // TODO update curve
+            pushLog([
+                { type: 'delete', object: curve, options: { path: path } },
+                { type: 'create', object: temp, options: { path: path } },
+            ]);
         });
     };
 
@@ -120,7 +144,7 @@ export const useEraser = () => {
         curveWithErasers.forEach(({ path, curve, eraser }) => {
             if (isIntersectCurveWithEraser(eraser, curve)) {
                 removeCurve(path, curve);
-                pushLog([{ type: 'delete', object: curve, options: { path: path } }]);
+                earseLog.current = [...earseLog.current, { type: 'delete', object: curve, options: { path: path } }];
             }
         });
     };
@@ -195,5 +219,5 @@ export const useEraser = () => {
         };
     };
 
-    return { erase, earseRadiusRef };
+    return { startErase, erase, endErase, earseRadiusRef };
 };

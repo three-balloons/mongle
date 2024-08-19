@@ -30,7 +30,7 @@ export const useCanvas = () => {
 
     /* tools */
     const { startDrawing, draw, finishDrawing } = useDrawer();
-    const { erase } = useEraser();
+    const { startErase, erase, endErase } = useEraser();
     const { grab, drag, release } = useHand();
     const {
         startCreateBubble,
@@ -60,9 +60,12 @@ export const useCanvas = () => {
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
                 const { bubble } = identifyTouchRegion(getCameraView(), currentPosition, getBubbles());
                 if (bubble === undefined) console.error('버블 밖에서는 라인을 그릴 수 없습니다');
-                else startDrawing(getCameraView(), currentPosition, bubble.path);
-                isPaintingRef.current = true;
+                else {
+                    startDrawing(getCameraView(), currentPosition, bubble.path);
+                    isPaintingRef.current = true;
+                }
             } else if (isEraseRef.current == false && modeRef.current == 'erase') {
+                startErase(getCameraView());
                 isEraseRef.current = true;
             } else if (modeRef.current == 'move') {
                 if (isMoveRef.current == false) {
@@ -129,8 +132,10 @@ export const useCanvas = () => {
             finishDrawing(getCameraView());
             reRender();
             isPaintingRef.current = false;
-        } else if (isEraseRef.current && modeRef.current == 'erase') isEraseRef.current = false;
-        else if (modeRef.current == 'bubble') {
+        } else if (isEraseRef.current && modeRef.current == 'erase') {
+            endErase();
+            isEraseRef.current = false;
+        } else if (modeRef.current == 'bubble') {
             if (isCreateBubbleRef.current) {
                 isCreateBubbleRef.current = false;
                 finishCreateBubble(getCameraView());

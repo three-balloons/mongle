@@ -5,6 +5,11 @@ export const isPoint = (obj: unknown): obj is Point => {
     return false;
 };
 
+export const isVector2D = (obj: unknown): obj is Vector2D => {
+    if (obj && typeof (obj as Vector2D).x === 'number' && typeof (obj as Vector2D).y === 'number') return true;
+    return false;
+};
+
 export const isVector3D = (obj: unknown): obj is Vector3D => {
     if (
         obj &&
@@ -55,6 +60,21 @@ export const isBubble = (obj: unknown): obj is Bubble => {
     );
 };
 
+type ViewCoord = {
+    pos: Rect;
+    path: string;
+    size: Vector2D;
+};
+
+export const isCamera = (obj: unknown): obj is ViewCoord => {
+    return (
+        obj !== null &&
+        typeof (obj as ViewCoord).path === 'string' &&
+        isRect((obj as ViewCoord).pos) &&
+        isVector2D((obj as ViewCoord).size)
+    );
+};
+
 export const isLogBubble = (logElement: LogElement): logElement is LogBubble => {
     return 'object' in logElement && isBubble(logElement.object);
 };
@@ -63,6 +83,6 @@ export const isLogCurve = (logElement: LogElement): logElement is LogCurve => {
     return 'object' in logElement && isCurve(logElement.object);
 };
 
-// export const isLogCamera = (logElement: LogElement): logElement is LogCamera => {
-//     return logElement.type === 'move' && 'object' in logElement;
-// };
+export const isLogCamera = (logElement: LogElement): logElement is LogCamera => {
+    return logElement.type === 'move' && isCamera(logElement.object);
+};

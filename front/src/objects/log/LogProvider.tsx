@@ -1,6 +1,8 @@
 import { useBubble } from '@/objects/bubble/useBubble';
+import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
-import { isLogBubble, isLogCurve } from '@/util/typeGuard';
+import { LogReducer } from '@/objects/log/LogReducer';
+import { isLogBubble, isLogCamera, isLogCurve } from '@/util/typeGuard';
 import { createContext, useReducer } from 'react';
 
 export type LogContextProps = {
@@ -16,6 +18,7 @@ export const LogContext = createContext<LogContextProps | undefined>(undefined);
 type LogProviderProps = {
     children: React.ReactNode;
 };
+
 /**
  * update
  * => 이전 object를 저장 => 교체
@@ -30,37 +33,10 @@ type LogProviderProps = {
  * => 이동한 cameraView를 저장 교체
  *
  */
-
-export type LogAction = { type: 'UNDO' } | { type: 'REDO' } | { type: 'PUSH_LOG'; payload: { log: LogGroup } };
-
-const LogReducer = (state: LogState, action: LogAction): LogState => {
-    switch (action.type) {
-        case 'UNDO': {
-            const obj = state.logStack[state.logStack.length - 1];
-            const newLogStack = [...state.logStack];
-            newLogStack.pop();
-            return { logStack: newLogStack, redoStack: [...state.redoStack, obj] };
-        }
-        case 'REDO': {
-            const obj = state.redoStack[state.redoStack.length - 1];
-            const newRedoStack = [...state.redoStack];
-            newRedoStack.pop();
-            return { logStack: [...state.logStack, obj], redoStack: newRedoStack };
-        }
-        case 'PUSH_LOG': {
-            return {
-                ...state,
-                logStack: [...state.logStack, action.payload.log],
-            };
-        }
-        default:
-            return state;
-    }
-};
-
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     const { addBubble, removeBubble, getBubbles } = useBubble();
     const { addCurve, removeCurve } = useCurve();
+    const { updateCameraView } = useCamera();
     const [state, dispatch] = useReducer(LogReducer, {
         logStack: [],
         redoStack: [],
@@ -78,8 +54,11 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
                     removeBubble(log.object);
                 } else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
             } else if (log.type == 'delete') {
-                if (isLogBubble(log)) addBubble(log.object, log.options.childrenPaths);
+                if (isLogBubble(log)) addBubble(log.object, log.options.childrenPaths ?? []);
                 else if (isLogCurve(log)) addCurve(log.options.path, log.object);
+            } else if (log.type == 'move') {
+                if (isLogCamera(log)) updateCameraView({ ...log.object }, { ...log.options.newCameraView.pos });
+                // if(isLogBubble(log))
             }
             // else if (log.type == 'update') {
             //     if (isLogBubble(log)) {
@@ -101,11 +80,13 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         logGroup.forEach((log) => {
             if (log.type == 'create') {
                 if (isLogBubble(log)) {
-                    addBubble(log.object, log.options.childrenPaths);
+                    addBubble(log.object, log.options.childrenPaths ?? []);
                 } else if (isLogCurve(log)) addCurve(log.options.path, log.object);
             } else if (log.type == 'delete') {
                 if (isLogBubble(log)) removeBubble(log.object);
                 else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
+            } else if (log.type == 'move') {
+                if (isLogCamera(log)) updateCameraView({ ...log.options.newCameraView }, { ...log.object.pos });
             }
         });
 
