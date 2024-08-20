@@ -7,7 +7,7 @@ import {
     mockedDeleteWorkspace,
     mockedCreateWorkspace,
 } from '@/mock/workspace';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK;
+const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetWorkspaceRes = Workspace;
 export const getWorkspaceAPI = async (workspaceId: string) => {

@@ -2,7 +2,7 @@ import { bubbleAPI } from '@/api/api';
 import { APIException } from '@/api/exceptions';
 import { mockedCreateBubble, mockedGetBubble, mockedDeleteBubble, mockedUpdateBubble } from '@/mock/bubble';
 import { mockedBubbleTree } from '@/mock/tree';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK;
+const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetBubbleRes = {
     bubbles: Array<Bubble>;

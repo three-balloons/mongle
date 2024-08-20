@@ -1,7 +1,7 @@
 import { bubbleAPI } from '@/api/api';
 import { APIException } from '@/api/exceptions';
 import { mockedAccessToken } from '@/mock/auth';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK;
+const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetAccessTokenReq = {
     provider: Provider;
