@@ -6,7 +6,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import me.bubble.bubble.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,10 +16,12 @@ import org.springframework.security.core.userdetails.User;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
+import org.springframework.security.core.AuthenticationException;
 
 @RequiredArgsConstructor
 @Service
 public class JwtTokenProvider {
+    private final UserRepository userRepository;
     private final JwtProperties jwtProperties;
     private final long JWT_EXPIRATION = 86400000L; // 1일
 
@@ -54,10 +58,13 @@ public class JwtTokenProvider {
                 .getBody();
 
         String oauthId = claims.get("oauthId", String.class);
+        // OAuthId가 유효한지 확인하는 추가 로직
+        me.bubble.bubble.domain.User user = userRepository.findByOauthId(oauthId) // 우리가 만든 User 객체
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid OAuth ID: " + oauthId));
 
-        // SimpleGrantedAuthority를 사용하여 역할을 추가할 수 있지만, 이 예제에서는 기본적으로 권한을 추가하지 않음
-        User principal = new User(oauthId, "", Collections.emptyList());
 
+        User principal = new User(oauthId, "", Collections.emptyList()); // 이 때의 User는 스프링 시큐리티에서의 User
+        // 인증 정보를 반환할 때 사용되는 유저 객체는 스프링 시큐리티에서 사용되는 유저여야 함. (principal로 사용되는 유저 객체는 UserDetails 인터페이스 구현해야 함.)
         return new UsernamePasswordAuthenticationToken(principal, token, Collections.emptyList());
     }
 

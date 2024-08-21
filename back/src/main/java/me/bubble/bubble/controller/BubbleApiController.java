@@ -16,10 +16,7 @@ import me.bubble.bubble.service.CurveService;
 import me.bubble.bubble.service.WorkspaceService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor // 빈 자동 주입 (final이 붙거나 @NotNull이 붙은 필드 대상) (생성자 주입)
 @RestController //HTTP Response Body의 객체 데이터를 JSON 형식으로 반환
@@ -122,7 +119,17 @@ public class BubbleApiController {
                     .data(null)
                     .build();
         } else if (depth == -1) { // depth 기본값을 pathDepth의 최대값으로
-            depth = bubbleService.getMaxPathDepth(workspaceId).getPathDepth();
+            Optional<Bubble> maxDepthBubble = bubbleService.getMaxPathDepth(workspaceId);
+            if (maxDepthBubble.isPresent()) {
+                depth = maxDepthBubble.get().getPathDepth();
+            } else {
+                return ApiResponse.<List<BubbleTreeResponse>>builder()
+                        .code("NO_WORKSPACE")
+                        .message("해당 워크스페이스가 존재하지 않습니다.")
+                        .data(null)
+                        .build();
+            }
+
         }
 
         // 응답 객체 만드는 과정
