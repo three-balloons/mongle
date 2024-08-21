@@ -40,6 +40,7 @@ public class AuthService {
                 .bodyToMono(OAuthResponseDto.class);
         //요청을 받아서, idToken을 decode 후에 sub을 가져온다.sub: 유저 식별자
         String idToken = kakaoResponseDtoMono.block().getId_token();
+
         return getOAuthIdFromIdToken(idToken);
     }
 

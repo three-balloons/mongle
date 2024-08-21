@@ -25,7 +25,7 @@ public class User {
     @Column(name = "provider")
     private String provider;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "name")
