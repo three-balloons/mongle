@@ -1,0 +1,42 @@
+{
+    "short_name": "mongle",
+    "name": "mongle",
+    "description": "몽글몽글한 손글씨 노트",
+    "start_url": "/",
+    "id": "/",
+    "display": "standalone",
+    "handle_links": "preferred",
+    "background_color": "#44e7ff",
+    "theme_color": "#44e7ff",
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
+    "orientation": "natural",
+    "categories": ["productivity "],
+    "dir": "ltr",
+    "lang": "ko",
+    "icons": [
+        {
+            "src": "/pwa/images/pwa-icon-vector.svg",
+            "type": "image/svg+xml",
+            "sizes": "512x512",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/pwa/images/pwa-icon-vector.svg",
+            "type": "image/svg+xml",
+            "sizes": "512x512",
+            "purpose": "any"
+        },
+        {
+            "src": "/pwa/images/pwa-icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/pwa/images/pwa-icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
