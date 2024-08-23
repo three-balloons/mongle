@@ -185,12 +185,12 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
             }
 
             setCameraView({ ...cameraViewRef.current, pos: pos });
-            time += 30;
             if (time >= duration) {
                 setCameraView({ ...cameraViewRef.current, pos: endViewPos });
                 setMode(modeRef.current);
                 clearInterval(intervalId);
             }
+            time += 30;
         }, 30);
     };
 

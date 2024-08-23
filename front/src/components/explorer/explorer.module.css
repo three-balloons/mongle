@@ -4,6 +4,8 @@
     width: 150px;
     color: var(--color-text);
     text-align: left;
+    overflow-x: scroll;
+    overflow-y: scroll;
 }
 
 .work-space-name {

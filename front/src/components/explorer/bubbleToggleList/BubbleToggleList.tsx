@@ -6,6 +6,7 @@ import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useLog } from '@/objects/log/useLog';
+import { useBubble } from '@/objects/bubble/useBubble';
 
 type BubbleToggleListProps = {
     name: string;
@@ -17,12 +18,14 @@ type BubbleToggleListProps = {
 export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
     const { getCameraView } = useRenderer();
     const { zoomBubble, updateCameraView } = useCamera();
+    const { setFocusBubblePath } = useBubble();
     const { pushLog } = useLog();
     const { mode } = useConfigStore((state) => state);
     const zoomAtBubble = (bubblePath: string) => {
         if (mode == 'animate') return;
         const originView = { ...getCameraView() };
         if (bubblePath == '') {
+            setFocusBubblePath(undefined);
             const { y: height, x: width } = getCameraView().size;
             const newView = {
                 pos: {
@@ -41,6 +44,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
             pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
             return;
         }
+        setFocusBubblePath(bubblePath);
         const newView = zoomBubble(bubblePath);
         if (newView) pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
     };

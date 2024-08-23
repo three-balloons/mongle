@@ -6,6 +6,7 @@ type State = {
     textConfig: TextConfig;
     mode: ControlMode;
     isShowAnimation: boolean;
+    isShowBubble: boolean;
 };
 
 type Action = {
@@ -17,6 +18,7 @@ type Action = {
     setEraseRadius: (radius: number) => void;
     setMode: (mode: ControlMode) => void;
     setIsShowAnimation: (isShowAnimation: boolean) => void;
+    setIsShowBubble: (isShowBubble: boolean) => void;
 };
 type Store = State & Action;
 
@@ -38,6 +40,7 @@ export const useConfigStore = createStore<Store, State>(
         },
         mode: 'move',
         isShowAnimation: true,
+        isShowBubble: false,
         setPenColor: (color) =>
             set((state) => ({
                 penConfig: {
@@ -82,6 +85,7 @@ export const useConfigStore = createStore<Store, State>(
             })),
         setMode: (mode) => set({ mode: mode }),
         setIsShowAnimation: (isShowAnimation) => set({ isShowAnimation: isShowAnimation }),
+        setIsShowBubble: (isShowBubble) => set({ isShowBubble: isShowBubble }),
     }),
     {
         name: 'configStorage',
@@ -91,6 +95,7 @@ export const useConfigStore = createStore<Store, State>(
             eraseConfig: state.eraseConfig,
             mode: state.mode,
             isShowAnimation: state.isShowAnimation,
+            isShowBubble: state.isShowBubble,
         }),
     },
 );

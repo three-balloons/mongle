@@ -14,7 +14,7 @@ import { useRenderer } from '@/objects/renderer/useRenderer';
  */
 // control logic
 export const useCanvas = () => {
-    const { getMainLayer, getCameraView, reRender, curveRenderer, lineRenderer, rectRender } = useRenderer();
+    const { getMainLayer, getCameraView, reRender, curveRenderer, lineRenderer } = useRenderer();
     const { mode } = useConfigStore((state) => state);
 
     /* state variable */
@@ -26,7 +26,7 @@ export const useCanvas = () => {
     const isMoveBubbleRef = useRef(false);
 
     const { getDrawingCurve } = useCurve();
-    const { getCreatingBubble, getBubbles } = useBubble();
+    const { getBubbles } = useBubble();
 
     /* tools */
     const { startDrawing, draw, finishDrawing } = useDrawer();
@@ -118,7 +118,6 @@ export const useCanvas = () => {
                 }
                 if (isCreateBubbleRef.current) {
                     createBubble(getCameraView(), currentPosition);
-                    rectRender(getCreatingBubble());
                 }
             }
         }
