@@ -119,7 +119,7 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
     const updateCameraView = (cameraView: ViewCoord, prevPosition?: Rect | undefined) => {
         let path = cameraView.path;
         let pos = { ...cameraView.pos };
-        let prevPos = prevPosition ? { ...prevPosition } : undefined;
+        let prevPos: Rect | undefined = prevPosition ? { ...prevPosition } : undefined;
 
         while (
             path != '/' &&

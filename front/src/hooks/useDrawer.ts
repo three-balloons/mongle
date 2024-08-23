@@ -51,6 +51,11 @@ export const useDrawer = () => {
                 );
 
                 const position = view2BubbleWithVector2D(currentPos, cameraView, getNewCurvePath());
+
+                if (position.x < -100 || position.x > 100 || position.y < -100 || position.y > 100) {
+                    return;
+                }
+
                 if (addControlPoint({ ...position, isVisible: true }))
                     lineRenderer(positionRef.current, currentPosition);
             }
