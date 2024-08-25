@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class KakaoResponseDto {
+public class OAuthResponseDto {
     private String access_token;
     private String token_type;
     private String refresh_token;

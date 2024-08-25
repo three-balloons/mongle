@@ -1,7 +1,7 @@
 import { bubbleAPI } from '@/api/api';
 import { APIException } from '@/api/exceptions';
 import { mockedAccessToken } from '@/mock/auth';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK;
+const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetAccessTokenReq = {
     provider: Provider;
@@ -16,10 +16,10 @@ type GetAccessTokenRes = {
 
 export const getAccessTokenAPI = async ({ provider, code, redirect_uri }: GetAccessTokenReq) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedAccessToken.data as GetAccessTokenRes;
-            return res;
-        } else {
+        // if (IS_MOCK) {
+        //     const res = mockedAccessToken.data as GetAccessTokenRes;
+        //     return res;
+        // } else {
             const res = await bubbleAPI.post<
                 GetAccessTokenReq,
                 GetAccessTokenRes,
@@ -30,7 +30,7 @@ export const getAccessTokenAPI = async ({ provider, code, redirect_uri }: GetAcc
                 redirect_uri: redirect_uri,
             });
             return res;
-        }
+        // }
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (

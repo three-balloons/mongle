@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "Users")
-public class User  {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
@@ -25,7 +25,7 @@ public class User  {
     @Column(name = "provider")
     private String provider;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "name")
