@@ -40,7 +40,7 @@ jobs:
           cd front
           aws s3 sync \
             --region ap-northeast-2 \
-            dist s3://app.mongle.xyz \
+            dist s3://mongle \
             --delete
       - name: Invalidate Cache cloudfront
         env:
