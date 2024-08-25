@@ -16,11 +16,12 @@ export const ControlSelect = () => {
     const { cameraView } = useViewStore((state) => state);
     const { mode } = useConfigStore((state) => state);
     const { isUndoAvailable, isRedoAvailable, undo, redo } = useLog();
-    const { getBubbles } = useBubble();
+    const { getBubbles, setFocusBubblePath } = useBubble();
     const { reRender } = useRenderer();
     const { updateCameraView } = useCamera();
     // TODO: 투터치 인터페이스 구현(줌/아웃 가능)
     const resizeView = (intensity: number) => {
+        setFocusBubblePath(undefined);
         updateCameraView(
             {
                 ...cameraView,

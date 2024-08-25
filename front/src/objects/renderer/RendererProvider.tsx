@@ -6,7 +6,7 @@ import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
-import { getThemeMainColor } from '@/util/getThemeStyle';
+import { getThemeMainColor, getThemeSecondColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { easeInOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
@@ -28,7 +28,7 @@ export type RendererContextProps = {
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
     renderer: () => void;
-    rectRender: (rect: Rect) => void;
+    createBubbleRender: (rect: Rect) => void;
     bubbleRender: (bubble: Bubble) => void;
     movementBubbleRender: () => void;
 };
@@ -41,9 +41,10 @@ type RendererProviderProps = {
 };
 
 export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
-    const { isShowAnimation } = useConfigStore((state) => state);
+    const { isShowAnimation, isShowBubble } = useConfigStore((state) => state);
     const { setMode } = useConfigStore((state) => state);
     const isShowAnimationRef = useRef<boolean>(isShowAnimation);
+    const isShowBubbleRef = useRef<boolean>(isShowBubble);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
@@ -53,7 +54,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const modeRef = useRef<ControlMode>('none');
 
     const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
-    const { getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
+    const { getFocusBubblePath, getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
     const { pushLog } = useLog();
     const { getCameraView } = useCamera();
 
@@ -63,8 +64,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             if (!isReadyToShow) return;
             reRender();
         });
-        useConfigStore.subscribe(({ isShowAnimation, mode }) => {
+        useConfigStore.subscribe(({ isShowAnimation, isShowBubble, mode }) => {
             isShowAnimationRef.current = isShowAnimation;
+            isShowBubbleRef.current = isShowBubble;
             modeRef.current = mode;
         });
     }, []);
@@ -111,8 +113,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         }
     };
 
-    //renders
-    //
     /**
      * bezier curve 적용 전 - 픽셀 단위로 그리기
      */
@@ -187,19 +187,13 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     bubbleRender(bubble);
                 }
             }
-            // bubbles.forEach((bubble) => {
-            //     if (!bubble.isBubblized) {
-            //         console.log(bubble);
-            //         bubbleRender(bubble);
-            //     }
-            // });
         }
     };
 
     /**
      * usage: create bubble drag
      */
-    const rectRender = (rect: Rect) => {
+    const createBubbleRender = (rect: Rect) => {
         if (!creationLayerRef.current) return;
         const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
@@ -208,7 +202,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.beginPath(); // Start a new path
             context.lineWidth = 5;
-            context.strokeStyle = getThemeMainColor(theme);
+            context.strokeStyle = getThemeSecondColor(theme);
             context.setLineDash([10, 10]);
             context.strokeRect(_rect.left, _rect.top, _rect.width, _rect.height); // Render the path
             context.setLineDash([]);
@@ -242,15 +236,24 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             cameraView,
         );
         if (context) {
-            context.beginPath(); // Start a new path
-            context.strokeStyle = getThemeMainColor(theme);
-            context.lineWidth = 5;
-            context.setLineDash([10, 10]);
-            context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
-            context.setLineDash([]);
-            context.font = '12px serif';
-            context.fillStyle = 'black';
-            context.fillText(bubble.name, rect.left, rect.top - 8);
+            // context.beginPath(); // Start a new path
+
+            if (getFocusBubblePath() === bubble.path) {
+                context.strokeStyle = getThemeMainColor(theme);
+            } else {
+                context.strokeStyle = getThemeSecondColor(theme);
+            }
+            if (isShowBubbleRef.current || getFocusBubblePath() === bubble.path) {
+                context.lineWidth = 3;
+                context.setLineDash([10, 10]);
+                context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
+                context.setLineDash([]);
+                context.font = '12px serif';
+
+                context.fillStyle = 'black';
+                context.fillText(bubble.name, rect.left, rect.top - 8);
+            }
+
             bubble.curves.forEach((curve) => {
                 const c = bubble2globalWithCurve(curve.position, bubbleView);
 
@@ -315,7 +318,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 const x = Math.min(rect.width + rect.left, rect.left);
                 const y = Math.min(rect.height + rect.top, rect.top);
                 const cornerRadius = Math.floor(Math.min(rect.width, rect.height) / 10);
-                context.strokeStyle = getThemeMainColor(theme);
+                context.strokeStyle = getThemeSecondColor(theme);
 
                 context.beginPath();
                 context.moveTo(x + cornerRadius, y);
@@ -343,10 +346,10 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     Math.max(rect.width, rect.height) * 0.5,
                 );
                 gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-                gradient.addColorStop(0.9, getThemeMainColor(theme, 0.5));
+                gradient.addColorStop(0.9, getThemeSecondColor(theme, 0.5));
                 context.fillStyle = gradient;
                 context.fill();
-                context.strokeStyle = getThemeMainColor(theme);
+                context.strokeStyle = getThemeSecondColor(theme);
                 context.stroke();
             });
         }
@@ -366,7 +369,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 lineRenderer,
                 curveRenderer,
                 renderer,
-                rectRender,
+                createBubbleRender,
                 bubbleRender,
                 movementBubbleRender,
             }}

@@ -5,7 +5,11 @@ import { useConfigStore } from '@/store/configStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
-import { isCollisionPointWithRect, isCollisionWithRect } from '@/util/shapes/collision';
+import {
+    isCollisionPointWithRect,
+    isCollisionWithRect,
+    isCollisionWithRectExceptIncluding,
+} from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 
@@ -21,7 +25,8 @@ export const useBubbleGun = () => {
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
     const {
-        updateCreatingBubble,
+        setFocusBubblePath,
+        setCreatingBubble,
         addBubble,
         getCreatingBubble,
         getBubbles,
@@ -29,10 +34,12 @@ export const useBubbleGun = () => {
         findBubble,
         descendant2child,
         view2BubbleWithVector2D,
+        view2BubbleWithRect,
         getBubbleInTree,
         getChildBubbles,
+        getDescendantBubbles,
     } = useBubble();
-    const { bubbleTransitAnimation } = useRenderer();
+    const { bubbleTransitAnimation, reRender, createBubbleRender } = useRenderer();
 
     /* logs */
     const { pushLog } = useLog();
@@ -46,30 +53,50 @@ export const useBubbleGun = () => {
             },
             cameraView,
         );
+
+        // 저장시 cameraView 좌표계로 저장
         if (pos) createdBubblePosRef.current = pos;
         createdBubblePathRef.current = path;
+        setFocusBubblePath(path);
+        reRender();
     }, []);
 
-    const createBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
+    const createBubble = useCallback((cameraView: ViewCoord, pos: Vector2D) => {
+        const currentPosition = view2Point(
+            {
+                x: pos.x,
+                y: pos.y,
+            },
+            cameraView,
+        );
+
         if (
             createdBubblePosRef.current &&
             (createdBubblePosRef.current.x != currentPosition.x || createdBubblePosRef.current.y != currentPosition.y)
         ) {
-            const currentPos = view2Point(
-                {
-                    x: currentPosition.x,
-                    y: currentPosition.y,
-                },
-                cameraView,
-            );
             const { x, y } = createdBubblePosRef.current;
-            if (currentPos)
-                updateCreatingBubble({
-                    top: Math.min(currentPos.y, y),
-                    left: Math.min(currentPos.x, x),
-                    height: Math.abs(currentPos.y - y),
-                    width: Math.abs(currentPos.x - x),
-                });
+            const currentRect: Rect = {
+                top: Math.min(currentPosition.y, y),
+                left: Math.min(currentPosition.x, x),
+                height: Math.abs(currentPosition.y - y),
+                width: Math.abs(currentPosition.x - x),
+            };
+            // bubble내의 좌표계로 전환
+            const bubbleRect = view2BubbleWithRect(currentRect, cameraView, createdBubblePathRef.current);
+            const siblings = getDescendantBubbles(createdBubblePathRef.current);
+            let isCollision = siblings.some((sibling) =>
+                isCollisionWithRectExceptIncluding(sibling as Rect, bubbleRect),
+            );
+            if (
+                createdBubblePathRef.current != '/' &&
+                (bubbleRect.top < -100 ||
+                    bubbleRect.top + bubbleRect.height > 100 ||
+                    bubbleRect.left < -100 ||
+                    bubbleRect.left + bubbleRect.width > 100)
+            )
+                isCollision = true;
+            if (currentPosition && !isCollision) setCreatingBubble(currentRect);
+            createBubbleRender(getCreatingBubble());
         }
     }, []);
 
@@ -130,11 +157,12 @@ export const useBubbleGun = () => {
         createBubbleLog.push({ type: 'create', object: bubble, options: { childrenPaths: childrenPaths } });
 
         addBubble(bubble, childrenPaths);
+        setFocusBubblePath(bubble.path);
         pushLog(createBubbleLog);
 
         bubbleIdRef.current += 1;
         createdBubblePathRef.current = '/';
-        updateCreatingBubble({
+        setCreatingBubble({
             top: 0,
             left: 0,
             height: 0,

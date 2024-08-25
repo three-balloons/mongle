@@ -24,6 +24,31 @@ export const isCollisionWithRect = (rectA: Rect, rectB: Rect): boolean => {
     return false;
 };
 
+export const isCollisionWithRectExceptIncluding = (rectA: Rect, rectB: Rect): boolean => {
+    const rect1ContainsRect2 =
+        rectA.left <= rectB.left &&
+        rectA.top <= rectB.top &&
+        rectA.left + rectA.width >= rectB.left + rectB.width &&
+        rectA.top + rectA.height >= rectB.top + rectB.height;
+
+    const rect2ContainsRect1 =
+        rectB.left <= rectA.left &&
+        rectB.top <= rectA.top &&
+        rectB.left + rectB.width >= rectA.left + rectA.width &&
+        rectB.top + rectB.height >= rectA.top + rectA.height;
+    if (rect1ContainsRect2 || rect2ContainsRect1) {
+        return false;
+    }
+    if (
+        rectA.left < rectB.left + rectB.width &&
+        rectB.left < rectA.left + rectA.width &&
+        rectA.top < rectB.top + rectB.height &&
+        rectB.top < rectA.top + rectA.height
+    )
+        return true;
+    return false;
+};
+
 export const isCollisionPointWithRect = (point: Vector2D, rect: Rect): boolean => {
     if (
         rect.left < point.x &&

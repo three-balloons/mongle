@@ -3,13 +3,15 @@ import { useCurve } from '@/objects/curve/useCurve';
 import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
+import { useRenderer } from '@/objects/renderer/useRenderer';
 
 // functions about pen drawing
 // features: draw curve
 export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve } = useCurve();
-    const { view2BubbleWithVector2D } = useBubble();
+    const { view2BubbleWithVector2D, setFocusBubblePath } = useBubble();
+    const { reRender } = useRenderer();
 
     /* logs */
     const { pushLog } = useLog();
@@ -17,6 +19,7 @@ export const useDrawer = () => {
     const startDrawing = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {
         positionRef.current = currentPosition;
         setNewCurvePath(path ?? cameraView.path);
+        setFocusBubblePath(path ?? cameraView.path);
         const pos = view2Point(
             {
                 x: currentPosition.x,
@@ -26,6 +29,7 @@ export const useDrawer = () => {
         );
         const position = view2BubbleWithVector2D(pos, cameraView, getNewCurvePath());
         addControlPoint({ ...position, isVisible: true }, true);
+        reRender();
     }, []);
 
     const draw = useCallback(
@@ -47,6 +51,11 @@ export const useDrawer = () => {
                 );
 
                 const position = view2BubbleWithVector2D(currentPos, cameraView, getNewCurvePath());
+
+                if (position.x < -100 || position.x > 100 || position.y < -100 || position.y > 100) {
+                    return;
+                }
+
                 if (addControlPoint({ ...position, isVisible: true }))
                     lineRenderer(positionRef.current, currentPosition);
             }

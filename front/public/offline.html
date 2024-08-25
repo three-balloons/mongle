@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>오프라인이에요</title>
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                font-family: helvetica, arial, sans-serif;
+
+                height: 50vh;
+            }
+
+            h1 {
+                color: black;
+            }
+
+            p {
+                margin-block: 1rem;
+            }
+
+            button {
+                display: block;
+                height: 50px;
+                width: 200px;
+                font-size: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <p>인터넷에 접속할 수 없습니다.<br />네트워크 환경을 확인해주세요...</p>
+        <button type="button">⤾ 다시연결하기</button>
+
+        <script>
+            // Manual reload feature.
+            document.querySelector('button').addEventListener('click', () => {
+                window.location.reload();
+            });
+
+            // Listen to changes in the network state, reload when online.
+            // This handles the case when the device is completely offline.
+            window.addEventListener('online', () => {
+                window.location.reload();
+            });
+
+            // Check if the server is responding and reload the page if it is.
+            // This handles the case when the device is online, but the server
+            // is offline or misbehaving.
+            async function checkNetworkAndReload() {
+                try {
+                    const response = await fetch('.');
+                    // Verify we get a valid response from the server
+                    if (response.status >= 200 && response.status < 500) {
+                        window.location.reload();
+                        return;
+                    }
+                } catch {
+                    // Unable to connect to the server, ignore.
+                }
+                window.setTimeout(checkNetworkAndReload, 5000);
+            }
+
+            checkNetworkAndReload();
+        </script>
+    </body>
+</html>

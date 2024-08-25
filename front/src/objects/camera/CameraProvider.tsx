@@ -119,7 +119,7 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
     const updateCameraView = (cameraView: ViewCoord, prevPosition?: Rect | undefined) => {
         let path = cameraView.path;
         let pos = { ...cameraView.pos };
-        let prevPos = prevPosition ? { ...prevPosition } : undefined;
+        let prevPos: Rect | undefined = prevPosition ? { ...prevPosition } : undefined;
 
         while (
             path != '/' &&
@@ -185,12 +185,12 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
             }
 
             setCameraView({ ...cameraViewRef.current, pos: pos });
-            time += 30;
             if (time >= duration) {
                 setCameraView({ ...cameraViewRef.current, pos: endViewPos });
                 setMode(modeRef.current);
                 clearInterval(intervalId);
             }
+            time += 30;
         }, 30);
     };
 

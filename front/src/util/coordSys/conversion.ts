@@ -138,9 +138,9 @@ export const global2bubbleWithRect = (rect: Rect, bubble: Bubble | Rect | undefi
 };
 
 /**
- * point과 bubble은 좌표계가 같음 => rect을 point의 좌표계 안으로 넣음
+ * point과 bubble은 좌표계가 같음 => point을 bubble의 좌표계 안으로 넣음
  */
-export const bubble2Vector2D = (point: Vector2D, bubble: Bubble | undefined): Vector2D => {
+export const global2bubbleWithVector2D = (point: Vector2D, bubble: Bubble | undefined): Vector2D => {
     if (bubble == undefined) return point;
     else
         return {

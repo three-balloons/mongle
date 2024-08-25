@@ -1,15 +1,18 @@
 import { getBubbleAPI } from '@/api/bubble';
 import { bubbleTreeReducer } from '@/objects/bubble/bubbleTreeReducer';
 import { useViewStore } from '@/store/viewStore';
-import { bubble2Vector2D } from '@/util/coordSys/conversion';
+import { global2bubbleWithRect, global2bubbleWithVector2D } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDifferentDepth, pathToList } from '@/util/path/path';
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useRef, useReducer, useEffect } from 'react';
 
 export type BubbleContextProps = {
+    setFocusBubblePath: (path: string | undefined) => void;
+    getFocusBubblePath: () => string | undefined;
+
     /* 버블 */
     getCreatingBubble: () => Rect;
-    updateCreatingBubble: (rect: Rect) => void;
+    setCreatingBubble: (rect: Rect) => void;
     clearAllBubbles: () => void;
     getBubbles: () => Array<Bubble>;
     addBubble: (bubble: Bubble, childrenPaths: Array<string>) => void;
@@ -21,6 +24,7 @@ export type BubbleContextProps = {
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
     getRatioWithCamera: (bubble: Bubble, cameraView: ViewCoord) => number | undefined;
     view2BubbleWithVector2D: (pos: Vector2D, cameraView: ViewCoord, bubblePath: string) => Vector2D;
+    view2BubbleWithRect: (rect: Rect, cameraView: ViewCoord, bubblePath: string) => Rect;
 
     /* 버블 트리 */
     bubbleTree: BubbleTreeNode;
@@ -43,6 +47,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     workspaceName = '제목없음',
 }) => {
     const bubblesRef = useRef<Array<Bubble>>([]);
+    const focusBubblePathRef = useRef<string | undefined>(undefined);
     const [state, dispatch] = useReducer(bubbleTreeReducer, {
         bubbleTree: {
             name: workspaceName,
@@ -77,7 +82,15 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         bubblesRef.current = [];
     };
 
-    const updateCreatingBubble = (rect: Rect) => {
+    const setFocusBubblePath = (path: string | undefined) => {
+        focusBubblePathRef.current = path;
+    };
+
+    const getFocusBubblePath = () => {
+        return focusBubblePathRef.current;
+    };
+
+    const setCreatingBubble = (rect: Rect) => {
         creatingBubbleRef.current = rect;
     };
 
@@ -124,7 +137,21 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         const bubble = findBubble(bubblePath);
         if (bubble) {
             const bubbleView = descendant2child(bubble, cameraView.path);
-            ret = bubble2Vector2D(ret, bubbleView);
+            ret = global2bubbleWithVector2D(ret, bubbleView);
+        }
+        return ret;
+    };
+
+    /**
+     * 실제 View 위의 좌표를 bubble 내의 좌표로 변환
+     */
+    const view2BubbleWithRect = (rect: Rect, cameraView: ViewCoord, bubblePath: string) => {
+        let ret = { ...rect };
+
+        const bubble = findBubble(bubblePath);
+        if (bubble) {
+            const bubbleView = descendant2child(bubble, cameraView.path);
+            ret = global2bubbleWithRect(ret, bubbleView);
         }
         return ret;
     };
@@ -265,6 +292,8 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     return (
         <BubbleContext.Provider
             value={{
+                setFocusBubblePath,
+                getFocusBubblePath,
                 clearAllBubbles,
                 getBubbles,
                 getDescendantBubbles,
@@ -273,11 +302,12 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                 addBubble,
                 removeBubble,
                 updateBubble,
-                updateCreatingBubble,
+                setCreatingBubble,
                 findBubble,
                 descendant2child,
                 getRatioWithCamera,
                 view2BubbleWithVector2D,
+                view2BubbleWithRect,
                 bubbleTree: state.bubbleTree,
                 setBubbleTree,
                 getBubbleInTree,
