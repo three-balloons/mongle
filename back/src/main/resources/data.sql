@@ -5,18 +5,14 @@
 --TRUNCATE TABLE curve;
 --SET foreign_key_checks = 1;
 --
---INSERT INTO Users (id, email, password, name) VALUES
---(1, 'alice@example.com', 'password1', 'Alice Johnson'),
---(2, 'bob@example.com', 'password2', 'Bob Smith'),
---(3, 'carol@example.com', 'password3', 'Carol White'),
---(4, 'dave@example.com', 'password4', 'Dave Brown'),
---(5, 'eve@example.com', 'password5', 'Eve Davis');
+--INSERT INTO Users (id, oauth_id, provider, email, name, deleted_at, refresh_token) VALUES
+--(1, '8783738783758', 'Bubble', 'alice@example.com', 'User 1', null, null);
 --
 ----기존의 UUID: 36자의 문자열 (데이터 32자 + '-' 4자), 16바이트의 바이너리 형식으로 저장
 --INSERT INTO workspace (id, name, theme, created_at, deleted_at, user_id) VALUES
 --(UUID_TO_BIN(UUID()), 'Workspace 1', 'Light', CURRENT_TIMESTAMP, NULL, 1),
---(UUID_TO_BIN(UUID()), 'Workspace 2', 'Dark', CURRENT_TIMESTAMP, NULL, 2),
---(UUID_TO_BIN(UUID()), 'Workspace 3', 'Colorful', CURRENT_TIMESTAMP, NULL, 3);
+--(UUID_TO_BIN(UUID()), 'Workspace 2', 'Dark', CURRENT_TIMESTAMP, NULL, 1),
+--(UUID_TO_BIN(UUID()), 'Workspace 3', 'Colorful', CURRENT_TIMESTAMP, NULL, 1);
 --
 ---- Insert bubbles : 워크스페이스로부터 UUID를 가져와서 넣어준다.
 --SET @first_workspace_id = (
@@ -50,5 +46,5 @@
 --(3, 'Green', 4, "0A141F", 2),
 --(4, 'Yellow', 5, "0A141F", 3),
 --(5, 'Purple', 6, "0A141F", 4);
---
+
 ;

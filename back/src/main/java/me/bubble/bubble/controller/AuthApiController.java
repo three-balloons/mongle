@@ -20,35 +20,76 @@ import java.util.Optional;
 @RestController
 public class AuthApiController {
     private final AuthService authService;
+    private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/api/auth/access")
     public ApiResponse<AccessTokenResponse> getAccessToken(@RequestBody AccessTokenRequest request) {
         if (request.getProvider().equals("KAKAO")) {
-            String oAuthId = authService.getKakaoOAuthId(request.getCode(), request.getRedirect_uri());
+            try {
+                String oAuthId = authService.getKakaoOAuthId(request.getCode(), request.getRedirect_uri());
+
+                String accessToken = CheckAndSaveUserAndReturnToken(request.getProvider(), oAuthId);
+                if (accessToken != null) {
+                    AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
+
+                    return ApiResponse.<AccessTokenResponse>builder()
+                            .code("OK")
+                            .message("")
+                            .data(accessTokenResponse)
+                            .build();
+                } else {
+                    return ApiResponse.<AccessTokenResponse>builder()
+                            .code("INAPPROPRATE_PAYLOAD")
+                            .message("부적절한 요청입니다.")
+                            .data(null)
+                            .build();
+                }
 
 
-            System.out.println("OAuthId"+ oAuthId);
+            } catch (Exception ex) {
+                return ApiResponse.<AccessTokenResponse>builder()
+                        .code("INAPPROPRATE_PAYLOAD")
+                        .message("부적절한 요청입니다.")
+                        .data(null)
+                        .build();
+            }
+
+        } else if (request.getProvider().equals("GOOGLE")) {
+            try {
+                String oAuthId = authService.getGoogleOAuthId(request.getCode(), request.getRedirect_uri());
+
+                String accessToken = CheckAndSaveUserAndReturnToken(request.getProvider(), oAuthId);
+                if (accessToken != null) {
+                    AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
+                    return ApiResponse.<AccessTokenResponse>builder()
+                            .code("OK")
+                            .message("")
+                            .data(accessTokenResponse)
+                            .build();
+                } else {
+                    return ApiResponse.<AccessTokenResponse>builder()
+                            .code("INAPPROPRATE_PAYLOAD")
+                            .message("부적절한 요청입니다.")
+                            .data(null)
+                            .build();
+                }
 
 
 
+            } catch (Exception ex) {
+                return ApiResponse.<AccessTokenResponse>builder()
+                        .code("INAPPROPRATE_PAYLOAD")
+                        .message("부적절한 요청입니다.")
+                        .data(null)
+                        .build();
+            }
 
-            String accessToken = jwtTokenProvider.generateToken(oAuthId);
-            System.out.println("AccessToken" + accessToken);
-            AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
 
-            return ApiResponse.<AccessTokenResponse>builder()
-                    .code("OK")
-                    .message("")
-                    .data(accessTokenResponse)
-                    .build();
-//        }else if (request.getProvider().equals("GOOGLE")) {
-//
-//        }
         } else {
             return ApiResponse.<AccessTokenResponse>builder()
-                    .code("NotKakao")
-                    .message("")
+                    .code("INAPPROPRATE_PAYLOAD")
+                    .message("부적절한 요청입니다.")
                     .data(null)
                     .build();
         }
@@ -58,5 +99,21 @@ public class AuthApiController {
 //                SecurityContextHolder.getContext().getAuthentication());
 //        return "redirect:/login";
 //    }
+    }
+
+    private String CheckAndSaveUserAndReturnToken (String provider, String oAuthId) {
+        Optional<User> userOptional = userService.findUserByOauthIdAndProvider(oAuthId, provider);
+        if (userOptional.isPresent()) { //OAuthId로 유저를 발견한 경우
+            User user = userOptional.get();
+
+            if (user.getDeletedAt() == null) { // 삭제되지 않은 경우 토큰 새로 생성 후 리턴
+                return jwtTokenProvider.generateToken(oAuthId);
+            } else {
+                return null;
+            }
+        } else {
+            User createdUser = userService.createUser(oAuthId, provider, null, null, null, null);
+            return jwtTokenProvider.generateToken(oAuthId);
+        }
     }
 }
