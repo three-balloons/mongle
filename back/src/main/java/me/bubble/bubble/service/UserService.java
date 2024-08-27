@@ -28,7 +28,34 @@ public class UserService {
         return userRepository.save(user);  // DB에 저장 후 저장된 객체 반환
     }
 
-    public Optional<User> findUserByOauthIdAndProvider(String oauthId, String provider) {
-        return userRepository.findByOauthIdAndProvider(oauthId, provider);
+    public Optional<User> findUserByOauthId(String oauthId) {
+        return userRepository.findByOauthId(oauthId);
+    }
+
+    @Transactional
+    public User updateUserNameAndEmail(String oAuthId, String newName, String newEmail) {
+        // 사용자 조회
+        User user = userRepository.findByOauthId(oAuthId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + oAuthId));
+
+        // 이름과 이메일 업데이트
+        user.setName(newName);
+        user.setEmail(newEmail);
+
+        // 변경된 사용자 정보 저장
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateDeletedAtByOauthId(String oauthId) {
+        // OAuthId로 User를 조회
+        User user = userRepository.findByOauthId(oauthId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 OAuth ID를 가진 사용자를 찾을 수 없습니다."));
+
+        // deletedAt 필드를 현재 시간으로 업데이트
+        user.setDeletedAt(LocalDateTime.now());
+
+        // 변경 사항 저장
+        userRepository.save(user);
     }
 }

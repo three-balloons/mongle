@@ -8,12 +8,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import me.bubble.bubble.domain.Bubble;
 import me.bubble.bubble.domain.Curve;
+import me.bubble.bubble.domain.User;
 import me.bubble.bubble.domain.Workspace;
 import me.bubble.bubble.dto.*;
 import me.bubble.bubble.exception.CurveNotFoundException;
 import me.bubble.bubble.service.BubbleService;
 import me.bubble.bubble.service.CurveService;
 import me.bubble.bubble.service.WorkspaceService;
+import me.bubble.bubble.util.SecurityUtil;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -40,6 +42,15 @@ public class BubbleApiController {
                                                                        @RequestParam(required = true) String path,
                                                                        @RequestParam(required = false, defaultValue = "1") int depth)
     {
+        Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
+
+        if (!workspace.getUser().getOauthId().equals(SecurityUtil.getCurrentUserOAuthId())) {
+            return ApiResponse.<List<BubbleResponse>>builder()
+                    .code("INAPPROPRIATE_USER")
+                    .message("해당 유저의 Workspace가 아닙니다.")
+                    .data(null)
+                    .build();
+        }
         if (depth < 1 || depth > 5) {
             return ApiResponse.<List<BubbleResponse>>builder()
                     .code("INAPPROPRIATE_DEPTH")
@@ -80,6 +91,16 @@ public class BubbleApiController {
     public ApiResponse<Object> deleteBubbleFromWorkspace(@PathVariable UUID workspaceId,
                                                          @RequestParam(required = true) String path){
 
+        Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
+
+        if (!workspace.getUser().getOauthId().equals(SecurityUtil.getCurrentUserOAuthId())) {
+            return ApiResponse.<Object>builder()
+                    .code("INAPPROPRIATE_USER")
+                    .message("해당 유저의 Workspace가 아닙니다.")
+                    .data(null)
+                    .build();
+        }
+
         if (path.endsWith("/")) {
             return ApiResponse.<Object>builder()
                     .code("BAD_REQUEST")
@@ -110,8 +131,19 @@ public class BubbleApiController {
     public ApiResponse<?> getBubbleTreeFromWorkspace(@PathVariable UUID workspaceId,
                                                      @RequestParam(required = false, defaultValue = "/") String path,
                                                      @RequestParam(required = false, defaultValue = "-1") int depth)
+
     // RequestedParam 내부에는 정적이 값이 들어가야해서 음수로 설정 후 밑에서 음수일 경우 기본값을 바꿔주는 형식으로 구현
     {
+        Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
+
+        if (!workspace.getUser().getOauthId().equals(SecurityUtil.getCurrentUserOAuthId())) {
+            return ApiResponse.<Object>builder()
+                    .code("INAPPROPRIATE_USER")
+                    .message("해당 유저의 Workspace가 아닙니다.")
+                    .data(null)
+                    .build();
+        }
+
         if (depth < -1) {
             return ApiResponse.<List<BubbleTreeResponse>>builder()
                     .code("Inappropriate depth")
@@ -206,6 +238,13 @@ public class BubbleApiController {
         // 해당 workspace 가져온다.
         Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
 
+        if (!workspace.getUser().getOauthId().equals(SecurityUtil.getCurrentUserOAuthId())) {
+            return ApiResponse.<BubbleResponse>builder()
+                    .code("INAPPROPRIATE_USER")
+                    .message("해당 유저의 Workspace가 아닙니다.")
+                    .data(null)
+                    .build();
+        }
         if (path.lastIndexOf('/') == -1 || path.endsWith("/")) { // request의 path가 hhh같은 경우와 /로 끝나는 경우
             return ApiResponse.<BubbleResponse>builder()
                     .code("BAD_REQUEST")
@@ -306,6 +345,15 @@ public class BubbleApiController {
     public ApiResponse<PutResponse> PutBubble (@PathVariable UUID workspaceId,
                                                @RequestParam(required = true) String path,
                                                @RequestBody PutRequest request) {
+        Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
+
+        if (!workspace.getUser().getOauthId().equals(SecurityUtil.getCurrentUserOAuthId())) {
+            return ApiResponse.<PutResponse>builder()
+                    .code("INAPPROPRIATE_USER")
+                    .message("해당 유저의 Workspace가 아닙니다.")
+                    .data(null)
+                    .build();
+        }
         try {
             Bubble bubble = bubbleService.findByPathAndWorkspaceId(path, workspaceId);
 
@@ -406,8 +454,16 @@ public class BubbleApiController {
     public ApiResponse<Object> PutMoveBubble (@PathVariable UUID workspaceId,
                                                @RequestParam(required = true) String oldPath,
                                                @RequestBody PutMoveRequest request) {
+        Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
+
+        if (!workspace.getUser().getOauthId().equals(SecurityUtil.getCurrentUserOAuthId())) {
+            return ApiResponse.<Object>builder()
+                    .code("INAPPROPRIATE_USER")
+                    .message("해당 유저의 Workspace가 아닙니다.")
+                    .data(null)
+                    .build();
+        }
         try {
-            Workspace workspace = workspaceService.findWorkspaceById(workspaceId);
             Bubble bubble = bubbleService.findByPathAndWorkspaceId(oldPath, workspaceId);
             if (request.getNewPath().isEmpty()) {
                 bubbleService.updateBubble(bubble.getId(), request.getName(), request.getTop(), request.getLeft(),
