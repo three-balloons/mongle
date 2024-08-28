@@ -248,7 +248,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 context.setLineDash([10, 10]);
                 context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
                 context.setLineDash([]);
-                context.font = '12px serif';
+                context.font = '12px monggeulR';
 
                 context.fillStyle = 'black';
                 context.fillText(bubble.name, rect.left, rect.top - 8);

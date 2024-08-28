@@ -249,6 +249,43 @@ export const useBubbleGun = () => {
                 moveBubbleRef.current.left = startMoveBubblePosRef.current.x;
                 moveBubbleRef.current.top = startMoveBubblePosRef.current.y;
             }
+        } else {
+            // 이동 성공, 로그 추가
+            const bubble = moveBubbleRef.current;
+            const childrenPaths = getChildBubbles(bubble.path)
+                .filter((child) => {
+                    // isInside 유틸함수 만들기
+                    if (
+                        bubble.top < child.top &&
+                        bubble.left < child.left &&
+                        child.top + child.height < bubble.top + bubble.height &&
+                        child.left + child.width < bubble.left + bubble.width
+                    )
+                        return true;
+                })
+                .map((child) => {
+                    return child.path;
+                });
+            console.log({
+                ...moveBubbleRef.current,
+                left: startMoveBubblePosRef.current?.x,
+                top: startMoveBubblePosRef.current?.y,
+            });
+            console.log(moveBubbleRef.current);
+            //
+            pushLog([
+                {
+                    type: 'delete',
+                    object: { ...moveBubbleRef.current, ...startMoveBubblePosRef.current },
+                    options: { childrenPaths: childrenPaths },
+                },
+                {
+                    type: 'create',
+                    object: moveBubbleRef.current,
+                    options: { childrenPaths: childrenPaths },
+                },
+            ]);
+            moveBubbleRef.current;
         }
     }, []);
 
