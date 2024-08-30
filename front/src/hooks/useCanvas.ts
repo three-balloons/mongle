@@ -26,7 +26,7 @@ export const useCanvas = () => {
     const isMoveBubbleRef = useRef(false);
 
     const { getDrawingCurve } = useCurve();
-    const { getBubbles } = useBubble();
+    const { getBubbles, descendant2child } = useBubble();
 
     /* tools */
     const { startDrawing, draw, finishDrawing } = useDrawer();
@@ -57,25 +57,59 @@ export const useCanvas = () => {
         if (mainLayer == undefined) return;
         const currentPosition = getViewCoordinate(event, mainLayer);
         if (currentPosition) {
+            const cameraView = getCameraView();
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
-                const { bubble } = identifyTouchRegion(getCameraView(), currentPosition, getBubbles());
+                const { bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
                 if (bubble === undefined) console.error('버블 밖에서는 라인을 그릴 수 없습니다');
                 else {
-                    startDrawing(getCameraView(), currentPosition, bubble.path);
+                    startDrawing(cameraView, currentPosition, bubble.path);
                     isPaintingRef.current = true;
                 }
             } else if (isEraseRef.current == false && modeRef.current == 'erase') {
-                startErase(getCameraView());
+                startErase(cameraView);
                 isEraseRef.current = true;
             } else if (modeRef.current == 'move') {
                 if (isMoveRef.current == false) {
                     isMoveRef.current = true;
-                    grab(getCameraView(), currentPosition);
+                    grab(cameraView, currentPosition);
                 }
             } else if (modeRef.current == 'bubble') {
-                const { region, bubble } = identifyTouchRegion(getCameraView(), currentPosition, getBubbles());
+                const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
                 if (isCreateBubbleRef.current == false) {
-                    if (region === 'border') {
+                    if (region === 'name') {
+                        if (bubble) {
+                            const bubbleView = descendant2child(bubble, cameraView.path);
+                            if (bubbleView) {
+                                /**
+                                 * 이름 터치시 input 띄어줘야함
+                                 * 현재 구현 계획 X
+                                 */
+                                // const rect = rect2View(
+                                //     {
+                                //         top: bubbleView.top,
+                                //         left: bubbleView.left,
+                                //         width: bubbleView.width,
+                                //         height: bubbleView.height,
+                                //     },
+                                //     cameraView,
+                                // );
+                                // showNameInput(bubble.name, {
+                                //     top: rect.top - 40,
+                                //     left: rect.left,
+                                //     width: rect.width,
+                                //     height: RENDERED_FONT_SIZE,
+                                // });
+                                // console.log(rect.top, rect.left);
+                                // TODO showNameInput
+                                //  top: rect.top - RENDERED_FONT_SIZE, left: rect.left 위치에
+                            }
+                        }
+
+                        if (bubble) {
+                            if (bubble.isBubblized === false) bubblize(bubble);
+                            else unbubblize(bubble);
+                        }
+                    } else if (region === 'border') {
                         if (bubble) {
                             if (bubble.isBubblized === false) bubblize(bubble);
                             else unbubblize(bubble);

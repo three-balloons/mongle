@@ -2,7 +2,7 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
-import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
+import { MINIMUN_RENDERED_BUBBLE_SIZE, RENDERED_FONT_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
 import { getParentPath, getPathDepth } from '@/util/path/path';
 import {
@@ -107,12 +107,15 @@ export const useBubbleGun = () => {
             console.error('생성하려는 버블의 크기가 너무 작습니다');
             return;
         }
-        const name = bubbleIdRef.current.toString();
+        const bubbleName = 'mongle ' + bubbleIdRef.current.toString();
 
         const bubble: Bubble = {
             ...bubbleRect,
-            path: createdBubblePathRef.current == '/' ? '/' + name : createdBubblePathRef.current + '/' + name,
-            name: name,
+            path:
+                createdBubblePathRef.current == '/'
+                    ? '/' + bubbleName
+                    : createdBubblePathRef.current + '/' + bubbleName,
+            name: bubbleName,
             curves: [],
             isBubblized: false,
             isVisible: true,
@@ -297,7 +300,7 @@ export const useBubbleGun = () => {
         cameraView: ViewCoord,
         position: Vector2D,
         bubbles: Array<Bubble>,
-    ): { region: 'inside' | 'outside' | 'border'; bubble: Bubble | undefined } => {
+    ): { region: 'inside' | 'outside' | 'border' | 'name'; bubble: Bubble | undefined } => {
         bubbles.sort((a, b) => getPathDepth(b.path) - getPathDepth(a.path));
         for (const bubble of bubbles) {
             if (!bubble.isVisible) continue;
@@ -312,8 +315,20 @@ export const useBubbleGun = () => {
                     },
                     cameraView,
                 );
-
                 if (
+                    isCollisionPointWithRect(position, {
+                        top: rect.top - RENDERED_FONT_SIZE,
+                        left: rect.left,
+                        width: rect.width,
+                        height: RENDERED_FONT_SIZE,
+                    })
+                ) {
+                    console.log('name touch');
+                    return {
+                        region: 'name',
+                        bubble: bubble,
+                    };
+                } else if (
                     isCollisionPointWithRect(position, {
                         top: rect.top - rect.height * 0.05,
                         left: rect.left - rect.width * 0.05,

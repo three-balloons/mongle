@@ -7,18 +7,18 @@ import postcssNesting from 'postcss-nesting';
 export default defineConfig({
     plugins: [svgr(), react()],
     base: '/',
-    // server: {
-    //     proxy: {
-    //         '/api': {
-    //             target: 'http://localhost:8080',
-    //             changeOrigin: true,
-    //             secure: false,
-    //             headers: {
-    //                 Origin: 'http://localhost:8080',
-    //             },
-    //         },
-    //     },
-    // },
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://http://43.201.202.138:8080',
+                changeOrigin: true,
+                secure: false,
+                headers: {
+                    Origin: 'https://mongle.xyz',
+                },
+            },
+        },
+    },
     resolve: {
         alias: {
             '@': '/src',
