@@ -95,8 +95,13 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
         const isLongHeight: boolean =
             visibleBubblePos.width * cameraViewRef.current.size.y <
             visibleBubblePos.height * cameraViewRef.current.size.x;
-        const newHeight = isLongHeight ? bubble.height : (bubble.width * newCameraPos.height) / newCameraPos.width;
-        const newWidth = isLongHeight ? (bubble.height * newCameraPos.width) / newCameraPos.height : bubble.width;
+        // 최대 크기의 91%
+        const newHeight = isLongHeight
+            ? bubble.height * 1.1
+            : (bubble.width * newCameraPos.height * 1.1) / newCameraPos.width;
+        const newWidth = isLongHeight
+            ? (bubble.height * newCameraPos.width * 1.1) / newCameraPos.height
+            : bubble.width * 1.1;
         const newCameraView: ViewCoord = {
             size: cameraViewRef.current.size,
             pos: {
