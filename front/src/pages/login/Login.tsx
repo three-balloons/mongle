@@ -14,7 +14,7 @@ export const Login = () => {
 
     const useDemoHandler = () => {
         loginWithDemo();
-        navigate('/workspace/demo');
+        navigate('/workspace/demo', { replace: true });
     };
 
     return (

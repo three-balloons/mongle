@@ -7,6 +7,7 @@ type State = {
 
 type Action = {
     login: (accessToken: string) => void;
+    logout: () => void;
     loginWithDemo: () => void;
 };
 type Store = State & Action;
