@@ -41,7 +41,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
                 },
                 path: '/',
             };
-            updateCameraView(newView, originView.pos);
+            updateCameraView(newView, originView);
             pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
             return;
         }

@@ -24,3 +24,21 @@ export const getParentPath = (path: string): string | undefined => {
     const ret = paths.slice(0, -1).join('/');
     return ret == '' ? '/' : ret;
 };
+
+/**
+ * 공통조상의 경로를 리턴
+ */
+export const getLCAPath = (pathA: string, pathB: string): string => {
+    const listA = pathToList(pathA);
+    const listB = pathToList(pathB);
+    const length = Math.min(listA.length, listB.length);
+    const ret: Array<string> = [];
+    for (let i = 0; i < length; i++) {
+        if (listA[i] !== listB[i]) {
+            return ret.join('/');
+        } else {
+            ret.push(listA[i]);
+        }
+    }
+    return ret.join('/');
+};

@@ -67,7 +67,6 @@ export const ControlSelect = () => {
                             if (!isUndoAvailable) return;
                             if (mode == 'animate') return;
                             undo();
-                            console.log(getBubbles(), 'cameraView');
                             reRender();
                         }}
                     >
