@@ -9,6 +9,7 @@ type APIExceptionCode =
     | 'ALREADY_EXIST'
     | 'NOT_MATCH_PASSWORD'
     | 'SIGN_UP_NEEDED'
-    | 'MEMBER_EXISTS';
+    | 'MEMBER_EXISTS'
+    | 'USER_NOT_FOUND';
 
 type Provider = 'KAKAO' | 'GOOGLE';

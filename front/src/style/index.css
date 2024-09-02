@@ -1,8 +1,7 @@
 @import url('@/style/color.css');
+@import url('@/style/font.css');
 
 :root {
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
     font-weight: 400;
 
     font-synthesis: none;
@@ -12,6 +11,7 @@
 }
 
 body {
+    font-family: 'monggeulR', sans-serif;
     margin: 0;
     min-width: 320px;
     min-height: 100vh;

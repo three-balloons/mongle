@@ -12,6 +12,7 @@ import { LogProvider } from '@/objects/log/LogProvider';
 import { CameraProvider } from '@/objects/camera/CameraProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWorkspaceAPI } from '@/api/workspace';
+// import { NameInput } from '@/components/nameInputModal/NameInput';
 // import { getBubbleAPI } from '@/api/bubble';
 
 type WorkspaceProps = {
@@ -59,6 +60,7 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
                                         height={canvasSize.height}
                                         workspaceId={workspaceId}
                                     />
+                                    {/* <NameInput /> */}
                                 </div>
                             </RendererProvider>
                         </LogProvider>

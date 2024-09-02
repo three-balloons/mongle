@@ -46,6 +46,8 @@
         text-align: center;
         flex: 1 1;
         color: var(--color-black);
+        font-size: 14px;
+        font-family: 'monggeulR';
     }
 }
 

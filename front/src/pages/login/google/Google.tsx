@@ -41,7 +41,7 @@ export const Google = () => {
         mutationFn: googleLogin,
         onSuccess({ accessToken }) {
             login(accessToken);
-            navigate('/home');
+            navigate('/home', { replace: true });
         },
         onError(error) {
             if (error instanceof APIException) {

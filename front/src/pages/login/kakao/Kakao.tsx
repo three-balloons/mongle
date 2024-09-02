@@ -42,7 +42,7 @@ export const Kakao = () => {
         mutationFn: kakaoLogin,
         onSuccess({ accessToken }) {
             login(accessToken);
-            navigate('/home');
+            navigate('/home', { replace: true });
         },
         onError(error) {
             if (error instanceof APIException) {

@@ -1,3 +1,4 @@
+import { getUserAPI } from '@/api/user';
 import { getAllWorkspaceAPI } from '@/api/workspace';
 import { WorkspaceSettingModal } from '@/components/workspaceSettingModal/WorkspaceSettingModal';
 import style from '@/pages/home/grid-view.module.css';
@@ -16,11 +17,23 @@ export const GridView = () => {
         },
     });
 
-    if (workspacesQuery.isLoading) return <></>;
+    const getUserQuery = useQuery({
+        queryKey: ['user'],
+        queryFn: () => {
+            return getUserAPI();
+        },
+    });
+
+    if (workspacesQuery.isLoading || workspacesQuery.isPending) return <>로딩중</>;
+    if (workspacesQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspaces: Array<Workspace> = workspacesQuery.data ?? [];
+
+    if (getUserQuery.isLoading || getUserQuery.isPending || !getUserQuery.data) return <>로딩중</>;
+    if (getUserQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
+    const user = getUserQuery.data;
     return (
         <div className={style.default}>
-            <h1>작업 공간</h1>
+            <h1>{user.name}의 작업 공간</h1>
             <div className={style.workspaceContainer}>
                 {workspaces.map((workspace, index) => {
                     return (

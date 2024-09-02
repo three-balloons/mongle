@@ -15,18 +15,31 @@
     margin-left: 16px;
 }
 
+.margin-left24 {
+    margin-left: 24px;
+}
+
 .title {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     width: 100%;
 }
+
 .title-text {
     flex: 1 1;
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: pre;
+}
+
+.title-text-button {
+    border-width: 0;
+    outline: none;
+    background-color: transparent;
+    font-size: 16px;
+    font-family: 'monggeulR';
 }
 
 .rotated {

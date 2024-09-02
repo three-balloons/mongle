@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'monggeulR';
+    font-weight: normal;
+    font-style: normal;
+    src: url('@/assets/fonts/HakgyoansimMonggeulmonggeulR.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'monggeulR';
+    font-weight: bold;
+    font-style: bold;
+    src: url('@/assets/fonts/HakgyoansimMonggeulmonggeulR.ttf') format('truetype');
+}

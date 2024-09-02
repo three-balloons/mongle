@@ -1,1 +1,2 @@
 export const MINIMUN_RENDERED_BUBBLE_SIZE = 30;
+export const RENDERED_FONT_SIZE = 22;

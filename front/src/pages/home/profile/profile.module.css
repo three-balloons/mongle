@@ -26,8 +26,9 @@
     font-size: 16px;
 
     :nth-child(2) {
-        max-width: 145px;
+        max-width: 170px;
         color: var(--color-gray-60);
+        cursor: pointer;
         overflow: hidden;
         text-overflow: ellipsis;
     }
