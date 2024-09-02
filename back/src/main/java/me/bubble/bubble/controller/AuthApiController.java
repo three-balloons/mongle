@@ -8,6 +8,8 @@ import me.bubble.bubble.domain.User;
 import me.bubble.bubble.dto.*;
 import me.bubble.bubble.service.AuthService;
 import me.bubble.bubble.service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,9 +29,9 @@ public class AuthApiController {
     public ApiResponse<AccessTokenResponse> getAccessToken(@RequestBody AccessTokenRequest request) {
         if (request.getProvider().equals("KAKAO")) {
             try {
-                String oAuthId = authService.getKakaoOAuthId(request.getCode(), request.getRedirect_uri());
+                String[] info = authService.getKakaoOAuthId(request.getCode(), request.getRedirect_uri());
 
-                String accessToken = CheckAndSaveUserAndReturnToken(request.getProvider(), oAuthId);
+                String accessToken = CheckAndSaveUserAndReturnToken(request.getProvider(), info);
                 if (accessToken != null) {
                     AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
 
@@ -57,9 +59,9 @@ public class AuthApiController {
 
         } else if (request.getProvider().equals("GOOGLE")) {
             try {
-                String oAuthId = authService.getGoogleOAuthId(request.getCode(), request.getRedirect_uri());
+                String[] info = authService.getGoogleOAuthId(request.getCode(), request.getRedirect_uri());
 
-                String accessToken = CheckAndSaveUserAndReturnToken(request.getProvider(), oAuthId);
+                String accessToken = CheckAndSaveUserAndReturnToken(request.getProvider(), info);
                 if (accessToken != null) {
                     AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
                     return ApiResponse.<AccessTokenResponse>builder()
@@ -101,8 +103,11 @@ public class AuthApiController {
 //    }
     }
 
-    private String CheckAndSaveUserAndReturnToken (String provider, String oAuthId) {
-        Optional<User> userOptional = userService.findUserByOauthIdAndProvider(oAuthId, provider);
+    private String CheckAndSaveUserAndReturnToken (String provider, String[] info) {
+        String oAuthId = info[0];
+        String email = info[1];
+        String name = info[2];
+        Optional<User> userOptional = userService.findUserByOauthId(oAuthId);
         if (userOptional.isPresent()) { //OAuthId로 유저를 발견한 경우
             User user = userOptional.get();
 
@@ -112,7 +117,7 @@ public class AuthApiController {
                 return null;
             }
         } else {
-            User createdUser = userService.createUser(oAuthId, provider, null, null, null, null);
+            User createdUser = userService.createUser(oAuthId, provider, email, name, null, null);
             return jwtTokenProvider.generateToken(oAuthId);
         }
     }

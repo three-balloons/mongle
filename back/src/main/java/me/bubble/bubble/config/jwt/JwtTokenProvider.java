@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import me.bubble.bubble.repository.UserRepository;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -59,9 +60,13 @@ public class JwtTokenProvider {
 
         String oauthId = claims.get("oauthId", String.class);
         // OAuthId가 유효한지 확인하는 추가 로직
+        // deletedAt으로 체크하는 걸 추가
         me.bubble.bubble.domain.User user = userRepository.findByOauthId(oauthId) // 우리가 만든 User 객체
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid OAuth ID: " + oauthId));
-
+        if (user.getDeletedAt() != null) { // 삭제된 경우 예외를 던진다.
+            System.out.println("예외 발생");
+            throw new DisabledException("Deleted User");
+        }
 
         User principal = new User(oauthId, "", Collections.emptyList()); // 이 때의 User는 스프링 시큐리티에서의 User
         // 인증 정보를 반환할 때 사용되는 유저 객체는 스프링 시큐리티에서 사용되는 유저여야 함. (principal로 사용되는 유저 객체는 UserDetails 인터페이스 구현해야 함.)

@@ -30,7 +30,7 @@ public class AuthService {
 
     Base64.Decoder decoder = Base64.getDecoder();
     JsonParser jsonParser = new BasicJsonParser();
-    public String getKakaoOAuthId(String code, String redirectUri) {
+    public String[] getKakaoOAuthId(String code, String redirectUri) {
         WebClient webClient = webClientBuilder.build();
         Mono<OAuthResponseDto> kakaoResponseDtoMono = webClient.post()
                 .uri("https://kauth.kakao.com/oauth/token")
@@ -41,10 +41,10 @@ public class AuthService {
         //요청을 받아서, idToken을 decode 후에 sub을 가져온다.sub: 유저 식별자
         String idToken = kakaoResponseDtoMono.block().getId_token();
 
-        return getOAuthIdFromIdToken(idToken);
+        return getInfoFromIdToken(idToken, "Kakao");
     }
 
-    public String getGoogleOAuthId(String code, String redirectUri) {
+    public String[] getGoogleOAuthId(String code, String redirectUri) {
         WebClient webClient = webClientBuilder.build();
         Mono<OAuthResponseDto> googleResponseDtoMono = webClient.post()
                 .uri("https://oauth2.googleapis.com/token")
@@ -54,10 +54,10 @@ public class AuthService {
                 .bodyToMono(OAuthResponseDto.class);
 
         String idToken = googleResponseDtoMono.block().getId_token();
-        return getOAuthIdFromIdToken(idToken);
+        return getInfoFromIdToken(idToken, "Google");
 
     }
-    private String getOAuthIdFromIdToken(String idToken) {
+    private String[] getInfoFromIdToken(String idToken, String provider) {
         final String payloadJwt = idToken.split("\\.")[1];
         byte[] payload = decoder.decode(payloadJwt);
         String decodedPayload = new String(payload);
@@ -65,6 +65,24 @@ public class AuthService {
         if (!jsonArray.containsKey("sub")) {
             throw new RuntimeException("ID token does not contain 'sub' field");
         }
-        return jsonArray.get("sub").toString();
+        String sub = jsonArray.get("sub").toString();
+
+        // email 필드가 없을 경우 빈 문자열로 처리
+        String email = jsonArray.containsKey("email") ? jsonArray.get("email").toString() : "";
+
+        String name = "";
+        // name 필드가 없을 경우 빈 문자열로 처리
+        if (provider.equals("Google")) {
+            name = jsonArray.containsKey("name") ? jsonArray.get("name").toString() : "";
+        } else if (provider.equals("Kakao")) {
+            name = jsonArray.containsKey("nickname") ? jsonArray.get("name").toString() : "";
+        }
+        // 배열로 변환
+        String[] result = new String[3];
+        result[0] = sub;
+        result[1] = email;
+        result[2] = name;
+
+        return result;
     }
 }
