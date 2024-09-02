@@ -94,7 +94,7 @@ type CreateWorkspaceReq = {
     theme: Theme;
 };
 type CreateWorkspaceRes = Workspace;
-export const createBubbleAPI = async () => {
+export const createWorkspaceAPI = async () => {
     try {
         if (IS_MOCK) {
             const res = mockedCreateWorkspace.data as CreateWorkspaceRes;

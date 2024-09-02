@@ -50,6 +50,7 @@ export const mockedGetWorkspaces = {
         },
     ],
 };
+
 export const mockedGetWorkspace = {
     code: 'OK',
     message: '',

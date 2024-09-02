@@ -10,7 +10,7 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {
-                target: 'https://www.kmer.site:8080/api',
+                target: 'https://www.kmer.site/api',
                 changeOrigin: true,
                 secure: true,
                 headers: {

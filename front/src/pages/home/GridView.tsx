@@ -1,5 +1,6 @@
 import { getUserAPI } from '@/api/user';
 import { getAllWorkspaceAPI } from '@/api/workspace';
+import { CreateWorkspaceModal } from '@/components/createWorkspaceModal/CreateWorkspaceModal';
 import { WorkspaceSettingModal } from '@/components/workspaceSettingModal/WorkspaceSettingModal';
 import style from '@/pages/home/grid-view.module.css';
 import objectStyle from '@/style/common/object.module.css';
@@ -47,6 +48,9 @@ export const GridView = () => {
                         </div>
                     );
                 })}
+                <div className={style.workspaceWrapper}>
+                    <CreateWorkspaceModal className={style.addWorkspaceButton} />
+                </div>
             </div>
         </div>
     );
