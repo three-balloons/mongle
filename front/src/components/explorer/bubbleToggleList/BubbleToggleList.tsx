@@ -61,6 +61,17 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
     });
 
     useEffect(() => {
+        setEditStates((prev) => {
+            return {
+                isEdit: [false, ...children.map(() => false)],
+                title: [name, ...children.map((child) => child.name)],
+                buttonRef: prev.buttonRef,
+            };
+        });
+        editStates.buttonRef.current = [null, ...children.map(() => null)];
+    }, [children]);
+
+    useEffect(() => {
         const editStateLength = editStates.isEdit.length;
         for (let i = 0; i < editStateLength; i++) {
             if (editStates.isEdit[i] && editStates.buttonRef.current && editStates.buttonRef.current[i]) {

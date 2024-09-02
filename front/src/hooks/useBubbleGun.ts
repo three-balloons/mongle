@@ -146,17 +146,7 @@ export const useBubbleGun = () => {
             });
 
         const createBubbleLog: LogGroup = [];
-        // childrenPaths.forEach((childPath) => {
-        //     const child = findBubble(childPath);
-        //     if (child) {
-        //         const grandChildrenPaths = getChildBubbles(childPath).map((child) => child.path);
-        //         createBubbleLog.push({
-        //             type: 'update',
-        //             object: child,
-        //             options: { childrenPaths: grandChildrenPaths },
-        //         });
-        //     }
-        // });
+
         createBubbleLog.push({ type: 'create', object: bubble, options: { childrenPaths: childrenPaths } });
 
         addBubble(bubble, childrenPaths);
