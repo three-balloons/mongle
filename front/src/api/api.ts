@@ -1,4 +1,5 @@
 import { APIException } from '@/api/exceptions';
+import { useAuthStore } from '@/store/authStore';
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig, AxiosRequestConfig } from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -36,11 +37,13 @@ const onError = (error: AxiosError | Error): Promise<AxiosError> => {
 };
 
 export const createAPI = () => {
+    const token = useAuthStore.getState().accessToken;
     const axiosInstance = axios.create({
         baseURL: API_URL,
         timeout: 10000,
         withCredentials: true,
         headers: {
+            Authorization: token,
             'Content-Type': 'application/json',
         },
     });

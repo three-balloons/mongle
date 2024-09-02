@@ -10,11 +10,11 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {
-                target: 'http://http://43.201.202.138:8080',
+                target: 'https://www.kmer.site:8080/api',
                 changeOrigin: true,
-                secure: false,
+                secure: true,
                 headers: {
-                    Origin: 'https://mongle.xyz',
+                    Origin: 'https://app.mongle.xyz',
                 },
             },
         },
