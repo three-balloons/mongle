@@ -48,9 +48,17 @@ export const getAllWorkspaceAPI = async () => {
     }
 };
 
-type UpdateWorkspaceReq = Workspace;
+type UpdateWorkspacePrams = {
+    workspaceId: string;
+    name: string;
+    theme: string;
+};
+type UpdateWorkspaceReq = {
+    name: string;
+    theme: string;
+};
 type UpdateWorkspaceRes = Workspace;
-export const updateWorkspaceAPI = async (workspaceId: string) => {
+export const updateWorkspaceAPI = async ({ workspaceId, name, theme }: UpdateWorkspacePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedUpdateWorkspace.data as UpdateWorkspaceRes;
@@ -58,6 +66,10 @@ export const updateWorkspaceAPI = async (workspaceId: string) => {
         }
         const res = await bubbleAPI.put<UpdateWorkspaceReq, UpdateWorkspaceRes, 'ALREADY_EXIST'>(
             `/workspace/${workspaceId}`,
+            {
+                name: name,
+                theme: theme,
+            },
         );
         return res;
     } catch (error: unknown) {
@@ -91,16 +103,19 @@ export const deleteBubbleAPI = async (workspaceId: string) => {
 
 type CreateWorkspaceReq = {
     name: string;
-    theme: Theme;
+    theme: string;
 };
 type CreateWorkspaceRes = Workspace;
-export const createWorkspaceAPI = async () => {
+export const createWorkspaceAPI = async ({ name, theme }: CreateWorkspaceReq) => {
     try {
         if (IS_MOCK) {
             const res = mockedCreateWorkspace.data as CreateWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.post<CreateWorkspaceReq, CreateWorkspaceRes, 'ALREADY_EXIST'>(`/workspace`);
+        const res = await bubbleAPI.post<CreateWorkspaceReq, CreateWorkspaceRes, 'ALREADY_EXIST'>(`/workspace`, {
+            name: name,
+            theme: theme,
+        });
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {

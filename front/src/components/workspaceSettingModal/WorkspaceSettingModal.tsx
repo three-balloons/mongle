@@ -20,14 +20,18 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
     const [theme, setTheme] = useState<Theme>(workspace.theme);
 
     const { mutate: updateWorkspace } = useMutation({
-        mutationFn: (id: string) => updateWorkspaceAPI(id),
+        mutationFn: ({ workspaceId, name, theme }: { workspaceId: string; name: string; theme: string }) =>
+            updateWorkspaceAPI({ workspaceId, name, theme }),
     });
     const saveHandler = () => {
-        updateWorkspace(workspace.id, {
-            onSuccess: () => {
-                console.log('저장 성공');
+        updateWorkspace(
+            { workspaceId: workspace.id, name: name, theme: theme as string },
+            {
+                onSuccess: () => {
+                    console.log('저장 성공');
+                },
             },
-        });
+        );
         return;
     };
 

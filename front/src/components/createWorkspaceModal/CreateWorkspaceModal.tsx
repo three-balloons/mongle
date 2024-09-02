@@ -18,14 +18,17 @@ export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) =
     const [theme, setTheme] = useState<Theme>('하늘');
 
     const { mutate: createWorkspace } = useMutation({
-        mutationFn: () => createWorkspaceAPI(),
+        mutationFn: ({ name, theme }: { name: string; theme: string }) => createWorkspaceAPI({ name, theme }),
     });
-    const saveHandler = () => {
-        createWorkspace(undefined, {
-            onSuccess: () => {
-                console.log('저장 성공');
+    const createHandler = () => {
+        createWorkspace(
+            { name: name, theme: theme as string },
+            {
+                onSuccess: () => {
+                    console.log('저장 성공');
+                },
             },
-        });
+        );
         return;
     };
 
@@ -133,8 +136,8 @@ export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) =
                     </Select.Content>
                 </Select>
                 <Modal.Closer className={style.save}>
-                    <button className={objectStyle.buttonBig} onClick={saveHandler}>
-                        저장하기
+                    <button className={objectStyle.buttonBig} onClick={createHandler}>
+                        생성하기
                     </button>
                 </Modal.Closer>
             </Modal.Content>
