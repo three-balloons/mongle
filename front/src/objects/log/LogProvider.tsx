@@ -57,7 +57,7 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
                 if (isLogBubble(log)) addBubble(log.object, log.options.childrenPaths ?? []);
                 else if (isLogCurve(log)) addCurve(log.options.path, log.object);
             } else if (log.type == 'move') {
-                if (isLogCamera(log)) updateCameraView({ ...log.object }, { ...log.options.newCameraView.pos });
+                if (isLogCamera(log)) updateCameraView({ ...log.object }, { ...log.options.newCameraView });
                 // if(isLogBubble(log))
             }
             // else if (log.type == 'update') {
@@ -86,7 +86,7 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
                 if (isLogBubble(log)) removeBubble(log.object);
                 else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
             } else if (log.type == 'move') {
-                if (isLogCamera(log)) updateCameraView({ ...log.options.newCameraView }, { ...log.object.pos });
+                if (isLogCamera(log)) updateCameraView({ ...log.options.newCameraView }, { ...log.object });
             }
         });
 
