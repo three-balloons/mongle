@@ -5,7 +5,8 @@ import { createContext, useEffect, useRef } from 'react';
 export type CurveContextProps = {
     getNewCurvePath: () => string;
     setNewCurvePath: (path: string) => void;
-    getDrawingCurve: () => Curve2D;
+    getNewCurve: () => Curve2D;
+    setNewCurve: (curve: Curve2D) => void;
     addControlPoint: (pos: Point, force?: boolean) => boolean;
     addNewCurve: (thicknessRatio?: number) => Curve;
     addCurve: (path: string, curve: Curve) => void;
@@ -86,8 +87,12 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         if (bubble) bubble.curves = [];
     };
 
-    const getDrawingCurve = (): Curve2D => {
+    const getNewCurve = (): Curve2D => {
         return [...newCurveRef.current];
+    };
+
+    const setNewCurve = (curve: Curve2D) => {
+        newCurveRef.current = [...curve];
     };
 
     const applyPenConfig = (context: CanvasRenderingContext2D, options?: PenConfig) => {
@@ -107,10 +112,12 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         <CurveContext.Provider
             value={{
                 getNewCurvePath,
-                getDrawingCurve,
+                getNewCurve,
+                setNewCurve,
                 setNewCurvePath,
                 addControlPoint,
                 addNewCurve,
+
                 addCurve,
                 removeCurve,
                 removeCurvesWithPath,

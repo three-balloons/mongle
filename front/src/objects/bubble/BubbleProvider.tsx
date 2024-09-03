@@ -74,7 +74,8 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     const bubbleQuery = useQuery({
         queryKey: ['bubbles'],
         queryFn: () => {
-            return getBubbleAPI(workspaceId, '/');
+            if (workspaceId === 'demo') return { bubbles: [] as Array<Bubble> };
+            else return getBubbleAPI(workspaceId, '/');
         },
     });
 

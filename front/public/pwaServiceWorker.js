@@ -60,23 +60,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                // 네트워크 응답이 성공적으로 왔을 경우, 캐시에 저장하고 응답을 반환합니다
-                const clone = response.clone();
-                caches.open('mongle-cache').then((cache) => {
-                    cache.put(event.request, clone);
-                });
                 return response;
             })
             .catch(() => {
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    if (event.request.mode === 'navigate') {
-                        return caches.match('/offline.html');
-                    }
-                    return new Response('Network error occurred', { status: 408 });
-                });
+                if (event.request.mode === 'navigate') {
+                    return caches.match('/offline.html');
+                }
+                return new Response('Network error occurred', { status: 408 });
             }),
     );
 });

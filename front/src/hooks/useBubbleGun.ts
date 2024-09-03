@@ -163,6 +163,15 @@ export const useBubbleGun = () => {
         });
     }, []);
 
+    // bubbleID를 useBubble로 옮기고 제거
+    const getBubbleId = () => {
+        return bubbleIdRef.current;
+    };
+    // bubbleID를 useBubble로 옮기고 제거
+    const setBubbleId = (id: number) => {
+        bubbleIdRef.current = id;
+    };
+
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
         let pos = view2Point(
             {
@@ -392,5 +401,7 @@ export const useBubbleGun = () => {
         identifyTouchRegion,
         bubblize,
         unbubblize,
+        getBubbleId,
+        setBubbleId,
     };
 };

@@ -27,7 +27,13 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
     const workspaceQuery = useQuery({
         queryKey: ['workspace'],
         queryFn: () => {
-            return getWorkspaceAPI(workspaceId);
+            if (workspaceId !== 'demo') return getWorkspaceAPI(workspaceId);
+            else
+                return {
+                    id: 'demo',
+                    theme: '하늘',
+                    name: '데모',
+                } as Workspace;
         },
     });
 
