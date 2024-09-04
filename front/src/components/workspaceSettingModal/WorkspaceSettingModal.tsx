@@ -16,7 +16,6 @@ type WorkspaceSettingModalProps = {
     className: string;
 };
 export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSettingModalProps) => {
-    const qc = queryClient;
     const [isNameChange, setIsNameChange] = useState(false);
     const [name, setName] = useState(workspace.name);
     const [theme, setTheme] = useState<Theme>(workspace.theme);
