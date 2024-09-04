@@ -17,9 +17,8 @@ type ErrRes<TErrCode> = {
 type APIResponse<TData, TErrCode> = OkRes<TData> | ErrRes<TErrCode>;
 
 const onRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    // const token = getCookie('accessToken');
-    // if (token) config.headers['Authorization'] = `Bearer ${token}`;
-
+    const token = useAuthStore.getState().accessToken;
+    if (token) config.headers['Authorization'] = `Bearer ${token}`;
     return config;
 };
 
@@ -37,13 +36,11 @@ const onError = (error: AxiosError | Error): Promise<AxiosError> => {
 };
 
 export const createAPI = () => {
-    const token = useAuthStore.getState().accessToken;
     const axiosInstance = axios.create({
         baseURL: API_URL,
         timeout: 10000,
         withCredentials: true,
         headers: {
-            Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json',
         },
     });

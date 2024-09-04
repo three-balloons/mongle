@@ -102,16 +102,17 @@ export const useDrawer = () => {
                 };
                 setBubbleId(getBubbleId() + 1);
                 addBubble(bubble, []);
-                setNewCurvePath('/bubble');
-                setFocusBubblePath('/bubble');
+                setNewCurvePath('/' + bubbleName);
+                setFocusBubblePath('/' + bubbleName);
                 setNewCurve([
                     ...getNewCurve().map((point): Point => {
-                        const pos = view2BubbleWithVector2D({ x: point.x, y: point.y }, cameraView, '/bubble');
+                        const pos = view2BubbleWithVector2D({ x: point.x, y: point.y }, cameraView, '/' + bubbleName);
                         return { x: pos.x, y: pos.y, isVisible: point.isVisible };
                     }),
                 ]);
             }
-            const newCurve = addNewCurve(getThicknessRatio(cameraView));
+            const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
+            console.log(newCurve);
             pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
         },
 
