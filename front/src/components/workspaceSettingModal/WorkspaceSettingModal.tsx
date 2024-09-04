@@ -9,12 +9,14 @@ import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { ReactComponent as DownIcon } from '@/assets/icon/button-down.svg';
 import { updateWorkspaceAPI } from '@/api/workspace';
 import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/react-query/quertClient';
 
 type WorkspaceSettingModalProps = {
     workspace: Workspace;
     className: string;
 };
 export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSettingModalProps) => {
+    const qc = queryClient;
     const [isNameChange, setIsNameChange] = useState(false);
     const [name, setName] = useState(workspace.name);
     const [theme, setTheme] = useState<Theme>(workspace.theme);
@@ -29,6 +31,7 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
             {
                 onSuccess: () => {
                     console.log('저장 성공');
+                    queryClient.invalidateQueries({ queryKey: ['workspaces'] });
                 },
             },
         );

@@ -26,7 +26,7 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     // const bubbleQuery = useQuery({
     //     queryKey: ['bubble'],
     //     queryFn: () => {
-    //         return getBubbleAPI(workspaceId, '/');
+    //         return Y(workspaceId, '/');
     //     },
     //     enabled: true,
     //     refetchOnWindowFocus: false,
