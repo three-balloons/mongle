@@ -12,6 +12,7 @@ interface Bubble extends Rect {
     curves: Array<Curve>;
     isBubblized: boolean;
     isVisible: boolean;
+    nameSizeInCanvas: number; // 캔버스에서 나타나는 이름의 크기, 프론트에서만 사용
 }
 
 type BubbleTreeNode = {

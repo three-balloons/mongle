@@ -99,6 +99,7 @@ export const useDrawer = () => {
                     curves: [],
                     isBubblized: false,
                     isVisible: true,
+                    nameSizeInCanvas: 0,
                 };
                 setBubbleId(getBubbleId() + 1);
                 addBubble(bubble, []);

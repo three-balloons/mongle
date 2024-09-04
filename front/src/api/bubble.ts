@@ -85,7 +85,13 @@ type CreateBubbleReq = {
     height: number;
     width: number;
 };
-type CreateBubbleRes = Bubble;
+interface CreateBubbleRes extends Rect {
+    path: string;
+    name: string;
+    curves: Array<Curve>;
+    isBubblized: boolean;
+    isVisible: boolean;
+}
 export const createBubbleAPI = async (workspaceId: string, path: string) => {
     try {
         if (IS_MOCK) {

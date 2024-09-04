@@ -119,6 +119,7 @@ export const useBubbleGun = () => {
             curves: [],
             isBubblized: false,
             isVisible: true,
+            nameSizeInCanvas: 0,
         };
 
         const parentBubble = findBubble(createdBubblePathRef.current);
@@ -318,7 +319,7 @@ export const useBubbleGun = () => {
                     isCollisionPointWithRect(position, {
                         top: rect.top - RENDERED_FONT_SIZE,
                         left: rect.left,
-                        width: rect.width,
+                        width: bubble.nameSizeInCanvas,
                         height: RENDERED_FONT_SIZE,
                     })
                 ) {

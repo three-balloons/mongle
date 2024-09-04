@@ -30,7 +30,7 @@ export const useCanvas = () => {
 
     /* tools */
     const { startDrawing, draw, finishDrawing } = useDrawer();
-    const { startErase, erase, endErase } = useEraser();
+    const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
     const {
         startCreateBubble,
@@ -75,9 +75,10 @@ export const useCanvas = () => {
                 const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
                 if (isCreateBubbleRef.current == false) {
                     if (region === 'name') {
+                        console.log('dd');
                         if (bubble) {
-                            if (bubble.isBubblized === false) bubblize(bubble);
-                            else unbubblize(bubble);
+                            eraseBubble(bubble);
+                            reRender();
                         }
                     } else if (region === 'border') {
                         if (bubble) {

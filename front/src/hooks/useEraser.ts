@@ -22,7 +22,7 @@ type CurveAndEraser = {
  */
 export const useEraser = () => {
     const positionRef = useRef<Vector2D | undefined>();
-    const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
+    const { eraseConfig } = useConfigStore((state) => state);
     const earseModeRef = useRef<EraseMode>(eraseConfig.mode);
     const earseRadiusRef = useRef<number>(eraseConfig.radius);
     const earseLog = useRef<LogGroup>([]);
@@ -65,7 +65,10 @@ export const useEraser = () => {
         if (earseModeRef.current == 'area') eraseArea(cameraView, currentPosition);
         else if (earseModeRef.current == 'stroke') eraseStroke(cameraView, currentPosition);
         else {
-            eraseBubble(cameraView, currentPosition);
+            const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
+            if (region == 'inside' && bubble) {
+                eraseBubble(bubble);
+            }
         }
     }, []);
 
@@ -149,34 +152,30 @@ export const useEraser = () => {
         });
     };
 
-    const eraseBubble = (cameraView: ViewCoord, currentPosition: Vector2D) => {
-        const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
-        if (region == 'inside') {
-            // TODO 경고 창 띄우고 지우기
-            setEraseMode('area');
-            if (bubble) {
-                const eraseLog: LogGroup = [];
-                const ereaseChildBubble = (bubble: Bubble) => {
-                    const children = getChildBubbles(bubble.path);
-                    eraseLog.push({
-                        type: 'delete',
-                        object: bubble,
-                        options: {
-                            childrenPaths: children.map((child) => child.path),
-                        },
-                    });
-                    children.forEach((child) => {
-                        ereaseChildBubble(child);
-                    });
-                    removeCurvesWithPath(bubble.path);
-                    removeBubble(bubble);
-                };
-                ereaseChildBubble(bubble);
-                // TODO  한 번에 삭제 추가할 수 있도록 할 것
-                // removeBubble(bubble);
-                pushLog(eraseLog);
-            }
-        }
+    const eraseBubble = (bubble: Bubble) => {
+        // TODO 경고 창 띄우고 지우기
+        // setEraseMode('area');
+
+        const eraseLog: LogGroup = [];
+        const ereaseChildBubble = (bubble: Bubble) => {
+            const children = getChildBubbles(bubble.path);
+            eraseLog.push({
+                type: 'delete',
+                object: bubble,
+                options: {
+                    childrenPaths: children.map((child) => child.path),
+                },
+            });
+            children.forEach((child) => {
+                ereaseChildBubble(child);
+            });
+            removeCurvesWithPath(bubble.path);
+            removeBubble(bubble);
+        };
+        ereaseChildBubble(bubble);
+        // TODO  한 번에 삭제 추가할 수 있도록 할 것
+        // removeBubble(bubble);
+        pushLog(eraseLog);
     };
 
     const findIntersectCurves = (curveWithErasers: Array<CurveAndEraser>): Array<CurveAndEraser> => {
@@ -219,5 +218,5 @@ export const useEraser = () => {
         };
     };
 
-    return { startErase, erase, endErase, earseRadiusRef };
+    return { startErase, erase, endErase, eraseBubble, earseRadiusRef };
 };

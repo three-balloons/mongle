@@ -250,8 +250,13 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 context.setLineDash([]);
                 context.font = '12px monggeulR';
 
+                context.fillStyle = 'red';
+                context.fillText('⊗', rect.left, rect.top - 8);
+                const metrics = context.measureText('⊗');
                 context.fillStyle = 'black';
-                context.fillText(bubble.name, rect.left, rect.top - 8);
+                context.fillText(bubble.name, rect.left + metrics.width + 4, rect.top - 8);
+                const metricName = context.measureText('⊗ ' + bubble.name);
+                bubble.nameSizeInCanvas = metricName.width;
             }
 
             bubble.curves.forEach((curve) => {
