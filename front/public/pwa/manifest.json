@@ -6,8 +6,8 @@
     "id": "/",
     "display": "standalone",
     "handle_links": "preferred",
-    "background_color": "#44e7ff",
-    "theme_color": "#44e7ff",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
     "launch_handler": {
         "client_mode": "navigate-existing"
     },
