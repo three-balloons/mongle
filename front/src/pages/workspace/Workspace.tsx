@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/util/cn';
 import style from '@/pages/workspace/workspace.module.css';
 import { Menu } from '@/components/menu/Menu';
@@ -23,6 +23,21 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
+
+    useEffect(() => {
+        const handleResize = () => {
+            setCanvasSize({
+                width: isShowExplorer ? window.innerWidth - 150 : window.innerWidth,
+                height: window.innerHeight - 100,
+            });
+            console.log('canvasSize', canvasSize);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [isShowExplorer]);
 
     const workspaceQuery = useQuery({
         queryKey: ['workspace'],

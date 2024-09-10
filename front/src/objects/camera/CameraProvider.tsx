@@ -44,6 +44,19 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
         path: '/',
     });
 
+    // 카메라 size 변경
+    useEffect(() => {
+        setCameraView({
+            ...cameraViewRef.current,
+            pos: {
+                top: -height / 2,
+                left: -width / 2,
+                width: width,
+                height: height,
+            },
+            size: { x: width, y: height },
+        });
+    }, [width, height]);
     useEffect(() => {
         setCameraView(cameraViewRef.current);
         // Rerenders when canvas view changes
