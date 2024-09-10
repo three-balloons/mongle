@@ -244,10 +244,32 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 context.strokeStyle = getThemeSecondColor(theme);
             }
             if (isShowBubbleRef.current || getFocusBubblePath() === bubble.path) {
+                const x = Math.min(rect.width + rect.left, rect.left);
+                const y = Math.min(rect.height + rect.top, rect.top);
+                const cornerRadius = Math.floor(Math.min(rect.width, rect.height) / 10);
+                context.strokeStyle = getThemeSecondColor(theme);
+
+                context.beginPath();
+                context.moveTo(x + cornerRadius, y);
+                context.lineTo(x + rect.width - cornerRadius, y);
+                context.quadraticCurveTo(x + rect.width, y, x + rect.width, y + cornerRadius);
+                context.lineTo(x + rect.width, y + rect.height - cornerRadius);
+                context.quadraticCurveTo(
+                    x + rect.width,
+                    y + rect.height,
+                    x + rect.width - cornerRadius,
+                    y + rect.height,
+                );
+                context.lineTo(x + cornerRadius, y + rect.height);
+                context.quadraticCurveTo(x, y + rect.height, x, y + rect.height - cornerRadius);
+                context.lineTo(x, y + cornerRadius);
+                context.quadraticCurveTo(x, y, x + cornerRadius, y);
+                context.closePath();
                 context.lineWidth = 3;
                 context.setLineDash([10, 10]);
-                context.strokeRect(rect.left, rect.top, rect.width, rect.height); // Render the path
+                context.stroke();
                 context.setLineDash([]);
+                // bubble name
                 context.font = '12px monggeulR';
 
                 context.fillStyle = 'red';
@@ -320,41 +342,27 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     },
                     cameraView,
                 );
-                const x = Math.min(rect.width + rect.left, rect.left);
-                const y = Math.min(rect.height + rect.top, rect.top);
-                const cornerRadius = Math.floor(Math.min(rect.width, rect.height) / 10);
-                context.strokeStyle = getThemeSecondColor(theme);
 
-                context.beginPath();
-                context.moveTo(x + cornerRadius, y);
-                context.lineTo(x + rect.width - cornerRadius, y);
-                context.quadraticCurveTo(x + rect.width, y, x + rect.width, y + cornerRadius);
-                context.lineTo(x + rect.width, y + rect.height - cornerRadius);
-                context.quadraticCurveTo(
-                    x + rect.width,
-                    y + rect.height,
-                    x + rect.width - cornerRadius,
-                    y + rect.height,
-                );
-                context.lineTo(x + cornerRadius, y + rect.height);
-                context.quadraticCurveTo(x, y + rect.height, x, y + rect.height - cornerRadius);
-                context.lineTo(x, y + cornerRadius);
-                context.quadraticCurveTo(x, y, x + cornerRadius, y);
-                context.closePath();
-
-                const gradient = context.createRadialGradient(
-                    x + rect.width * 0.4,
-                    y + rect.height * 0.4,
-                    Math.min(rect.width, rect.height) * 0.1,
-                    x + rect.width * 0.4,
-                    y + rect.height * 0.4,
-                    Math.max(rect.width, rect.height) * 0.5,
-                );
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-                gradient.addColorStop(0.9, getThemeSecondColor(theme, 0.5));
-                context.fillStyle = gradient;
-                context.fill();
                 context.strokeStyle = getThemeSecondColor(theme);
+                context.lineWidth = 3;
+                context.strokeRect(rect.left, rect.top, rect.width, rect.height);
+                // context.moveTo(rect.left, rect.top);
+                // context.arc(rect.left, rect.top, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left + rect.width / 2, rect.top);
+                // context.arc(rect.left + rect.width / 2, rect.top, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left + rect.width, rect.top);
+                // context.arc(rect.left + rect.width, rect.top, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left + rect.width, rect.top + rect.height / 2);
+                // context.arc(rect.left + rect.width, rect.top + rect.height / 2, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left + rect.width, rect.top + rect.height);
+                // context.arc(rect.left + rect.width, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left + rect.width / 2, rect.top + rect.height);
+                // context.arc(rect.left + rect.width / 2, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left, rect.top + rect.height);
+                // context.arc(rect.left, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
+                // context.moveTo(rect.left, rect.top + rect.height / 2);
+                // context.arc(rect.left, rect.top + rect.height / 2, 3, 0, 2 * Math.PI, false);
+
                 context.stroke();
             });
         }
