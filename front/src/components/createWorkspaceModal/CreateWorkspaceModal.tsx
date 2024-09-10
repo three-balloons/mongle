@@ -8,6 +8,7 @@ import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { createWorkspaceAPI } from '@/api/workspace';
 import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/react-query/quertClient';
 
 type CreateWorkspaceModalProps = {
     className: string;
@@ -26,6 +27,7 @@ export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) =
             {
                 onSuccess: () => {
                     console.log('저장 성공');
+                    queryClient.invalidateQueries({ queryKey: ['workspaces'] });
                 },
             },
         );
