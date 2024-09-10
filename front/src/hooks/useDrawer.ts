@@ -120,5 +120,12 @@ export const useDrawer = () => {
         [addNewCurve],
     );
 
-    return { startDrawing, draw, finishDrawing };
+    const cancelDrawing = () => {
+        positionRef.current = undefined;
+        setNewCurvePath('/');
+        setFocusBubblePath(undefined);
+        setNewCurve([]);
+    };
+
+    return { startDrawing, draw, finishDrawing, cancelDrawing };
 };

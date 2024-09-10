@@ -23,16 +23,6 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
     // const { addBubble } = useBubble();
     const { earseRadiusRef } = useEraser();
 
-    // const bubbleQuery = useQuery({
-    //     queryKey: ['bubble'],
-    //     queryFn: () => {
-    //         return Y(workspaceId, '/');
-    //     },
-    //     enabled: true,
-    //     refetchOnWindowFocus: false,
-    //     refetchOnMount: false,
-    // });
-
     useEffect(() => {
         reRender();
     }, [width, height]);
@@ -101,9 +91,6 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
         };
     }, []);
 
-    // if (bubbleQuery.isLoading) return <>fgfgf</>;
-    // if (bubbleQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
-    // const bubbles = bubbleQuery.data; // bubble 구조 잡고 수정
     return (
         <div>
             <canvas ref={mainLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>

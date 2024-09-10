@@ -37,10 +37,6 @@ export const useHand = () => {
         };
     }, []);
 
-    // const secondGrab = useCallback((disSquare: number | undefined = undefined) => {
-    //     startDistance.current = disSquare;
-    // }, []);
-
     const drag = useCallback(
         (cameraView: ViewCoord, position: Vector2D /*, second: Vector2D | undefined = undefined*/) => {
             if (startPositionRef.current == undefined || startViewPositionRef.current == undefined) return;
@@ -54,18 +50,6 @@ export const useHand = () => {
                     top: startViewPositionRef.current.y + moveIntensityRef.current.y * y,
                 },
             });
-            // if (second != undefined && startDistance.current != undefined && startDistance.current != 0) {
-            //     const intensity = Math.round((distanceSquare(position, second) * 100) / startDistance.current);
-            //     setCameraView({
-            //         ...cameraView,
-            //         pos: {
-            //             left: startViewPositionRef.current.x + (startViewSizeRef.current.x * intensity) / 100,
-            //             top: startViewPositionRef.current.y + (startViewSizeRef.current.y * intensity) / 100,
-            //             width: (startViewSizeRef.current.x * intensity) / 100,
-            //             height: (startViewSizeRef.current.y * intensity) / 100,
-            //         },
-            //     });
-            // }
         },
         [],
     );
@@ -73,10 +57,6 @@ export const useHand = () => {
     const release = useCallback(() => {
         startPositionRef.current = undefined;
     }, []);
-
-    // const secondRelease = useCallback(() => {
-    //     startDistance.current = undefined;
-    // }, []);
 
     return { grab, drag, release };
 };
