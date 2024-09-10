@@ -28,10 +28,20 @@
     :nth-child(2) {
         max-width: 170px;
         color: var(--color-gray-60);
-        cursor: pointer;
         overflow: hidden;
         text-overflow: ellipsis;
     }
+}
+
+.profile-edit {
+    text-align: left;
+    gap: 10px;
+    padding: 0 10px;
+    font-size: 16px;
+}
+
+.touchable {
+    cursor: pointer;
 }
 
 .line {
