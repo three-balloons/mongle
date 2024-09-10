@@ -6,13 +6,12 @@ import postcssNesting from 'postcss-nesting';
 
 export default defineConfig({
     plugins: [svgr(), react()],
-    base: '/',
     server: {
         proxy: {
             '/api': {
-                target: 'https://www.kmer.site/api',
+                target: 'https://www.kmer.site',
                 changeOrigin: true,
-                secure: true,
+                secure: false,
                 headers: {
                     Origin: 'https://app.mongle.xyz',
                 },
