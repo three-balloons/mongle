@@ -1,6 +1,8 @@
 import { getUserAPI } from '@/api/user';
+import { ProfileEditModal } from '@/components/profileEditModal/ProfileEditModal';
 import style from '@/pages/home/profile/profile.module.css';
 import { useAuthStore } from '@/store/authStore';
+import { cn } from '@/util/cn';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,7 +47,12 @@ export const Profile = () => {
                 </div>
 
                 <div className={style.line} />
-                <div className={style.profile}>
+                <ProfileEditModal
+                    className={cn(style.profileEdit, style.touchable)}
+                    user={{ name: user.name, email: user.email ?? '' }}
+                />
+
+                <div className={cn(style.profile, style.touchable)}>
                     <div onClick={() => logoutHandler()}>로그아웃</div>
                 </div>
                 <div className={style.withdraw}>계정삭제</div>
