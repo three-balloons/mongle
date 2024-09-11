@@ -7,9 +7,6 @@ import { getViewCoordinate } from '@/util/canvas/canvas';
 import { addVector2D } from '@/util/shapes/operator';
 import { useEraser } from '@/hooks/useEraser';
 import { useRenderer } from '@/objects/renderer/useRenderer';
-// import { useQuery } from '@tanstack/react-query';
-// import { getBubbleAPI } from '@/api/bubble';
-// import { useBubble } from '@/objects/bubble/useBubble';
 
 type CanvasProps = {
     width: number;

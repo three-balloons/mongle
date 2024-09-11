@@ -284,6 +284,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     useEffect(() => {
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
+        console.log(bubbles);
         bubbles.forEach((bubble) => {
             addBubble(bubble, []);
         });

@@ -84,6 +84,8 @@ type CreateBubbleReq = {
     left: number;
     height: number;
     width: number;
+    isBubblized: boolean;
+    isVisible: boolean;
 };
 interface CreateBubbleRes extends Rect {
     path: string;
@@ -92,14 +94,23 @@ interface CreateBubbleRes extends Rect {
     isBubblized: boolean;
     isVisible: boolean;
 }
-export const createBubbleAPI = async (workspaceId: string, path: string) => {
+
+export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
     try {
         if (IS_MOCK) {
             const res = mockedCreateBubble.data as CreateBubbleRes;
             return res;
         }
         const res = await bubbleAPI.post<CreateBubbleReq, CreateBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
-            `/bubble/${workspaceId}?path=${path}`,
+            `/bubble/${workspaceId}?path=${bubble.path}`,
+            {
+                top: bubble.top,
+                left: bubble.left,
+                height: bubble.height,
+                width: bubble.width,
+                isBubblized: bubble.isBubblized,
+                isVisible: bubble.isVisible,
+            },
         );
         return res;
     } catch (error: unknown) {
