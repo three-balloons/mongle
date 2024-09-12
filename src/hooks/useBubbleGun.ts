@@ -19,8 +19,6 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
     if (workspaceId === 'demo') return;
     try {
         const data = await createBubbleAPI(workspaceId, bubble);
-        console.log('dddd', workspaceId, bubble);
-        console.log('Fetched User Data:', data);
         return data;
     } catch (error) {
         console.error('Error fetching user data:', error);

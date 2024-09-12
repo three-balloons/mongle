@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCurve } from '@/objects/curve/useCurve';
-import { /*getSecondTouchCoordinate,*/ getViewCoordinate } from '@/util/canvas/canvas';
+import { getViewCoordinate } from '@/util/canvas/canvas';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
@@ -64,11 +64,11 @@ export const useCanvas = () => {
      * 두 손가락 터치 시작
      * TODO 함수명 변경
      */
-    const handleTouchStart = (e: TouchEvent) => {
+    const handleTouchStart = (e: TouchEvent | MouseEvent) => {
         const mainLayer = getMainLayer();
         if (mainLayer == undefined) return;
         const currentPosition = getViewCoordinate(e, mainLayer);
-        if (e.touches.length === 2) {
+        if (e instanceof TouchEvent && e.touches.length === 2) {
             isZoomRef.current = true;
             const distance = Math.sqrt(
                 getSquaredDistance(
@@ -79,17 +79,20 @@ export const useCanvas = () => {
             grab(getCameraView(), currentPosition);
             touchPointDistance.current = distance;
             isMoveRef.current = true;
-        } else if (e.touches.length === 1 && modeRef.current === 'move') {
+        } else if (
+            ((e instanceof TouchEvent && e.touches.length === 1) || e instanceof MouseEvent) &&
+            modeRef.current === 'move'
+        ) {
             isMoveRef.current = true;
             grab(getCameraView(), currentPosition);
         }
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const handleTouchMove = (e: TouchEvent | MouseEvent) => {
         const mainLayer = getMainLayer();
         if (mainLayer == undefined) return;
         const currentPosition = getViewCoordinate(e, mainLayer);
-        if (e.touches.length === 2 && touchPointDistance.current && isMoveRef.current) {
+        if (e instanceof TouchEvent && e.touches.length === 2 && touchPointDistance.current && isMoveRef.current) {
             const currentDistance = calculateDistance(e.touches[0], e.touches[1]);
             const scaleChange = currentDistance / touchPointDistance.current;
             touchPointDistance.current = currentDistance;
@@ -97,20 +100,27 @@ export const useCanvas = () => {
             resizeView(scale.current * 50 - 50, false);
             if (0.99 <= scaleChange && scaleChange <= 1.01) drag(getCameraView(), currentPosition);
             else grab(getCameraView(), currentPosition); // TODO 임시로 위치 초기화 => useHand로직 바꿀 것
-        } else if (e.touches.length === 1 && isMoveRef.current && modeRef.current === 'move') {
+        } else if (
+            ((e instanceof TouchEvent && e.touches.length === 1) || e instanceof MouseEvent) &&
+            isMoveRef.current &&
+            modeRef.current === 'move'
+        ) {
             drag(getCameraView(), currentPosition);
         }
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
-        if (e.touches.length < 2) {
+    const handleTouchEnd = (e: TouchEvent | MouseEvent) => {
+        if (e instanceof TouchEvent && e.touches.length < 2) {
             touchPointDistance.current = null;
             if (isZoomRef.current && e.touches.length === 0) {
                 isZoomRef.current = false; // TODO::이전 mode로 변경
                 isMoveRef.current = false;
             }
         }
-        if (e.touches.length === 1 && modeRef.current === 'move') {
+        if (
+            ((e instanceof TouchEvent && e.touches.length === 1) || e instanceof MouseEvent) &&
+            modeRef.current === 'move'
+        ) {
             isMoveRef.current = false;
             release();
         }
@@ -142,7 +152,7 @@ export const useCanvas = () => {
     const touchDown = useCallback((event: MouseEvent | TouchEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        if (event instanceof TouchEvent) handleTouchStart(event);
+        handleTouchStart(event);
         const mainLayer = getMainLayer();
         if (mainLayer == undefined) return;
         const currentPosition = getViewCoordinate(event, mainLayer);
@@ -187,7 +197,7 @@ export const useCanvas = () => {
     const touch = useCallback((event: MouseEvent | TouchEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        if (event instanceof TouchEvent) handleTouchMove(event);
+        handleTouchMove(event);
         const mainLayer = getMainLayer();
         if (mainLayer == undefined) return;
         const currentPosition = getViewCoordinate(event, mainLayer);
@@ -227,7 +237,7 @@ export const useCanvas = () => {
     }, []);
 
     const touchUp = useCallback((event: MouseEvent | TouchEvent) => {
-        if (event instanceof TouchEvent) handleTouchEnd(event);
+        handleTouchEnd(event);
         if (isPaintingRef.current && modeRef.current == 'draw') {
             isPaintingRef.current = false;
             if (isZoomRef.current) cancelDrawing();
