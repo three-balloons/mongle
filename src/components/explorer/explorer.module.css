@@ -1,0 +1,31 @@
+.default {
+    background-color: var(--color-primary-25);
+
+    width: 150px;
+    color: var(--color-text);
+    text-align: left;
+    overflow-x: scroll;
+    overflow-y: scroll;
+}
+
+.work-space-name {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    margin-left: 6px;
+    padding-right: 5px;
+}
+
+.icon {
+    width: 12px;
+    height: 12px;
+}
+.icon-idle {
+    transform: rotate(0);
+    transition-duration: 100ms;
+}
+
+.icon-closed {
+    transform: rotate(-180deg);
+    transition-duration: 100ms;
+}

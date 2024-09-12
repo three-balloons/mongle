@@ -1,0 +1,104 @@
+.sub-layer {
+    position: absolute;
+    background-color: transparent;
+}
+
+.top-layer {
+    position: absolute;
+    background-color: transparent;
+}
+
+.background-layer {
+    position: absolute;
+
+    --color-ground: var(--color-background);
+    --color-line: #c9cccc; /*cdcccc */
+    --color-main-line: #c9cccc;
+    --color-main-cross: #c9cccc;
+
+    background-color: var(--color-ground);
+    /* background-image: linear-gradient(
+            90deg,
+            var(--color-main-line) 0px,
+            var(--color-main-line) 1px,
+            transparent 1px,
+            transparent 99px,
+            transparent 100px
+        ),
+        linear-gradient(
+            var(--color-main-line) 0px,
+            var(--color-main-line) 1px,
+            transparent 1px,
+            transparent 99px,
+            transparent 100px
+        ),
+        linear-gradient(
+            var(--color-line) 0px,
+            var(--color-line) 1px,
+            transparent 1px,
+            transparent 99px,
+            transparent 100px
+        ),
+        linear-gradient(
+            90deg,
+            var(--color-line) 0px,
+            var(--color-line) 1px,
+            transparent 1px,
+            transparent 99px,
+            transparent 100px
+        ),
+        linear-gradient(
+            transparent 0px,
+            transparent 5px,
+            var(--color-ground) 5px,
+            var(--color-ground) 95px,
+            transparent 95px,
+            transparent 100px
+        ),
+        linear-gradient(
+            90deg,
+            var(--color-line) 0px,
+            var(--color-line) 1px,
+            transparent 1px,
+            transparent 99px,
+            var(--color-main-cross) 99px,
+            var(--color-main-cross) 100px
+        ),
+        linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 5px,
+            var(--color-ground) 5px,
+            var(--color-ground) 95px,
+            transparent 95px,
+            transparent 100px
+        ),
+        linear-gradient(
+            transparent 0px,
+            transparent 1px,
+            var(--color-ground) 1px,
+            var(--color-ground) 99px,
+            transparent 99px,
+            transparent 100px
+        ),
+        linear-gradient(var(--color-main-cross), var(--color-main-cross));
+    background-size:
+        100px 100%,
+        100% 100px,
+        100% 10px,
+        10px 100%,
+        100% 100px,
+        100px 100%,
+        100px 100%,
+        100px 100px,
+        100px 100px; */
+}
+
+.eraser {
+    position: absolute;
+    background-color: var(--color-white);
+    border-radius: 50%;
+    border: 1px solid var(--color-black);
+    pointer-events: none;
+    z-index: 1;
+}

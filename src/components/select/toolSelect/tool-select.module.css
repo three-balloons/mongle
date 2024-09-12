@@ -1,0 +1,51 @@
+.default {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    border-radius: 10px;
+    align-items: center;
+    text-align: center;
+    line-height: 24px;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    justify-content: flex-start;
+
+    padding: 5px 10px;
+    border-left: 2px solid var(--color-gray-60);
+    border-right: 2px solid var(--color-gray-60);
+    column-gap: 10px;
+
+    overflow: scroll;
+    -ms-overflow-style: none; /* internet explorer */
+    scrollbar-width: none; /* firefox */
+}
+
+.content::-webkit-scrollbar {
+    display: none; /* chrome, safari, opera, edge */
+}
+
+.option {
+    border: 1px solid var(--color-black);
+    background-color: var(--color-neutral-50);
+    color: var(--color-primary-100);
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.active-option {
+    background-color: var(--color-primary-50);
+}

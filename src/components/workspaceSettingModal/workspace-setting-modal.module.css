@@ -1,0 +1,90 @@
+.overlay {
+    background-color: var(--color-transparent);
+}
+
+.opener {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.opener-name {
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.icon-down {
+    width: 16px;
+    height: 16px;
+}
+
+.content {
+    position: absolute;
+    background-color: var(--color-background);
+    top: 10%;
+    left: 20%;
+    width: 60%;
+    max-height: 80%;
+    margin: auto;
+    text-align: center;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.12);
+}
+
+.name {
+    font-size: 26px;
+    margin-right: 10px;
+    white-space: normal;
+}
+
+.icon-modify {
+    margin: auto 0;
+    width: 22px;
+    height: 22px;
+}
+
+.input {
+    border-radius: 10px;
+    padding: 4px;
+    font-size: 16px;
+    border: 1px solid black;
+    margin-right: 10px;
+}
+
+.theme {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    justify-items: center;
+    align-items: center;
+    margin-top: 30px;
+    row-gap: 10px;
+    column-gap: 10px;
+    overflow-y: scroll;
+}
+
+.theme-option {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+    color: var(--color-primary-25);
+}
+
+.theme-selected {
+    color: var(--color-primary-100);
+}
+
+.save {
+    margin-top: 40px;
+    button {
+        width: 200px;
+        height: 100px;
+        background-color: var(--color-gray-20);
+        font-family: 'monggeulR';
+    }
+}

@@ -1,0 +1,6 @@
+.default {
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 40px;
+    height: 40px;
+}

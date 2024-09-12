@@ -1,0 +1,33 @@
+.bubble {
+    width: 90px;
+    height: 90px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow:
+        0 0 6px 0 white,
+        3px 3px 6px 3px var(--color-primary-75),
+        -3px -3px 6px 0 var(--color-primary-25),
+        /* inside */ inset 0 0 3px 0 white,
+        inset -12px -9px 18px 0 var(--color-primary-75),
+        inset -12px -9px 21px 0 var(--color-primary-50),
+        inset -12px -9px 42px 0 var(--color-primary-25),
+        inset -12px -9px 42px 0 var(--color-background);
+}
+
+.button-small {
+    align-items: center;
+    padding: 5px 12px;
+    gap: 8px;
+    border-radius: 48px;
+    font-size: 16px;
+    border: 1px solid black;
+}
+
+.button-big {
+    align-items: center;
+    border-radius: 48px;
+    font-size: 26px;
+    padding: 14px 16px;
+    border: 1px solid black;
+    gap: 8px;
+}

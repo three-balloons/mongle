@@ -1,0 +1,80 @@
+.default {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+.workspace-container {
+    /* TODO why? */
+    width: calc(100% - 40px);
+    padding: 20px;
+    overflow-y: scroll;
+    display: grid;
+    grid-auto-flow: row;
+    justify-items: center;
+    align-items: center;
+
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    row-gap: 10px;
+    column-gap: 20px;
+}
+
+.workspace-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border: 1px solid black;
+    height: 200px;
+    width: 100%;
+    min-width: 120px;
+    align-items: center;
+    background-color: var(--color-background);
+    border-radius: 20px;
+}
+
+.workspace-name {
+    width: 80%;
+    margin-bottom: 20px;
+    margin-top: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.bubble {
+    width: 90px;
+    height: 90px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow:
+        0 0 6px 0 white,
+        3px 3px 6px 3px var(--color-primary-75),
+        -3px -3px 6px 0 var(--color-primary-25),
+        /* inside */ inset 0 0 3px 0 white,
+        inset -12px -9px 18px 0 var(--color-primary-75),
+        inset -12px -9px 21px 0 var(--color-primary-50),
+        inset -12px -9px 42px 0 var(--color-primary-25),
+        inset -12px -9px 42px 0 var(--color-background);
+    animation:
+        glow 1s linear infinite alternate,
+        ball 1s ease-in-out infinite alternate;
+}
+
+@keyframes ball {
+    0% {
+        margin-top: 0px;
+    }
+    to {
+        margin-bottom: 15px;
+        width: 95px;
+        height: 88px;
+    }
+}
+
+.add-workspace-button {
+    width: 100%;
+    height: 100%;
+}
