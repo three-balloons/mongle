@@ -1,0 +1,56 @@
+name: mongle front - build and deploy
+
+on:
+  push:
+    branches: [front, dev]
+  pull_request:
+    branches: [dev]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: |
+          cd front
+          npm ci
+      - name: Make Dot env
+        env:
+          DOTENV: ${{ secrets.FRONT_ENV_PRODUCTION }}
+        run: |
+          cd front
+          echo "${DOTENV}" > ./.env.production
+      - name: Build project
+        run: |
+          cd front
+          npm run build # 빌드 커맨드
+
+      # IAM: front-mongle-s3
+      - name: Deploy files to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_FRONT_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_FRONT_S3_SECRET_ACCESS_KEY }}
+        run: |
+          cd front
+          aws s3 sync \
+            --region ap-northeast-2 \
+            dist s3://mongle \
+            --delete
+      - name: Invalidate Cache cloudfront
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_FRONT_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_FRONT_S3_SECRET_ACCESS_KEY }}
+          CLOUD_FRONT_ID: ${{ secrets.AWS_FRONT_CLOUDFRONT_ID_PRODUCTION }}
+          AWS_EC2_METADATA_DISABLED: true
+        run: |
+          cd front
+          aws cloudfront create-invalidation \
+            --debug \
+            --distribution-id $CLOUD_FRONT_ID \
+            --paths "/*"
