@@ -1,8 +1,10 @@
 import { getBubbleAPI } from '@/api/bubble';
 import { bubbleTreeReducer } from '@/objects/bubble/bubbleTreeReducer';
 import { useViewStore } from '@/store/viewStore';
-import { global2bubbleWithRect, global2bubbleWithVector2D } from '@/util/coordSys/conversion';
-import { getParentPath, getPathDifferentDepth, pathToList } from '@/util/path/path';
+import { BUBBLE_BORDER_WIDTH, RENDERED_FONT_SIZE } from '@/util/constant';
+import { global2bubbleWithRect, global2bubbleWithVector2D, rect2View } from '@/util/coordSys/conversion';
+import { getParentPath, getPathDepth, getPathDifferentDepth, pathToList } from '@/util/path/path';
+import { isCollisionPointWithRect } from '@/util/shapes/collision';
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useRef, useReducer, useEffect } from 'react';
 
@@ -19,6 +21,10 @@ export type BubbleContextProps = {
     removeBubble: (bubble: Bubble) => void;
     updateBubble: (path: string, bubble: Bubble) => void;
     findBubble: (path: string) => Bubble | undefined;
+    identifyTouchRegion: (
+        cameraView: ViewCoord,
+        position: Vector2D,
+    ) => { region: 'inside' | 'outside' | 'border' | 'name'; bubble: Bubble | undefined };
 
     /* 좌표 변환 */
     descendant2child: (descendant: Bubble, ancestorPath: string) => Bubble | undefined;
@@ -155,6 +161,75 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
             ret = global2bubbleWithRect(ret, bubbleView);
         }
         return ret;
+    };
+
+    /**
+     * 버블 안인지 밖인지 테두리인지 판단하는 함수
+     */
+    // TODO renaming
+    const identifyTouchRegion = (
+        cameraView: ViewCoord,
+        position: Vector2D,
+    ): { region: 'inside' | 'outside' | 'border' | 'name'; bubble: Bubble | undefined } => {
+        const bubbles = bubblesRef.current;
+        bubbles.sort((a, b) => getPathDepth(b.path) - getPathDepth(a.path));
+        for (const bubble of bubbles) {
+            if (!bubble.isVisible) continue;
+            const bubbleView = descendant2child(bubble, cameraView.path);
+            if (bubbleView) {
+                const rect = rect2View(
+                    {
+                        top: bubbleView.top,
+                        left: bubbleView.left,
+                        width: bubbleView.width,
+                        height: bubbleView.height,
+                    },
+                    cameraView,
+                );
+                if (
+                    isCollisionPointWithRect(position, {
+                        top: rect.top - RENDERED_FONT_SIZE,
+                        left: rect.left,
+                        width: bubble.nameSizeInCanvas,
+                        height: RENDERED_FONT_SIZE,
+                    })
+                ) {
+                    console.log('name touch');
+                    return {
+                        region: 'name',
+                        bubble: bubble,
+                    };
+                } else if (
+                    isCollisionPointWithRect(position, {
+                        top: rect.top - BUBBLE_BORDER_WIDTH,
+                        left: rect.left - BUBBLE_BORDER_WIDTH,
+                        width: rect.width + BUBBLE_BORDER_WIDTH * 2,
+                        height: rect.height + BUBBLE_BORDER_WIDTH * 2,
+                    })
+                )
+                    if (
+                        isCollisionPointWithRect(position, {
+                            top: rect.top + BUBBLE_BORDER_WIDTH,
+                            left: rect.left + BUBBLE_BORDER_WIDTH,
+                            width: rect.width - BUBBLE_BORDER_WIDTH * 2,
+                            height: rect.height - BUBBLE_BORDER_WIDTH * 2,
+                        })
+                    )
+                        return {
+                            region: 'inside',
+                            bubble: bubble,
+                        };
+                    else
+                        return {
+                            region: 'border',
+                            bubble: bubble,
+                        };
+            }
+        }
+        return {
+            region: 'outside',
+            bubble: undefined,
+        };
     };
 
     /**
@@ -305,6 +380,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                 updateBubble,
                 setCreatingBubble,
                 findBubble,
+                identifyTouchRegion,
                 descendant2child,
                 getRatioWithCamera,
                 view2BubbleWithVector2D,

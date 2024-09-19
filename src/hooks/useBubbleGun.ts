@@ -2,14 +2,10 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
-import { BUBBLE_BORDER_WIDTH, MINIMUN_RENDERED_BUBBLE_SIZE, RENDERED_FONT_SIZE } from '@/util/constant';
+import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
-import { getParentPath, getPathDepth } from '@/util/path/path';
-import {
-    isCollisionPointWithRect,
-    isCollisionWithRect,
-    isCollisionWithRectExceptIncluding,
-} from '@/util/shapes/collision';
+import { getParentPath } from '@/util/path/path';
+import { isCollisionWithRect, isCollisionWithRectExceptIncluding } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 import { createBubbleAPI } from '@/api/bubble';
@@ -315,75 +311,6 @@ export const useBubbleGun = () => {
         }
     }, []);
 
-    /**
-     * 버블 안인지 밖인지 테두리인지 판단하는 함수
-     */
-    // TODO renaming
-    const identifyTouchRegion = (
-        cameraView: ViewCoord,
-        position: Vector2D,
-        bubbles: Array<Bubble>,
-    ): { region: 'inside' | 'outside' | 'border' | 'name'; bubble: Bubble | undefined } => {
-        bubbles.sort((a, b) => getPathDepth(b.path) - getPathDepth(a.path));
-        for (const bubble of bubbles) {
-            if (!bubble.isVisible) continue;
-            const bubbleView = descendant2child(bubble, cameraView.path);
-            if (bubbleView) {
-                const rect = rect2View(
-                    {
-                        top: bubbleView.top,
-                        left: bubbleView.left,
-                        width: bubbleView.width,
-                        height: bubbleView.height,
-                    },
-                    cameraView,
-                );
-                if (
-                    isCollisionPointWithRect(position, {
-                        top: rect.top - RENDERED_FONT_SIZE,
-                        left: rect.left,
-                        width: bubble.nameSizeInCanvas,
-                        height: RENDERED_FONT_SIZE,
-                    })
-                ) {
-                    console.log('name touch');
-                    return {
-                        region: 'name',
-                        bubble: bubble,
-                    };
-                } else if (
-                    isCollisionPointWithRect(position, {
-                        top: rect.top - BUBBLE_BORDER_WIDTH,
-                        left: rect.left - BUBBLE_BORDER_WIDTH,
-                        width: rect.width + BUBBLE_BORDER_WIDTH * 2,
-                        height: rect.height + BUBBLE_BORDER_WIDTH * 2,
-                    })
-                )
-                    if (
-                        isCollisionPointWithRect(position, {
-                            top: rect.top + BUBBLE_BORDER_WIDTH,
-                            left: rect.left + BUBBLE_BORDER_WIDTH,
-                            width: rect.width - BUBBLE_BORDER_WIDTH * 2,
-                            height: rect.height - BUBBLE_BORDER_WIDTH * 2,
-                        })
-                    )
-                        return {
-                            region: 'inside',
-                            bubble: bubble,
-                        };
-                    else
-                        return {
-                            region: 'border',
-                            bubble: bubble,
-                        };
-            }
-        }
-        return {
-            region: 'outside',
-            bubble: undefined,
-        };
-    };
-
     const bubblize = (bubble: Bubble) => {
         bubble.isBubblized = true;
         bubble.curves.forEach((curve) => (curve.isVisible = false));
@@ -422,7 +349,7 @@ export const useBubbleGun = () => {
         startMoveBubble,
         moveBubble,
         finishMoveBubble,
-        identifyTouchRegion,
+
         bubblize,
         unbubblize,
         getBubbleId,

@@ -10,6 +10,7 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useCamera } from '@/objects/camera/useCamera';
 import { getSquaredDistance } from '@/util/shapes/operator';
+import { useEditor } from '@/hooks/useEditor';
 
 /**
  * store canvas infromation and command functions
@@ -27,21 +28,23 @@ export const useCanvas = () => {
     const isMoveRef = useRef(false);
     const isCreateBubbleRef = useRef(false);
     const isMoveBubbleRef = useRef(false);
+    const isEditRef = useRef(false);
 
     const { getNewCurve } = useCurve();
-    const { getBubbles, setFocusBubblePath } = useBubble();
+    const { setFocusBubblePath, identifyTouchRegion } = useBubble();
 
     /* tools */
     const { startDrawing, draw, finishDrawing, cancelDrawing } = useDrawer();
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
+    const { startEditing, editCurve, finishEditing } = useEditor();
     const {
         startCreateBubble,
         createBubble,
         finishCreateBubble,
         startMoveBubble,
         moveBubble,
-        identifyTouchRegion,
+        // identifyTouchRegion,
         bubblize,
         unbubblize,
         finishMoveBubble,
@@ -159,7 +162,7 @@ export const useCanvas = () => {
         if (currentPosition) {
             const cameraView = getCameraView();
             if (isPaintingRef.current == false && modeRef.current == 'draw') {
-                const { bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
+                const { bubble } = identifyTouchRegion(cameraView, currentPosition);
                 if (bubble === undefined) startDrawing(cameraView, currentPosition, '/');
                 else startDrawing(cameraView, currentPosition, bubble.path);
                 isPaintingRef.current = true;
@@ -167,7 +170,8 @@ export const useCanvas = () => {
                 startErase(cameraView);
                 isEraseRef.current = true;
             } else if (modeRef.current == 'bubble') {
-                const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
+                const { region, bubble } = identifyTouchRegion(cameraView, currentPosition);
+
                 if (isCreateBubbleRef.current == false) {
                     if (region === 'name') {
                         if (bubble) {
@@ -190,6 +194,9 @@ export const useCanvas = () => {
                         }
                     }
                 }
+            } else if (modeRef.current == 'edit') {
+                startEditing(cameraView, currentPosition);
+                isEditRef.current = true;
             }
         }
     }, []);
@@ -232,6 +239,8 @@ export const useCanvas = () => {
                         // TODO Bubble 생성 초기화?
                     }
                 }
+            } else if (modeRef.current == 'edit') {
+                editCurve(getCameraView(), currentPosition);
             }
         }
     }, []);
@@ -258,6 +267,10 @@ export const useCanvas = () => {
                 finishMoveBubble(getCameraView());
                 reRender();
             }
+        } else if (modeRef.current == 'edit') {
+            isEditRef.current = false;
+            finishEditing(getCameraView());
+            reRender();
         }
     }, []);
 

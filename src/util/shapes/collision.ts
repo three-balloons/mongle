@@ -13,6 +13,21 @@ export const isCollisionRectWithCircle = (rect: Rect, circle: Circle): boolean =
     return distanceSquared <= circle.radius * circle.radius;
 };
 
+export const isCollisionRectWithLine = (rect: Rect, line: Line2D): boolean => {
+    if (isCollisionPointWithRect(line[0], rect) || isCollisionPointWithRect(line[1], rect)) {
+        return true;
+    }
+    const minX = Math.min(line[0].x, line[1].x);
+    const maxX = Math.max(line[0].x, line[1].x);
+    const minY = Math.min(line[0].y, line[1].y);
+    const maxY = Math.max(line[0].y, line[1].y);
+
+    if (maxX < rect.left || minX > rect.left + rect.width || maxY < rect.top || minY > rect.top + rect.height) {
+        return false;
+    }
+    return true;
+};
+
 export const isCollisionWithRect = (rectA: Rect, rectB: Rect): boolean => {
     if (
         rectA.left < rectB.left + rectB.width &&

@@ -5,7 +5,6 @@ import { curve2Rect } from '@/util/shapes/conversion';
 import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
 import { useConfigStore } from '@/store/configStore';
 import { useBubble } from '@/objects/bubble/useBubble';
-import { useBubbleGun } from '@/hooks/useBubbleGun';
 import { useLog } from '@/objects/log/useLog';
 
 type CurveAndEraser = {
@@ -30,13 +29,12 @@ export const useEraser = () => {
     const { removeCurve, removeCurvesWithPath } = useCurve();
     const {
         view2BubbleWithVector2D,
-        getBubbles,
         removeBubble,
         getChildBubbles,
         getDescendantBubbles,
         getRatioWithCamera,
+        identifyTouchRegion,
     } = useBubble();
-    const { identifyTouchRegion } = useBubbleGun();
 
     /* logs */
     const { pushLog } = useLog();
@@ -65,7 +63,7 @@ export const useEraser = () => {
         if (earseModeRef.current == 'area') eraseArea(cameraView, currentPosition);
         else if (earseModeRef.current == 'stroke') eraseStroke(cameraView, currentPosition);
         else {
-            const { region, bubble } = identifyTouchRegion(cameraView, currentPosition, getBubbles());
+            const { region, bubble } = identifyTouchRegion(cameraView, currentPosition);
             if (region == 'inside' && bubble) {
                 eraseBubble(bubble);
             }
@@ -215,6 +213,7 @@ export const useEraser = () => {
             position: curve.position,
             isVisible: curve.isVisible,
             id: curve.id,
+            isSelected: curve.isSelected,
         };
     };
 

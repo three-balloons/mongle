@@ -53,7 +53,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     // use for animation
     const modeRef = useRef<ControlMode>('none');
 
-    const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio, getSelectedCurve } = useCurve();
     const { getFocusBubblePath, getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
     const { pushLog } = useLog();
     const { getCameraView } = useCamera();
@@ -287,6 +287,14 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 const beziers = catmullRom2Bezier(curve2View(c, cameraView));
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(cameraView));
+                if (getSelectedCurve().find((cuv) => cuv === curve)) {
+                    context.shadowColor = getThemeMainColor(theme);
+                    context.shadowBlur = 5;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                } else {
+                    context.shadowBlur = 0;
+                }
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
                 if (beziers.length > 0) {
@@ -313,6 +321,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 }
                 context.stroke();
             });
+            context.shadowBlur = 0;
         }
     };
 

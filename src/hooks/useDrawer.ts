@@ -113,7 +113,6 @@ export const useDrawer = () => {
                 ]);
             }
             const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
-            console.log(newCurve);
             pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
         },
 

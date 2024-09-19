@@ -10,6 +10,8 @@ export type CurveContextProps = {
     addControlPoint: (pos: Point, force?: boolean) => boolean;
     addNewCurve: (thicknessRatio?: number) => Curve;
     addCurve: (path: string, curve: Curve) => void;
+    setSelectedCurve: (curves: Array<Curve>) => void;
+    getSelectedCurve: () => Array<Curve>;
     removeCurve: (path: string, curveToRemove: Curve) => void;
     removeCurvesWithPath: (path: string) => void;
     applyPenConfig: (context: CanvasRenderingContext2D, options?: PenConfig) => void;
@@ -26,6 +28,8 @@ type CurveProviderProps = {
 export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitivity = 0 }) => {
     const newCurveRef = useRef<Curve2D>([]);
     const newCurvePathRef = useRef<string>('/');
+    // editor에 의해 선택된 커브를 나타냄
+    const selectedCurveRef = useRef<Array<Curve>>([]);
     const coolTime = useRef(sensitivity);
     const { penConfig } = useConfigStore((state) => state);
     const { findBubble } = useBubble();
@@ -68,6 +72,14 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         if (bubble) bubble.curves = [...bubble.curves, newCurve];
         newCurveRef.current = [];
         return newCurve;
+    };
+
+    const setSelectedCurve = (curves: Array<Curve>) => {
+        selectedCurveRef.current = curves;
+    };
+
+    const getSelectedCurve = () => {
+        return selectedCurveRef.current;
     };
 
     const addCurve = (path: string, curve: Curve) => {
@@ -117,7 +129,8 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
                 setNewCurvePath,
                 addControlPoint,
                 addNewCurve,
-
+                setSelectedCurve,
+                getSelectedCurve,
                 addCurve,
                 removeCurve,
                 removeCurvesWithPath,
