@@ -213,7 +213,6 @@ export const useEraser = () => {
             position: curve.position,
             isVisible: curve.isVisible,
             id: curve.id,
-            isSelected: curve.isSelected,
         };
     };
 
