@@ -83,13 +83,13 @@ export const updateWorkspaceAPI = async ({ workspaceId, name, theme }: UpdateWor
 };
 
 type DeleteWorkspaceRes = Workspace;
-export const deleteBubbleAPI = async (workspaceId: string) => {
+export const deleteWorkspaceAPI = async (workspaceId: string) => {
     try {
         if (IS_MOCK) {
             const res = mockedDeleteWorkspace.data as DeleteWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.delete<DeleteWorkspaceRes, 'NOT_EXIST'>(`/bubble/${workspaceId}`);
+        const res = await bubbleAPI.delete<DeleteWorkspaceRes, 'NOT_EXIST'>(`/workspace/${workspaceId}`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {

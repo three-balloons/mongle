@@ -14,6 +14,7 @@ import { useParams } from 'react-router-dom';
 const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
     if (workspaceId === 'demo') return;
     try {
+        console.log(bubble);
         const data = await createBubbleAPI(workspaceId, bubble);
         return data;
     } catch (error) {

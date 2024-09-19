@@ -360,7 +360,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
         bubbles.forEach((bubble) => {
-            addBubble(bubble, []);
+            addBubble({ ...bubble }, []);
         });
         if (isReadyToShowRef.current === false) setIsReadyToShow(true);
     }, [bubbles]);
