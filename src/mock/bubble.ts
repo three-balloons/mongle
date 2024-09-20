@@ -72,8 +72,8 @@ export const mockedCreateBubble = {
         left: -30,
         width: 100,
         height: 100,
-        isVisible: true,
-        isBubblized: true,
+        visible: true,
+        bubblized: true,
         curves: [],
     },
 };

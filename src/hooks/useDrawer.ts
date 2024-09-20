@@ -6,6 +6,20 @@ import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
+import { createBubbleAPI } from '@/api/bubble';
+import { useParams } from 'react-router-dom';
+
+// TODO 서버와 통신하는 부분 따로 옮기기
+const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
+    if (workspaceId === 'demo') return;
+    try {
+        console.log(bubble);
+        const data = await createBubbleAPI(workspaceId, bubble);
+        return { ...data, isVisible: data.visible, isBubblized: data.bubblized, nameSizeInCanvas: 0 };
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+};
 
 // functions about pen drawing
 // features: draw curve
@@ -15,6 +29,8 @@ export const useDrawer = () => {
     const { view2BubbleWithVector2D, setFocusBubblePath, addBubble } = useBubble();
     const { reRender } = useRenderer();
     const { getBubbleId, setBubbleId } = useBubbleGun(); // TODO bubbleIdRef을 useBubble로 옮기기
+
+    const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
     const { pushLog } = useLog();
@@ -103,6 +119,9 @@ export const useDrawer = () => {
                 };
                 setBubbleId(getBubbleId() + 1);
                 addBubble(bubble, []);
+                if (workspaceId) {
+                    saveBubbleToServer(workspaceId, bubble);
+                }
                 setNewCurvePath('/' + bubbleName);
                 setFocusBubblePath('/' + bubbleName);
                 setNewCurve([

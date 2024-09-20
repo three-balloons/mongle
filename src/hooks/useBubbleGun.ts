@@ -11,12 +11,12 @@ import { useCallback, useRef } from 'react';
 import { createBubbleAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
 
-const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
+const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<Bubble | undefined> => {
     if (workspaceId === 'demo') return;
     try {
         console.log(bubble);
         const data = await createBubbleAPI(workspaceId, bubble);
-        return data;
+        return { ...data, isVisible: data.visible, isBubblized: data.bubblized, nameSizeInCanvas: 0 };
     } catch (error) {
         console.error('Error fetching user data:', error);
     }

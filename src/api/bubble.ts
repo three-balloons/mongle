@@ -82,15 +82,15 @@ type CreateBubbleReq = {
     left: number;
     height: number;
     width: number;
-    isBubblized: boolean;
-    isVisible: boolean;
+    bubblized: boolean;
+    visible: boolean;
 };
 interface CreateBubbleRes extends Rect {
     path: string;
     name: string;
     curves: Array<Curve>;
-    isBubblized: boolean;
-    isVisible: boolean;
+    bubblized: boolean;
+    visible: boolean;
 }
 
 export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
@@ -106,8 +106,8 @@ export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
                 left: bubble.left,
                 height: bubble.height,
                 width: bubble.width,
-                isBubblized: bubble.isBubblized,
-                isVisible: bubble.isVisible,
+                bubblized: bubble.isBubblized,
+                visible: bubble.isVisible,
             },
         );
         return res;
