@@ -29,7 +29,7 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');
-    const bubbleIdRef = useRef<number>(0);
+    // const bubbleIdRef = useRef<number>(0);
     const startMoveBubblePosRef = useRef<Vector2D | undefined>();
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
@@ -41,6 +41,8 @@ export const useBubbleGun = () => {
         getBubbles,
         getRatioWithCamera,
         findBubble,
+        setBubbleNum,
+        getBubbleNum,
         descendant2child,
         view2BubbleWithVector2D,
         view2BubbleWithRect,
@@ -122,7 +124,7 @@ export const useBubbleGun = () => {
             console.error('생성하려는 버블이 겹칩니다');
             return;
         }
-        const bubbleName = 'mongle ' + bubbleIdRef.current.toString();
+        const bubbleName = 'mongle ' + getBubbleNum().toString();
 
         const bubble: Bubble = {
             ...bubbleRect,
@@ -174,7 +176,7 @@ export const useBubbleGun = () => {
         setFocusBubblePath(bubble.path);
         pushLog(createBubbleLog);
 
-        bubbleIdRef.current += 1;
+        setBubbleNum(getBubbleNum() + 1);
         createdBubblePathRef.current = '/';
         setCreatingBubble({
             top: 0,
@@ -184,14 +186,14 @@ export const useBubbleGun = () => {
         });
     }, []);
 
-    // bubbleID를 useBubble로 옮기고 제거
-    const getBubbleId = () => {
-        return bubbleIdRef.current;
-    };
-    // bubbleID를 useBubble로 옮기고 제거
-    const setBubbleId = (id: number) => {
-        bubbleIdRef.current = id;
-    };
+    // // bubbleID를 useBubble로 옮기고 제거
+    // const getBubbleId = () => {
+    //     return bubbleIdRef.current;
+    // };
+    // // bubbleID를 useBubble로 옮기고 제거
+    // const setBubbleId = (id: number) => {
+    //     bubbleIdRef.current = id;
+    // };
 
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
         let pos = view2Point(
@@ -353,7 +355,5 @@ export const useBubbleGun = () => {
 
         bubblize,
         unbubblize,
-        getBubbleId,
-        setBubbleId,
     };
 };

@@ -5,7 +5,7 @@ import { cn } from '@/util/cn';
 import { ReactComponent as PenIcon } from '@/assets/icon/pen.svg';
 import { ReactComponent as HandIcon } from '@/assets/icon/hand.svg';
 import { ReactComponent as EraserIcon } from '@/assets/icon/eraser.svg';
-import { ReactComponent as BubbleGunIcon } from '@/assets/icon/bubble-gun.svg';
+import { ReactComponent as AddBubbleIcon } from '@/assets/icon/add-rectangle.svg';
 import { ReactComponent as SelectIcon } from '@/assets/icon/select.svg';
 import { EraserModal } from '@/components/select/toolSelect/EraserModal';
 
@@ -48,7 +48,7 @@ export const ToolSelect = () => {
                         setMode('bubble');
                     }}
                 >
-                    <BubbleGunIcon className={style.icon} />
+                    <AddBubbleIcon className={style.icon} />
                 </Select.Option>
                 <Select.Option
                     className={cn(style.option, mode === 'edit' && style.activeOption)}

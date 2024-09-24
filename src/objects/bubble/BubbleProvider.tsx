@@ -18,6 +18,8 @@ export type BubbleContextProps = {
     clearAllBubbles: () => void;
     getBubbles: () => Array<Bubble>;
     addBubble: (bubble: Bubble, childrenPaths: Array<string>) => void;
+    getBubbleNum: () => number;
+    setBubbleNum: (num: number) => void;
     removeBubble: (bubble: Bubble) => void;
     updateBubble: (path: string, bubble: Bubble) => void;
     findBubble: (path: string) => Bubble | undefined;
@@ -53,6 +55,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     workspaceName = '제목없음',
 }) => {
     const bubblesRef = useRef<Array<Bubble>>([]);
+    const bubbleNumRef = useRef<number>(0);
     const focusBubblePathRef = useRef<string | undefined>(undefined);
     const [state, dispatch] = useReducer(bubbleTreeReducer, {
         bubbleTree: {
@@ -133,6 +136,14 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     const findBubble = (path: string): Bubble | undefined => {
         if (path == '/') return undefined;
         return bubblesRef.current.find((bubble) => bubble.path == path);
+    };
+
+    const setBubbleNum = (num: number) => {
+        bubbleNumRef.current = num;
+    };
+
+    const getBubbleNum = () => {
+        return bubbleNumRef.current;
     };
 
     /**
@@ -359,8 +370,20 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     useEffect(() => {
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
+        console.log(bubbles);
         bubbles.forEach((bubble) => {
-            addBubble({ ...bubble }, []);
+            if (bubble) {
+                if (bubble.name) {
+                    const regex = /^num\s(\d+)$/;
+                    const match = bubble.name.match(regex);
+                    console.log(match);
+                    bubbleNumRef.current = match
+                        ? Math.max(bubbleNumRef.current, Number(match[1]) + 1)
+                        : bubbleNumRef.current;
+                }
+
+                addBubble({ ...bubble }, []);
+            }
         });
         if (isReadyToShowRef.current === false) setIsReadyToShow(true);
     }, [bubbles]);
@@ -380,6 +403,8 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                 updateBubble,
                 setCreatingBubble,
                 findBubble,
+                setBubbleNum,
+                getBubbleNum,
                 identifyTouchRegion,
                 descendant2child,
                 getRatioWithCamera,

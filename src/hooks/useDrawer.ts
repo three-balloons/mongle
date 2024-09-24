@@ -5,7 +5,6 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { curve2Rect } from '@/util/shapes/conversion';
-import { useBubbleGun } from '@/hooks/useBubbleGun';
 import { createBubbleAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
 
@@ -26,9 +25,8 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
 export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { getNewCurve, setNewCurve, getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve } = useCurve();
-    const { view2BubbleWithVector2D, setFocusBubblePath, addBubble } = useBubble();
+    const { view2BubbleWithVector2D, setFocusBubblePath, addBubble, getBubbleNum, setBubbleNum } = useBubble();
     const { reRender } = useRenderer();
-    const { getBubbleId, setBubbleId } = useBubbleGun(); // TODO bubbleIdRef을 useBubble로 옮기기
 
     const { workspaceId } = useParams<{ workspaceId: string }>();
 
@@ -104,7 +102,7 @@ export const useDrawer = () => {
                 // 버블 밖에 커브를 그린 경우
                 const rect = curve2Rect(getNewCurve(), 10);
                 // TODO: useBubble로 id옮기고 bubble => mongle로 변경
-                const bubbleName = 'bubble ' + getBubbleId().toString();
+                const bubbleName = 'bubble ' + getBubbleNum().toString();
                 const bubble: Bubble = {
                     top: rect.top,
                     left: rect.left,
@@ -117,7 +115,7 @@ export const useDrawer = () => {
                     isVisible: true,
                     nameSizeInCanvas: 0,
                 };
-                setBubbleId(getBubbleId() + 1);
+                setBubbleNum(getBubbleNum() + 1);
                 addBubble(bubble, []);
                 if (workspaceId) {
                     saveBubbleToServer(workspaceId, bubble);
