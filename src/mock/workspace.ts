@@ -18,11 +18,6 @@ export const mockedGetWorkspaces = {
             theme: '분홍',
         },
         {
-            name: 'mock',
-            id: '1235267',
-            theme: '하양',
-        },
-        {
             name: '하이',
             id: '1223567',
             theme: '연두',
@@ -43,10 +38,17 @@ export const mockedGetWorkspaces = {
             id: '1235697',
             theme: '하늘',
         },
+    ],
+};
+
+export const mockedGetDeletedWorkspaces = {
+    code: 'OK',
+    message: '',
+    data: [
         {
-            name: 'test',
-            id: '1235670',
-            theme: '검정',
+            name: '삭제띠',
+            id: '42094830',
+            theme: '하늘',
         },
     ],
 };

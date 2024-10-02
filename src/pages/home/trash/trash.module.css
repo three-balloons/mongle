@@ -26,7 +26,7 @@
     padding: 0 20px 10px 20px;
 }
 
-.trashs {
+/* .trashs {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -35,12 +35,55 @@
     padding: 20px;
     border: 1px solid var(--color-black);
     border-radius: 20px;
+} */
+
+.trashs {
+    /* TODO why? */
+    width: calc(100% - 40px);
+    padding: 20px;
+    overflow-y: scroll;
+    display: grid;
+    grid-auto-flow: row;
+    justify-items: center;
+    align-items: center;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    row-gap: 10px;
+    column-gap: 20px;
 }
 
-.trash {
+.workspace-wrapper {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 0 10px;
+    flex-direction: column;
+    justify-content: flex-end;
+    border: 1px solid black;
+    height: 200px;
+    width: 100%;
+    min-width: 120px;
+    align-items: center;
+    background-color: var(--color-background);
+    border-radius: 20px;
+}
+
+.delete-date {
+    font-size: 12px;
+    color: var(--color-gray-60);
+    margin: 15px;
+    align-self: flex-start;
+}
+
+.workspace-name {
+    width: 80%;
+    margin-bottom: 10px;
+    margin-top: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.restoration {
+    margin-bottom: 10px;
+    color: var(--color-error);
+    font-size: 14px;
+    cursor: pointer;
 }

@@ -2,6 +2,7 @@ import { AnimationToggle } from '@/components/toggle/animationToggle/AnimationTo
 import { BubbleToggle } from '@/components/toggle/bubbleToggle/BubbleToggle';
 import { TouchDrawToggle } from '@/components/toggle/touchDrawToggle/TouchDrawToggle';
 import style from '@/pages/home/setting/setting.module.css';
+import { cn } from '@/util/cn';
 
 export const Setting = () => {
     return (
@@ -18,9 +19,13 @@ export const Setting = () => {
                     손가락으로 그리기 <TouchDrawToggle />
                 </div>
                 <div className={style.line} />
-                <div className={style.setting}>이용약관</div>
+                <div className={cn(style.setting, style.clickable)} onClick={() => alert('이용약관 준비중입니다')}>
+                    이용약관
+                </div>
                 <div className={style.line} />
-                <div className={style.setting}>개인정보 정책</div>
+                <div className={cn(style.setting, style.clickable)} onClick={() => alert('개인정보 정책 준비중입니다')}>
+                    개인정보 정책
+                </div>
             </div>
         </div>
     );
