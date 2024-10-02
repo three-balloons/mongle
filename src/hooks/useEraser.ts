@@ -26,7 +26,7 @@ export const useEraser = () => {
     const earseRadiusRef = useRef<number>(eraseConfig.radius);
     const earseLog = useRef<LogGroup>([]);
     const earseAreaCurves = useRef<Array<{ origin: Curve; earsed: Curve; isModified: boolean }>>([]);
-    const { removeCurve, removeCurvesWithPath } = useCurve();
+    const { removeCurve, removeCurvesWithPath, updateCurve } = useCurve();
     const {
         view2BubbleWithVector2D,
         removeBubble,
@@ -105,6 +105,7 @@ export const useEraser = () => {
         // 지워주면 됨 => log가 생기면 log씌움
         curveWithErasers.forEach(({ path, curve, eraser }) => {
             const temp = markCurveWithEraser(eraser, curve);
+            updateCurve(path, temp);
             // removeCurve(path, curve);
             // addCurve(path, temp);
             // TODO update curve
@@ -196,21 +197,25 @@ export const useEraser = () => {
     };
 
     /**
-     * marked at control points which is invisible
+     * curve의 control point 변경 => updateCurve
      */
     const markCurveWithEraser = (circle: Circle, curve: Curve): Curve => {
-        const { config } = curve;
+        const { config, position: points } = curve;
 
         // TODO 두께 고려한 지우기, radius 보정 필요
-        const points = curve.position;
-        for (let i = 0; i < points.length - 1; i++) {
-            if (isCollisionCapsuleWithCircle({ p1: points[i], p2: points[i + 1], radius: 5 }, circle)) {
-                curve.position[i].isVisible = false;
+        const updatedPoints = points.map((point, index) => {
+            if (index < points.length - 1) {
+                const nextPoint = points[index + 1];
+                // 충돌 여부를 확인하고 조건이 맞으면 isVisible을 false로 변경
+                if (isCollisionCapsuleWithCircle({ p1: point, p2: nextPoint, radius: 5 }, circle)) {
+                    return { ...point, isVisible: false };
+                }
             }
-        }
+            return point; // 조건에 맞지 않으면 기존 point 반환
+        });
         return {
             config: config,
-            position: curve.position,
+            position: updatedPoints,
             id: curve.id,
         };
     };

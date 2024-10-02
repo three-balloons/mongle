@@ -8,6 +8,7 @@ import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { getThemeMainColor, getThemeSecondColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
+import { addVector2D } from '@/util/shapes/operator';
 import { easeInOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
@@ -27,6 +28,7 @@ export type RendererContextProps = {
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
+    eraseRender: (curretPosition: Vector2D) => void;
     renderer: () => void;
     createBubbleRender: (rect: Rect) => void;
     bubbleRender: (bubble: Bubble) => void;
@@ -41,10 +43,11 @@ type RendererProviderProps = {
 };
 
 export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
-    const { isShowAnimation, isShowBubble } = useConfigStore((state) => state);
+    const { isShowAnimation, isShowBubble, eraseConfig } = useConfigStore((state) => state);
     const { setMode } = useConfigStore((state) => state);
     const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const isShowBubbleRef = useRef<boolean>(isShowBubble);
+    const ereaseRadiusRef = useRef(eraseConfig.radius);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
@@ -64,10 +67,11 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             if (!isReadyToShow) return;
             reRender();
         });
-        useConfigStore.subscribe(({ isShowAnimation, isShowBubble, mode }) => {
+        useConfigStore.subscribe(({ isShowAnimation, isShowBubble, eraseConfig, mode }) => {
             isShowAnimationRef.current = isShowAnimation;
             isShowBubbleRef.current = isShowBubble;
             modeRef.current = mode;
+            ereaseRadiusRef.current = eraseConfig.radius;
         });
     }, []);
 
@@ -169,6 +173,19 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                         );
                 }
             }
+            context.stroke();
+        }
+    };
+
+    const eraseRender = (curretPosition: Vector2D) => {
+        if (!mainLayerRef.current) return;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
+        const context = canvas.getContext('2d');
+        if (context) {
+            context.strokeStyle = 'gray';
+            context.lineWidth = 1;
+            context.beginPath();
+            context.arc(curretPosition.x, curretPosition.y, ereaseRadiusRef.current, 0, Math.PI * 2);
             context.stroke();
         }
     };
@@ -390,6 +407,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 reRender,
                 lineRenderer,
                 curveRenderer,
+                eraseRender,
                 renderer,
                 createBubbleRender,
                 bubbleRender,

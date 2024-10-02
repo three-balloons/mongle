@@ -12,6 +12,7 @@ export type CurveContextProps = {
     addControlPoint: (pos: Point, force?: boolean) => boolean;
     addNewCurve: (thicknessRatio?: number) => Curve;
     addCurve: (path: string, curve: Curve) => void;
+    updateCurve: (path: string, curveToUpdate: Curve) => void;
     setSelectedCurve: (curves: Array<Curve>) => void;
     getSelectedCurve: () => Array<Curve>;
     removeCurve: (path: string, curveToRemove: Curve) => void;
@@ -37,9 +38,53 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
     const { penConfig } = useConfigStore((state) => state);
     const { findBubble } = useBubble();
 
+    const bufferedUpdateCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());
+    const bufferedDeleteCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());
+    const bufferedCreateCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());
+    const nextBufferedCurveIdRef = useRef(-1);
+
+    // const { mutate: updateCurveMutation } = useMutation({
+    //     mutationFn: ({
+    //         bubblePath,
+    //         createCurves,
+    //         updateCurves,
+    //         deleteCurves,
+    //     }: {
+    //         bubblePath: string;
+    //         createCurves: Array<Curve>;
+    //         updateCurves: Array<Curve>;
+    //         deleteCurves: Array<Curve>;
+    //     }) =>
+    //         updateCurveAPI({
+    //             workspaceId,
+    //             bubblePath,
+    //             deletedCurves: deleteCurves
+    //                 .filter((deleteCurves) => deleteCurves.id !== undefined)
+    //                 .map((deleteCurves) => ({ id: deleteCurves.id as number })),
+    //             updatedCurves: updateCurves,
+    //             createdCurves: createCurves,
+    //         }),
+    // });
+
     const { mutate: createCurveMutation } = useMutation({
         mutationFn: ({ bubblePath, curves }: { bubblePath: string; curves: Array<Curve> }) =>
             updateCurveAPI({ workspaceId, bubblePath, createdCurves: curves }),
+    });
+
+    const { mutate: updateCurveMutation } = useMutation({
+        mutationFn: ({ bubblePath, curves }: { bubblePath: string; curves: Array<Curve> }) =>
+            updateCurveAPI({ workspaceId, bubblePath, updatedCurves: curves }),
+    });
+
+    const { mutate: deleteCurveMutation } = useMutation({
+        mutationFn: ({ bubblePath, curves }: { bubblePath: string; curves: Array<Curve> }) =>
+            updateCurveAPI({
+                workspaceId,
+                bubblePath,
+                deletedCurves: curves
+                    .filter((curve) => curve.id !== undefined)
+                    .map((curve) => ({ id: curve.id as number })),
+            }),
     });
 
     const penConfigRef = useRef<PenConfig>(penConfig);
@@ -48,7 +93,30 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
         useConfigStore.subscribe(({ penConfig }) => {
             penConfigRef.current = penConfig;
         });
+
+        const sendCurveToServerId = setInterval(_sendCurveToServer, 10000);
+
+        return () => {
+            clearInterval(sendCurveToServerId);
+        };
     }, []);
+
+    const _sendCurveToServer = () => {
+        bufferedDeleteCurveRef.current.forEach(({ curve, path }) => {
+            deleteCurveMutation({ bubblePath: path, curves: [curve] });
+        });
+        bufferedUpdateCurveRef.current.forEach(({ curve, path }) => {
+            updateCurveMutation({ bubblePath: path, curves: [curve] });
+        });
+        bufferedCreateCurveRef.current.forEach(({ curve, path }) => {
+            createCurveMutation({ bubblePath: path, curves: [curve] });
+        });
+        bufferedDeleteCurveRef.current.clear();
+        bufferedUpdateCurveRef.current.clear();
+        bufferedCreateCurveRef.current.clear();
+        nextBufferedCurveIdRef.current = -1;
+        console.log('커브전송 완료!');
+    };
 
     const setNewCurvePath = (path: string) => {
         newCurvePathRef.current = path;
@@ -73,21 +141,48 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
         const newCurve: Curve = {
             position: newCurveRef.current,
             config: { ...penConfigRef.current, thickness: penConfigRef.current.thickness / thicknessRatio },
-            id: undefined,
+            id: nextBufferedCurveIdRef.current,
         };
         const bubble = findBubble(newCurvePathRef.current);
-        createCurveMutation(
-            { bubblePath: newCurvePathRef.current, curves: [newCurve] },
-            {
-                onSuccess: (data) => {
-                    if (data.create[0].successYn) newCurve.id = data.create[0].id;
-                    console.log('Success: createCurveMutation', newCurve.id);
-                },
-            },
-        );
+        bufferedCreateCurveRef.current.set(newCurve.id, { curve: newCurve, path: newCurvePathRef.current });
+        nextBufferedCurveIdRef.current = nextBufferedCurveIdRef.current - 1;
+
         if (bubble) bubble.curves = [...bubble.curves, newCurve];
         newCurveRef.current = [];
         return newCurve;
+    };
+
+    const updateCurve = (path: string, curveToUpdate: Curve) => {
+        if (!bufferedDeleteCurveRef.current.has(curveToUpdate.id)) {
+            if (bufferedCreateCurveRef.current.has(curveToUpdate.id)) {
+                bufferedCreateCurveRef.current.set(curveToUpdate.id, { curve: curveToUpdate, path: path });
+            } else bufferedUpdateCurveRef.current.set(curveToUpdate.id, { curve: curveToUpdate, path: path });
+        }
+
+        const bubble = findBubble(path);
+        if (bubble) {
+            bubble.curves = bubble.curves.map((curve) => {
+                if (curve.id == curveToUpdate.id) return { ...curveToUpdate };
+                else return curve;
+            });
+        }
+    };
+
+    const removeCurve = (path: string, curveToRemove: Curve) => {
+        const bubble = findBubble(path);
+
+        if (bufferedUpdateCurveRef.current.has(curveToRemove.id)) {
+            bufferedUpdateCurveRef.current.delete(curveToRemove.id);
+            bufferedDeleteCurveRef.current.set(curveToRemove.id, { curve: curveToRemove, path: path });
+        } else if (bufferedCreateCurveRef.current.has(curveToRemove.id)) {
+            bufferedCreateCurveRef.current.delete(curveToRemove.id);
+        } else if (!bufferedDeleteCurveRef.current.has(curveToRemove.id)) {
+            bufferedDeleteCurveRef.current.set(curveToRemove.id, { curve: curveToRemove, path: path });
+        }
+
+        if (bubble) {
+            bubble.curves = [...bubble.curves.filter((curve) => curve != curveToRemove)];
+        }
     };
 
     const setSelectedCurve = (curves: Array<Curve>) => {
@@ -101,13 +196,6 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
     const addCurve = (path: string, curve: Curve) => {
         const bubble = findBubble(path);
         if (bubble) bubble.curves = [...bubble.curves, curve];
-    };
-
-    const removeCurve = (path: string, curveToRemove: Curve) => {
-        const bubble = findBubble(path);
-        if (bubble) {
-            bubble.curves = [...bubble.curves.filter((curve) => curve != curveToRemove)];
-        }
     };
 
     const removeCurvesWithPath = (path: string) => {
@@ -148,6 +236,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
                 setSelectedCurve,
                 getSelectedCurve,
                 addCurve,
+                updateCurve,
                 removeCurve,
                 removeCurvesWithPath,
                 applyPenConfig,

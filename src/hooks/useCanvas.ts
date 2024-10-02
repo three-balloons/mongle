@@ -16,7 +16,7 @@ import { useHand } from '@/hooks/useHand';
  */
 // control logic
 export const useCanvas = () => {
-    const { getCameraView, reRender, curveRenderer, lineRenderer } = useRenderer();
+    const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender } = useRenderer();
     const { mode } = useConfigStore((state) => state);
 
     /* state variable */
@@ -107,6 +107,7 @@ export const useCanvas = () => {
         } else if (isEraseRef.current && modeRef.current == 'erase') {
             erase(getCameraView(), currentPosition);
             reRender();
+            eraseRender(currentPosition);
         } else if (modeRef.current == 'bubble') {
             if (isMoveBubbleRef.current) {
                 moveBubble(getCameraView(), currentPosition);
@@ -133,6 +134,7 @@ export const useCanvas = () => {
         } else if (isEraseRef.current && modeRef.current == 'erase') {
             endErase();
             isEraseRef.current = false;
+            reRender();
         } else if (modeRef.current == 'bubble') {
             if (isCreateBubbleRef.current) {
                 isCreateBubbleRef.current = false;

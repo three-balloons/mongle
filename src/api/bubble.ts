@@ -83,15 +83,15 @@ type CreateBubbleReq = {
     left: number;
     height: number;
     width: number;
-    visible: boolean;
-    bubblized: boolean;
+    isBubblized: boolean;
+    isVisible: boolean;
 };
 interface CreateBubbleRes extends Rect {
     path: string;
     name: string;
     curves: Array<Curve>;
-    bubblized: boolean;
-    visible: boolean;
+    isBubblized: boolean;
+    isVisible: boolean;
 }
 
 export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
@@ -108,8 +108,8 @@ export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
                 height: bubble.height,
                 width: bubble.width,
                 name: bubble.name,
-                bubblized: bubble.isBubblized,
-                visible: bubble.isVisible,
+                isBubblized: bubble.isBubblized,
+                isVisible: bubble.isVisible,
             },
         );
         return res;
@@ -132,7 +132,7 @@ type UpdateCurveReq = {
             position: Array<{
                 x: number;
                 y: number;
-                visible: boolean;
+                isVisible: boolean;
             }>;
         };
     }>;
@@ -142,7 +142,7 @@ type UpdateCurveReq = {
             position: Array<{
                 x: number;
                 y: number;
-                visible: boolean;
+                isVisible: boolean;
             }>;
         };
     }>;
@@ -159,7 +159,7 @@ type updateCurvePrams = {
     bubblePath: string;
     deletedCurves?: Array<{ id: number }>;
     updatedCurves?: Array<Curve>;
-    createdCurves: Array<Curve>;
+    createdCurves?: Array<Curve>;
 };
 /**
  * 버블에 포함된 커브 수정하는 API
@@ -193,7 +193,7 @@ export const updateCurveAPI = async ({
                                     return {
                                         x: point.x,
                                         y: point.y,
-                                        visible: point.isVisible,
+                                        isVisible: point.isVisible,
                                     };
                                 }),
                             },
@@ -208,7 +208,7 @@ export const updateCurveAPI = async ({
                                     return {
                                         x: point.x,
                                         y: point.y,
-                                        visible: point.isVisible,
+                                        isVisible: point.isVisible,
                                     };
                                 }),
                             },

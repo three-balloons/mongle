@@ -14,7 +14,7 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
     try {
         console.log(bubble);
         const data = await createBubbleAPI(workspaceId, bubble);
-        return { ...data, isVisible: data.visible, isBubblized: data.bubblized, nameSizeInCanvas: 0 };
+        return { ...data, nameSizeInCanvas: 0 };
     } catch (error) {
         console.error('Error fetching user data:', error);
     }
