@@ -6,8 +6,6 @@ import { useEraser } from '@/hooks/useEraser';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useRenderer } from '@/objects/renderer/useRenderer';
-// import { useCamera } from '@/objects/camera/useCamera';
-// import { getSquaredDistance } from '@/util/shapes/operator';
 import { useEditor } from '@/hooks/useEditor';
 import { useHand } from '@/hooks/useHand';
 
@@ -76,10 +74,6 @@ export const useCanvas = () => {
                         reRender();
                     }
                 } else if (region === 'border') {
-                    // if (bubble) {
-                    //     if (bubble.isBubblized === false) bubblize(bubble);
-                    //     else unbubblize(bubble);
-                    // }
                     reRender();
                 } else {
                     if (region == 'inside' && bubble && bubble.isBubblized == true) {
@@ -154,7 +148,6 @@ export const useCanvas = () => {
     };
 
     return {
-        isEraseRef,
         modeRef,
         setupAction,
         executeAction,

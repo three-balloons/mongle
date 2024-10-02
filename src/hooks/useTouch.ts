@@ -16,7 +16,6 @@ type InputPoint = {
 /**
  * touchState 관리
  * touchState에 의해 이동하는 경우, 이동 관련 함수 호출
- *
  */
 export const useTouch = () => {
     const { setFocusBubblePath } = useBubble();

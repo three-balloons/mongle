@@ -220,5 +220,5 @@ export const useEraser = () => {
         };
     };
 
-    return { startErase, erase, endErase, eraseBubble, earseRadiusRef };
+    return { startErase, erase, endErase, eraseBubble };
 };

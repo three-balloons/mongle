@@ -43,37 +43,14 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
     const bufferedCreateCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());
     const nextBufferedCurveIdRef = useRef(-1);
 
-    // const { mutate: updateCurveMutation } = useMutation({
-    //     mutationFn: ({
-    //         bubblePath,
-    //         createCurves,
-    //         updateCurves,
-    //         deleteCurves,
-    //     }: {
-    //         bubblePath: string;
-    //         createCurves: Array<Curve>;
-    //         updateCurves: Array<Curve>;
-    //         deleteCurves: Array<Curve>;
-    //     }) =>
-    //         updateCurveAPI({
-    //             workspaceId,
-    //             bubblePath,
-    //             deletedCurves: deleteCurves
-    //                 .filter((deleteCurves) => deleteCurves.id !== undefined)
-    //                 .map((deleteCurves) => ({ id: deleteCurves.id as number })),
-    //             updatedCurves: updateCurves,
-    //             createdCurves: createCurves,
-    //         }),
-    // });
-
     const { mutate: createCurveMutation } = useMutation({
         mutationFn: ({ bubblePath, curves }: { bubblePath: string; curves: Array<Curve> }) =>
-            updateCurveAPI({ workspaceId, bubblePath, createdCurves: curves }),
+            updateCurveAPI({ workspaceId, bubblePath, createCurves: curves }),
     });
 
     const { mutate: updateCurveMutation } = useMutation({
         mutationFn: ({ bubblePath, curves }: { bubblePath: string; curves: Array<Curve> }) =>
-            updateCurveAPI({ workspaceId, bubblePath, updatedCurves: curves }),
+            updateCurveAPI({ workspaceId, bubblePath, updateCurves: curves }),
     });
 
     const { mutate: deleteCurveMutation } = useMutation({
@@ -81,7 +58,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
             updateCurveAPI({
                 workspaceId,
                 bubblePath,
-                deletedCurves: curves
+                deleteCurves: curves
                     .filter((curve) => curve.id !== undefined)
                     .map((curve) => ({ id: curve.id as number })),
             }),

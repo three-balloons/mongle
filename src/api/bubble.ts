@@ -157,9 +157,9 @@ type UpdateCurveRes = {
 type updateCurvePrams = {
     workspaceId: string;
     bubblePath: string;
-    deletedCurves?: Array<{ id: number }>;
-    updatedCurves?: Array<Curve>;
-    createdCurves?: Array<Curve>;
+    deleteCurves?: Array<{ id: number }>;
+    updateCurves?: Array<Curve>;
+    createCurves?: Array<Curve>;
 };
 /**
  * 버블에 포함된 커브 수정하는 API
@@ -170,9 +170,9 @@ type updateCurvePrams = {
 export const updateCurveAPI = async ({
     workspaceId,
     bubblePath,
-    deletedCurves,
-    updatedCurves,
-    createdCurves,
+    deleteCurves,
+    updateCurves,
+    createCurves,
 }: updateCurvePrams) => {
     try {
         if (IS_MOCK) {
@@ -182,9 +182,9 @@ export const updateCurveAPI = async ({
         const res = await bubbleAPI.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
             `/bubble/${workspaceId}/curve?path=${bubblePath}`,
             {
-                delete: deletedCurves ?? [],
+                delete: deleteCurves ?? [],
                 update:
-                    updatedCurves?.map((curve) => {
+                    updateCurves?.map((curve) => {
                         return {
                             id: curve.id ?? 0,
                             curve: {
@@ -200,7 +200,7 @@ export const updateCurveAPI = async ({
                         };
                     }) ?? [],
                 create:
-                    createdCurves?.map((curve) => {
+                    createCurves?.map((curve) => {
                         return {
                             curve: {
                                 config: curve.config,

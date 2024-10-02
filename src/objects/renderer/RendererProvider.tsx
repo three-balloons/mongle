@@ -8,7 +8,6 @@ import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { getThemeMainColor, getThemeSecondColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
-import { addVector2D } from '@/util/shapes/operator';
 import { easeInOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
@@ -372,22 +371,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 context.strokeStyle = getThemeSecondColor(theme);
                 context.lineWidth = 3;
                 context.strokeRect(rect.left, rect.top, rect.width, rect.height);
-                // context.moveTo(rect.left, rect.top);
-                // context.arc(rect.left, rect.top, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width / 2, rect.top);
-                // context.arc(rect.left + rect.width / 2, rect.top, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width, rect.top);
-                // context.arc(rect.left + rect.width, rect.top, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width, rect.top + rect.height / 2);
-                // context.arc(rect.left + rect.width, rect.top + rect.height / 2, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width, rect.top + rect.height);
-                // context.arc(rect.left + rect.width, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width / 2, rect.top + rect.height);
-                // context.arc(rect.left + rect.width / 2, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left, rect.top + rect.height);
-                // context.arc(rect.left, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left, rect.top + rect.height / 2);
-                // context.arc(rect.left, rect.top + rect.height / 2, 3, 0, 2 * Math.PI, false);
 
                 context.stroke();
             });
