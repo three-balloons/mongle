@@ -102,13 +102,13 @@ export const useDrawer = () => {
                 // 버블 밖에 커브를 그린 경우
                 const rect = curve2Rect(getNewCurve(), 10);
                 // TODO: useBubble로 id옮기고 bubble => mongle로 변경
-                const bubbleName = 'bubble ' + getBubbleNum().toString();
+                const bubbleName = 'mongle ' + getBubbleNum().toString();
                 const bubble: Bubble = {
                     top: rect.top,
                     left: rect.left,
                     height: rect.height,
                     width: rect.width,
-                    path: '/' + bubbleName, // TODO 이름 바꾸기
+                    path: '/' + bubbleName,
                     name: bubbleName,
                     curves: [],
                     isBubblized: false,

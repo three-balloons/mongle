@@ -6,6 +6,7 @@
 .top-layer {
     position: absolute;
     background-color: transparent;
+    touch-action: none;
 }
 
 .background-layer {

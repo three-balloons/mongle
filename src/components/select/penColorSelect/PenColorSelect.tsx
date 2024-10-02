@@ -15,7 +15,7 @@ export const PenColorSelect = () => {
             <Select.Overlay zIndex={1} />
             <Select.Trigger>
                 <div
-                    className={cn(style.bigCircle, style.preview)}
+                    className={cn(style.middleCircle, style.preview)}
                     style={penConfig.color && { backgroundColor: penConfig.color }}
                 ></div>
             </Select.Trigger>

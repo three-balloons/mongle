@@ -94,5 +94,6 @@ type Color =
  * none: 아무것도 안하는 모드
  */
 type ControlMode = 'move' | 'draw' | 'erase' | 'bubble' | 'edit' | 'animate' | 'none';
+type TouchState = 'none' | 'command' | 'pan' | 'zoom';
 
 type Theme = '하늘' | '분홍' | '연두' | '노랑' | '하양' | '검정';

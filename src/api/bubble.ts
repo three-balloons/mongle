@@ -78,6 +78,7 @@ export const getBubbleTreeAPI = async (workspaceId: string, path: string = '/', 
 };
 
 type CreateBubbleReq = {
+    name: string;
     top: number;
     left: number;
     height: number;
@@ -106,6 +107,7 @@ export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
                 left: bubble.left,
                 height: bubble.height,
                 width: bubble.width,
+                name: bubble.name,
                 bubblized: bubble.isBubblized,
                 visible: bubble.isVisible,
             },

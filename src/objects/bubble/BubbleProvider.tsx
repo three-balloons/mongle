@@ -374,9 +374,9 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         bubbles.forEach((bubble) => {
             if (bubble) {
                 if (bubble.name) {
-                    const regex = /^num\s(\d+)$/;
+                    const regex = /^mongle\s(\d+)$/;
                     const match = bubble.name.match(regex);
-                    console.log(match);
+
                     bubbleNumRef.current = match
                         ? Math.max(bubbleNumRef.current, Number(match[1]) + 1)
                         : bubbleNumRef.current;

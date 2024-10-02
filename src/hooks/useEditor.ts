@@ -10,7 +10,8 @@ import { useCallback, useRef } from 'react';
 // functions about pen drawing
 // features: draw curve
 export const useEditor = () => {
-    const { setCreatingBubble, getCreatingBubble, identifyTouchRegion, view2BubbleWithRect } = useBubble();
+    const { setCreatingBubble, getCreatingBubble, identifyTouchRegion, view2BubbleWithRect, getChildBubbles } =
+        useBubble();
     const { setSelectedCurve, getSelectedCurve } = useCurve();
     const { createBubbleRender } = useRenderer();
     // 영역 잡을 때 사용하는 시작 영역
@@ -90,6 +91,8 @@ export const useEditor = () => {
             // TODO 선택한 curve 고르기
             if (selectedBubbleRef.current) {
                 const curves = selectedBubbleRef.current?.curves ?? [];
+                const childBubble = getChildBubbles(selectedBubbleRef.current?.path);
+                console.log(childBubble);
                 const rect = view2BubbleWithRect(
                     {
                         top: selectedRectRef.current.top - BUBBLE_BORDER_WIDTH,
@@ -101,6 +104,7 @@ export const useEditor = () => {
                     selectedBubbleRef.current.path,
                 );
                 setSelectedCurve([
+                    // TODO 선택된 버블 넣는 로직 추가
                     ...curves.filter((curve) => {
                         for (let i = 0; i < curve.position.length - 1; i++) {
                             if (

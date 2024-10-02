@@ -7,6 +7,7 @@ import { getViewCoordinate } from '@/util/canvas/canvas';
 import { addVector2D } from '@/util/shapes/operator';
 import { useEraser } from '@/hooks/useEraser';
 import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useTouch } from '@/hooks/useTouch';
 
 type CanvasProps = {
     width: number;
@@ -15,7 +16,8 @@ type CanvasProps = {
 };
 
 export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
-    const { isEraseRef, touchDown, touch, touchUp } = useCanvas();
+    const { isEraseRef } = useCanvas();
+    const { touchDown, touch, touchUp } = useTouch();
     const { mainLayerRef, creationLayerRef, movementLayerRef, interfaceLayerRef, reRender } = useRenderer();
     // const { addBubble } = useBubble();
     const { earseRadiusRef } = useEraser();
@@ -30,25 +32,34 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
             return;
         }
         const canvas: HTMLCanvasElement = interfaceLayerRef.current;
-        canvas.addEventListener('mousedown', touchDown);
-        canvas.addEventListener('mousemove', touch);
-        canvas.addEventListener('mouseup', touchUp);
-        canvas.addEventListener('mouseleave', touchUp);
+        canvas.addEventListener('pointerdown', touchDown);
+        canvas.addEventListener('pointermove', touch);
+        canvas.addEventListener('pointerup', touchUp);
+        canvas.addEventListener('pointercancel', touchUp);
+        canvas.addEventListener('pointerout', touchUp);
 
-        canvas.addEventListener('touchstart', touchDown);
-        canvas.addEventListener('touchmove', touch);
-        canvas.addEventListener('touchend', touchUp);
-        canvas.addEventListener('touchcancel', touchUp);
+        // canvas.addEventListener('touchstart', touchDown);
+        // canvas.addEventListener('touchmove', touch);
+        // canvas.addEventListener('touchend', () => {
+        //     console.log('touchend 발생');
+        // });
+        // canvas.addEventListener('touchcancel', touchUp);
 
         return () => {
-            canvas.removeEventListener('mousedown', touchDown);
-            canvas.removeEventListener('mousemove', touch);
-            canvas.removeEventListener('mouseup', touchUp);
-            canvas.removeEventListener('mouseleave', touchUp);
-            canvas.removeEventListener('touchstart', touchDown);
-            canvas.removeEventListener('touchmove', touch);
-            canvas.removeEventListener('touchend', touchUp);
-            canvas.removeEventListener('touchcancel', touchUp);
+            canvas.removeEventListener('pointerdown', touchDown);
+            canvas.removeEventListener('pointermove', touch);
+            canvas.removeEventListener('pointerup', touchUp);
+            canvas.removeEventListener('pointercancel', touchUp);
+            canvas.removeEventListener('pointerout', touchUp);
+
+            // canvas.removeEventListener('mousedown', touchDown);
+            // canvas.removeEventListener('mousemove', touch);
+            // canvas.removeEventListener('mouseup', touchUp);
+            // canvas.removeEventListener('mouseleave', touchUp);
+            // canvas.removeEventListener('touchstart', touchDown);
+            // canvas.removeEventListener('touchmove', touch);
+            // canvas.removeEventListener('touchend', touchUp);
+            // canvas.removeEventListener('touchcancel', touchUp);
         };
     }, [touchDown, touch, touchUp]);
 
