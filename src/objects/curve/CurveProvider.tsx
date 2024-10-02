@@ -1,5 +1,7 @@
+import { updateCurveAPI } from '@/api/bubble';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useConfigStore } from '@/store/configStore';
+import { useMutation } from '@tanstack/react-query';
 import { createContext, useEffect, useRef } from 'react';
 
 export type CurveContextProps = {
@@ -22,10 +24,11 @@ export const CurveContext = createContext<CurveContextProps | undefined>(undefin
 
 type CurveProviderProps = {
     children: React.ReactNode;
+    workspaceId: string;
     sensitivity?: number;
 };
 
-export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitivity = 0 }) => {
+export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspaceId, sensitivity = 0 }) => {
     const newCurveRef = useRef<Curve2D>([]);
     const newCurvePathRef = useRef<string>('/');
     // editor에 의해 선택된 커브를 나타냄
@@ -33,6 +36,11 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
     const coolTime = useRef(sensitivity);
     const { penConfig } = useConfigStore((state) => state);
     const { findBubble } = useBubble();
+
+    const { mutate: createCurveMutation } = useMutation({
+        mutationFn: ({ bubblePath, curves }: { bubblePath: string; curves: Array<Curve> }) =>
+            updateCurveAPI({ workspaceId, bubblePath, createdCurves: curves }),
+    });
 
     const penConfigRef = useRef<PenConfig>(penConfig);
 
@@ -65,10 +73,18 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, sensitiv
         const newCurve: Curve = {
             position: newCurveRef.current,
             config: { ...penConfigRef.current, thickness: penConfigRef.current.thickness / thicknessRatio },
-            isVisible: true,
             id: undefined,
         };
         const bubble = findBubble(newCurvePathRef.current);
+        createCurveMutation(
+            { bubblePath: newCurvePathRef.current, curves: [newCurve] },
+            {
+                onSuccess: (data) => {
+                    if (data.create[0].successYn) newCurve.id = data.create[0].id;
+                    console.log('Success: createCurveMutation', newCurve.id);
+                },
+            },
+        );
         if (bubble) bubble.curves = [...bubble.curves, newCurve];
         newCurveRef.current = [];
         return newCurve;

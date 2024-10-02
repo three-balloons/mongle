@@ -42,8 +42,8 @@ export const useCanvas = () => {
         finishCreateBubble,
         startMoveBubble,
         moveBubble,
-        bubblize,
-        unbubblize,
+        // bubblize,
+        // unbubblize,
         finishMoveBubble,
     } = useBubbleGun();
 
@@ -76,10 +76,10 @@ export const useCanvas = () => {
                         reRender();
                     }
                 } else if (region === 'border') {
-                    if (bubble) {
-                        if (bubble.isBubblized === false) bubblize(bubble);
-                        else unbubblize(bubble);
-                    }
+                    // if (bubble) {
+                    //     if (bubble.isBubblized === false) bubblize(bubble);
+                    //     else unbubblize(bubble);
+                    // }
                     reRender();
                 } else {
                     if (region == 'inside' && bubble && bubble.isBubblized == true) {

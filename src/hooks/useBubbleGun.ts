@@ -24,7 +24,7 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<
 
 /**
  * functions about bubble
- * features: create bubble, bubblize, unbubblize, move bubble
+ * features: create bubble, move bubble
  */
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
@@ -46,7 +46,6 @@ export const useBubbleGun = () => {
         descendant2child,
         view2BubbleWithVector2D,
         view2BubbleWithRect,
-        getBubbleInTree,
         getChildBubbles,
         getDescendantBubbles,
     } = useBubble();
@@ -314,37 +313,6 @@ export const useBubbleGun = () => {
         }
     }, []);
 
-    const bubblize = (bubble: Bubble) => {
-        bubble.isBubblized = true;
-        bubble.curves.forEach((curve) => (curve.isVisible = false));
-
-        const node = getBubbleInTree(bubble);
-        if (node == undefined) return;
-        for (const child of node.children) {
-            if (child.this) _setIsVisibleAll(child.this, false);
-        }
-    };
-
-    const unbubblize = (bubble: Bubble) => {
-        bubble.isBubblized = false;
-        bubble.curves.forEach((curve) => (curve.isVisible = true));
-        const node = getBubbleInTree(bubble);
-        if (node == undefined) return;
-        for (const child of node.children) {
-            if (child.this) _setIsVisibleAll(child.this, true);
-        }
-    };
-
-    const _setIsVisibleAll = (bubble: Bubble, isVisible: boolean) => {
-        bubble.isVisible = isVisible;
-        if (!bubble.isBubblized) bubble.curves.forEach((curve) => (curve.isVisible = isVisible));
-        const node = getBubbleInTree(bubble);
-        if (node == undefined) return;
-        for (const child of node.children) {
-            if (child.this) _setIsVisibleAll(child.this, isVisible);
-        }
-    };
-
     return {
         startCreateBubble,
         createBubble,
@@ -352,8 +320,5 @@ export const useBubbleGun = () => {
         startMoveBubble,
         moveBubble,
         finishMoveBubble,
-
-        bubblize,
-        unbubblize,
     };
 };

@@ -382,7 +382,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                         : bubbleNumRef.current;
                 }
 
-                addBubble({ ...bubble }, []);
+                addBubble({ ...bubble, nameSizeInCanvas: 0 }, []);
             }
         });
         if (isReadyToShowRef.current === false) setIsReadyToShow(true);

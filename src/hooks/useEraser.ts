@@ -211,7 +211,6 @@ export const useEraser = () => {
         return {
             config: config,
             position: curve.position,
-            isVisible: curve.isVisible,
             id: curve.id,
         };
     };

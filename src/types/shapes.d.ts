@@ -3,11 +3,6 @@ interface Vector2D {
     x: number;
     y: number;
 }
-interface Vector3D {
-    x: number;
-    y: number;
-    z: number;
-}
 interface Point extends Vector2D {
     isVisible: boolean;
 }
@@ -15,7 +10,6 @@ interface Point extends Vector2D {
 type Line2D = [Vector2D, Vector2D];
 // curve
 type Curve2D = Array<Point>;
-type Curve3D = Array<Vector3D>;
 
 // rectangle
 interface Rect {

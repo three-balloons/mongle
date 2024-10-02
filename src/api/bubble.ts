@@ -83,8 +83,8 @@ type CreateBubbleReq = {
     left: number;
     height: number;
     width: number;
-    bubblized: boolean;
     visible: boolean;
+    bubblized: boolean;
 };
 interface CreateBubbleRes extends Rect {
     path: string;
@@ -123,28 +123,98 @@ export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
     }
 };
 
-type UpdateBubbleReq = {
-    delete: Array<{ id: number }>;
-    update: Array<{
+type UpdateCurveReq = {
+    delete?: Array<{ id: number }>;
+    update?: Array<{
         id: number;
-        curve: Curve;
+        curve: {
+            config: PenConfig;
+            position: Array<{
+                x: number;
+                y: number;
+                visible: boolean;
+            }>;
+        };
     }>;
-    create: Array<{ curve: Curve }>;
+    create?: Array<{
+        curve: {
+            config: PenConfig;
+            position: Array<{
+                x: number;
+                y: number;
+                visible: boolean;
+            }>;
+        };
+    }>;
 };
 
-type UpdateBubbleRes = {
-    delete: Array<{ id: string; successYn: boolean }>;
-    update: Array<{ id: string; successYn: boolean }>;
-    create: Array<{ id: string; successYn: boolean }>;
+type UpdateCurveRes = {
+    delete: Array<{ id: number; successYn: boolean }>;
+    update: Array<{ id: number; successYn: boolean }>;
+    create: Array<{ id: number; successYn: boolean }>;
 };
-export const updateBubbleAPI = async (workspaceId: string, path: string) => {
+
+type updateCurvePrams = {
+    workspaceId: string;
+    bubblePath: string;
+    deletedCurves?: Array<{ id: number }>;
+    updatedCurves?: Array<Curve>;
+    createdCurves: Array<Curve>;
+};
+/**
+ * 버블에 포함된 커브 수정하는 API
+ * @param workspaceId workspaceId
+ * @param bubblePath curve가 업데이트 될 Bubble의 path
+ * @returns
+ */
+export const updateCurveAPI = async ({
+    workspaceId,
+    bubblePath,
+    deletedCurves,
+    updatedCurves,
+    createdCurves,
+}: updateCurvePrams) => {
     try {
         if (IS_MOCK) {
-            const res = mockedUpdateBubble.data as UpdateBubbleRes;
+            const res = mockedUpdateBubble.data as UpdateCurveRes;
             return res;
         }
-        const res = await bubbleAPI.put<UpdateBubbleReq, UpdateBubbleRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
-            `/bubble/${workspaceId}?path=${path}`,
+        const res = await bubbleAPI.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
+            `/bubble/${workspaceId}/curve?path=${bubblePath}`,
+            {
+                delete: deletedCurves ?? [],
+                update:
+                    updatedCurves?.map((curve) => {
+                        return {
+                            id: curve.id ?? 0,
+                            curve: {
+                                config: curve.config,
+                                position: curve.position.map((point) => {
+                                    return {
+                                        x: point.x,
+                                        y: point.y,
+                                        visible: point.isVisible,
+                                    };
+                                }),
+                            },
+                        };
+                    }) ?? [],
+                create:
+                    createdCurves?.map((curve) => {
+                        return {
+                            curve: {
+                                config: curve.config,
+                                position: curve.position.map((point) => {
+                                    return {
+                                        x: point.x,
+                                        y: point.y,
+                                        visible: point.isVisible,
+                                    };
+                                }),
+                            },
+                        };
+                    }) ?? [],
+            },
         );
         return res;
     } catch (error: unknown) {
