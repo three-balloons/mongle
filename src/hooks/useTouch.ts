@@ -3,7 +3,8 @@ import { useHand } from '@/hooks/useHand';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useRenderer } from '@/objects/renderer/useRenderer';
-import { useCallback, useRef } from 'react';
+import { useConfigStore } from '@/store/configStore';
+import { useCallback, useEffect, useRef } from 'react';
 // import { useViewStore } from '@/store/viewStore';
 
 type InputPoint = {
@@ -24,13 +25,21 @@ export const useTouch = () => {
     const { grab, drag, release } = useHand();
     const { setupAction, executeAction, terminateAction } = useCanvas();
 
+    const { isTouchDraw } = useConfigStore((state) => state);
+    const isTouchDrawRef = useRef<boolean>(isTouchDraw);
+
     // 위치와 타입도 저장
     const currentPointersRef = useRef<Map<number, InputPoint>>(new Map());
     const initalPointersRef = useRef<Map<number, InputPoint>>(new Map());
-    const previousPointerNumRef = useRef<number>(0);
     const touchStateRef = useRef<TouchState>('none');
     const zoomDistanceRef = useRef<number | null>(null); // zoom에 사용
     const zoomScaleRef = useRef<number>(1);
+
+    useEffect(() => {
+        useConfigStore.subscribe(({ isTouchDraw }) => {
+            isTouchDrawRef.current = isTouchDraw;
+        });
+    }, []);
 
     // 두 손가락 사이의 거리를 계산하는 함수
     const calculateDistance = (touch1: InputPoint, touch2: InputPoint) => {
@@ -48,7 +57,7 @@ export const useTouch = () => {
         };
         currentPointersRef.current.set(event.pointerId, { ...currentInput });
         initalPointersRef.current.set(event.pointerId, currentInput);
-        changeTouchStateAndMove();
+        changeTouchState();
         if (touchStateRef.current == 'pan') {
             const currentPointerEventList = Array.from(currentPointersRef.current.values());
             if (mainLayer) {
@@ -60,7 +69,7 @@ export const useTouch = () => {
             const currentPosition = getViewCoordinate(currentInput, mainLayer);
             setupAction(currentPosition);
         }
-        previousPointerNumRef.current = currentPointersRef.current.size;
+        if (touchStateRef.current == 'pan' && isTouchDrawRef.current) terminateAction(true);
     }, []);
 
     const touch = useCallback((event: PointerEvent) => {
@@ -72,7 +81,7 @@ export const useTouch = () => {
         };
         if (currentPointersRef.current.has(event.pointerId)) {
             currentPointersRef.current.set(event.pointerId, currentInput);
-            changeTouchStateAndMove();
+            changeTouchState();
         }
         if (touchStateRef.current == 'pan') {
             if (mainLayer) {
@@ -92,36 +101,28 @@ export const useTouch = () => {
             const currentPosition = getViewCoordinate(currentPointersRef.current.values().next().value, mainLayer);
             executeAction(currentPosition);
         }
-        previousPointerNumRef.current = currentPointersRef.current.size;
     }, []);
 
     const touchUp = useCallback((event: PointerEvent) => {
         initalPointersRef.current.delete(event.pointerId);
         currentPointersRef.current.delete(event.pointerId);
         const previousTouchState = touchStateRef.current;
-        changeTouchStateAndMove();
-        if (touchStateRef.current == 'pan' && previousPointerNumRef.current == 2) {
+        changeTouchState();
+        // pan일때 2터치에서 1터치로 바뀌었을 때 => pan 동작 초기화
+        if (touchStateRef.current == 'pan' && currentPointersRef.current.size == 1) {
             release();
             currentPointersRef.current.forEach((input, key) => initalPointersRef.current.set(key, input));
-            changeTouchStateAndMove();
+            // changeTouchState();
         }
+
         if (previousTouchState == 'pan' && touchStateRef.current != 'pan') {
             release();
-        }
-        if (previousTouchState == 'zoom' && touchStateRef.current == 'pan') {
-            const mainLayer = getMainLayer();
-
-            if (mainLayer) {
-                const position = getViewCoordinate(currentPointersRef.current.values().next().value, mainLayer);
-                grab(getCameraView(), position);
-            }
         }
 
         if (previousTouchState == 'command' && touchStateRef.current != 'command') {
             if (touchStateRef.current == 'none') terminateAction(false);
             else terminateAction(true);
         }
-        previousPointerNumRef.current = currentPointersRef.current.size;
     }, []);
 
     const getTouchState = () => {
@@ -129,7 +130,7 @@ export const useTouch = () => {
     };
 
     // touch 상태 변경
-    const changeTouchStateAndMove = () => {
+    const changeTouchState = () => {
         const initalPointerEventList = Array.from(initalPointersRef.current.values());
         const currentPointerEventList = Array.from(currentPointersRef.current.values());
 
@@ -146,7 +147,8 @@ export const useTouch = () => {
             touchStateRef.current = 'command';
         } else if (currentPointersRef.current.size == 1) {
             // 'touch'
-            touchStateRef.current = 'pan';
+            if (isTouchDrawRef.current) touchStateRef.current = 'command';
+            else touchStateRef.current = 'pan';
         } else if (currentPointersRef.current.size == 2) {
             const initalDistance = calculateDistance(initalPointerEventList[0], initalPointerEventList[1]);
             const currentDistance = calculateDistance(currentPointerEventList[0], currentPointerEventList[1]);
@@ -154,7 +156,7 @@ export const useTouch = () => {
                 const scale = currentDistance / zoomDistanceRef.current;
                 const changedScale = currentDistance / initalDistance;
                 zoomDistanceRef.current = currentDistance;
-                if (0.8 <= changedScale && changedScale <= 1.2 && touchStateRef.current == 'pan') {
+                if (0.7 <= changedScale && changedScale <= 1.3 && touchStateRef.current == 'pan') {
                     touchStateRef.current = 'pan';
                 } else {
                     touchStateRef.current = 'zoom';
@@ -169,7 +171,6 @@ export const useTouch = () => {
         }
 
         if (touchStateRef.current != 'pan' && touchStateRef.current != 'zoom') zoomDistanceRef.current = null;
-        console.log(touchStateRef.current);
     };
 
     const getViewCoordinate = (inputPoint: InputPoint, canvas: HTMLCanvasElement): Vector2D => {

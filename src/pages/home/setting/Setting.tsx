@@ -1,5 +1,6 @@
 import { AnimationToggle } from '@/components/toggle/animationToggle/AnimationToggle';
 import { BubbleToggle } from '@/components/toggle/bubbleToggle/BubbleToggle';
+import { TouchDrawToggle } from '@/components/toggle/touchDrawToggle/TouchDrawToggle';
 import style from '@/pages/home/setting/setting.module.css';
 
 export const Setting = () => {
@@ -12,6 +13,9 @@ export const Setting = () => {
                 </div>
                 <div className={style.setting}>
                     버블 테두리 보여줌 <BubbleToggle />
+                </div>
+                <div className={style.setting}>
+                    손가락으로 그리기 <TouchDrawToggle />
                 </div>
                 <div className={style.line} />
                 <div className={style.setting}>이용약관</div>
