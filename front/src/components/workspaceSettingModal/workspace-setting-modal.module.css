@@ -8,6 +8,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
 }
 
 .opener-name {
@@ -34,6 +35,14 @@
     box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.12);
 }
 
+.name-editor {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
 .name {
     font-size: 26px;
     margin-right: 10px;
@@ -54,37 +63,88 @@
     margin-right: 10px;
 }
 
+.option {
+    width: 80%;
+}
+
+.theme-title {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: left;
+    width: calc(70% + 10px);
+
+    margin: 0 auto;
+    margin-top: 30px;
+}
+
 .theme {
     width: 100%;
     height: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     justify-items: center;
     align-items: center;
-    margin-top: 30px;
-    row-gap: 10px;
-    column-gap: 10px;
+
+    gap: 10px;
     overflow-y: scroll;
 }
 
 .theme-option {
     padding-top: 10px;
+    cursor: pointer;
     display: flex;
-    flex-direction: column;
-    row-gap: 20px;
+    flex-direction: row;
+    column-gap: 20px;
+    justify-content: center;
+    align-items: center;
     color: var(--color-primary-25);
+}
+
+.color-sample {
+    flex: 1 1;
+    margin: 0 10px;
+    background: linear-gradient(to right, var(--color-primary-75), var(--color-primary-25));
+    cursor: pointer;
+    width: 100px;
+    height: 30px;
+}
+
+.color-sample-selected {
+    background: var(--color-primary-100);
 }
 
 .theme-selected {
     color: var(--color-primary-100);
 }
 
-.save {
-    margin-top: 40px;
+.mutate-button-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 70%;
+    margin: 30px auto;
+}
+
+.delete {
     button {
-        width: 200px;
-        height: 100px;
         background-color: var(--color-gray-20);
-        font-family: 'monggeulR';
+        color: var(--color-error);
+        border: none;
+    }
+
+    button:hover {
+        border: 1 solid black;
+    }
+}
+
+.save {
+    button {
+        background-color: var(--color-gray-20);
+        border: none;
+    }
+
+    button:hover {
+        border: 1 solid black;
     }
 }

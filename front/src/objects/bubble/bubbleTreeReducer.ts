@@ -100,21 +100,6 @@ export const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): Bub
                             prevNode.this,
                         );
                         if (child.this) {
-                            // child.this = {
-                            //     ...child.this,
-                            //     top: pos.top,
-                            //     left: pos.left,
-                            //     height: pos.height,
-                            //     width: pos.width,
-                            //     path: parentPath === '/' ? parentPath + child.name : parentPath + '/' + child.name,
-                            // };
-                            // const tmp = child.this;
-                            // tmp.top = pos.top;
-                            // tmp.left = pos.left;
-                            // tmp.height = pos.height;
-                            // tmp.width = pos.width;
-                            // tmp.path = parentPath === '/' ? parentPath + child.name : parentPath + '/' + child.name;
-                            // TODO tree와 bubble의 동기화가 늦음
                             child.this.top = pos.top;
                             child.this.left = pos.left;
                             child.this.height = pos.height;

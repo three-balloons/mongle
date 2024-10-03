@@ -53,8 +53,9 @@ const ModalCloser = ({ className, children, onClick }: ModalCloserProps) => {
 type ModalOverlayProps = {
     className?: string;
     zIndex?: number;
+    onClick?: () => void;
 };
-const ModalOverlay = ({ className, zIndex = 1 }: ModalOverlayProps) => {
+const ModalOverlay = ({ className, onClick, zIndex = 1 }: ModalOverlayProps) => {
     const { isOpen, close } = useModal();
     return (
         <>
@@ -62,7 +63,10 @@ const ModalOverlay = ({ className, zIndex = 1 }: ModalOverlayProps) => {
                 <div
                     style={{ position: 'absolute', inset: 0, cursor: 'default', zIndex: zIndex }}
                     className={cn(className)}
-                    onClick={close}
+                    onClick={() => {
+                        close();
+                        onClick && onClick();
+                    }}
                 />
             )}
         </>

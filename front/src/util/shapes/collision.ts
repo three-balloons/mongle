@@ -1,5 +1,4 @@
 import { getSquaredDistance } from '@/util/shapes/operator';
-import { isRect, isCircle } from '@/util/typeGuard';
 
 export const isCollisionRectWithCircle = (rect: Rect, circle: Circle): boolean => {
     const { x: circleX, y: circleY } = circle.center;
@@ -11,6 +10,21 @@ export const isCollisionRectWithCircle = (rect: Rect, circle: Circle): boolean =
     const distanceSquared = distanceX * distanceX + distanceY * distanceY;
 
     return distanceSquared <= circle.radius * circle.radius;
+};
+
+export const isCollisionRectWithLine = (rect: Rect, line: Line2D): boolean => {
+    if (isCollisionPointWithRect(line[0], rect) || isCollisionPointWithRect(line[1], rect)) {
+        return true;
+    }
+    const minX = Math.min(line[0].x, line[1].x);
+    const maxX = Math.max(line[0].x, line[1].x);
+    const minY = Math.min(line[0].y, line[1].y);
+    const maxY = Math.max(line[0].y, line[1].y);
+
+    if (maxX < rect.left || minX > rect.left + rect.width || maxY < rect.top || minY > rect.top + rect.height) {
+        return false;
+    }
+    return true;
 };
 
 export const isCollisionWithRect = (rectA: Rect, rectB: Rect): boolean => {
@@ -102,17 +116,4 @@ export const isCollisionCapsuleWithCircle = (capsule: Capsule, circle: Circle, t
 
 export const isCollisionWithCircle = (circleA: Circle, circleB: Circle): boolean => {
     return Math.sqrt(getSquaredDistance(circleA.center, circleB.center)) <= circleA.radius + circleB.radius;
-};
-
-type Shape = Rect | Circle;
-export const isCollision = (shapeA: Shape, shapeB: Shape) => {
-    if (isRect(shapeA) && isRect(shapeB)) {
-        return isCollisionWithRect(shapeA, shapeB);
-    } else if (isCircle(shapeA) && isRect(shapeB)) {
-        return isCollisionRectWithCircle(shapeB, shapeA);
-    } else if (isRect(shapeA) && isCircle(shapeB)) {
-        return isCollisionRectWithCircle(shapeA, shapeB);
-    } else if (isCircle(shapeA) && isCircle(shapeB)) {
-        return isCollisionWithCircle(shapeA, shapeB);
-    }
 };

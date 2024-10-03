@@ -84,6 +84,16 @@ type Color =
     | '#5200A3'
     | '#300061';
 
-type ControlMode = 'move' | 'draw' | 'erase' | 'bubble' | 'none' | 'animate';
+/**
+ * move: 화면(camera view)을 움직이기 사용, 주로 데스크톱 환경
+ * draw: curve를 그리는 모드
+ * erase: 지우개 모드
+ * bubble: 버블을 그리고 이동하는 모드
+ * edit: curve를 수정하고 옮기는 모드
+ * animate: 이동 관련 애니메이션이 실행할 때의 모드(none이랑 동일)
+ * none: 아무것도 안하는 모드
+ */
+type ControlMode = 'move' | 'draw' | 'erase' | 'bubble' | 'edit' | 'animate' | 'none';
+type TouchState = 'none' | 'command' | 'pan' | 'zoom';
 
 type Theme = '하늘' | '분홍' | '연두' | '노랑' | '하양' | '검정';

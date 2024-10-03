@@ -2,8 +2,7 @@
 interface Curve {
     position: Curve2D;
     config: PenConfig;
-    isVisible: boolean;
-    id: string | undefined;
+    id: number;
 }
 
 interface Bubble extends Rect {

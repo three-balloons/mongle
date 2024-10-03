@@ -13,10 +13,10 @@
     height: 20px;
 }
 
-.big-circle {
+.middle-circle {
     border-radius: 100%;
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
 }
 
 .content {

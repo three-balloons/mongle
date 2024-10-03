@@ -28,7 +28,7 @@ export const GridView = () => {
     if (workspacesQuery.isLoading || workspacesQuery.isPending) return <>로딩중</>;
     if (workspacesQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspaces: Array<Workspace> = workspacesQuery.data ?? [];
-
+    console.log('workspaces', workspaces);
     if (getUserQuery.isLoading || getUserQuery.isPending || !getUserQuery.data) return <>로딩중</>;
     if (getUserQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const user = getUserQuery.data;
@@ -44,7 +44,7 @@ export const GridView = () => {
                                 style={{ animationDelay: `${Math.random()}s` }}
                                 onClick={() => navigate(`/workspace/${workspace.id}`)}
                             ></div>
-                            <WorkspaceSettingModal className={style.workspaceName} workspace={workspace} />
+                            <WorkspaceSettingModal key={index} className={style.workspaceName} workspace={workspace} />
                         </div>
                     );
                 })}
