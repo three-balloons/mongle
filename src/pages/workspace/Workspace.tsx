@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getWorkspaceAPI } from '@/api/workspace';
 import { ReactComponent as BackIcon } from '@/assets/icon/back.svg';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -22,6 +23,7 @@ type WorkspaceProps = {
 export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
+    const { isDemo } = useAuthStore();
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
 
     const navigator = useNavigate();
@@ -49,7 +51,7 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
                 return {
                     id: 'demo',
                     theme: '하늘',
-                    name: '데모',
+                    name: '데모입니다 :)',
                 } as Workspace;
         },
     });
@@ -78,7 +80,10 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
                                 <div className={style.header}>
                                     <BackIcon
                                         className={style.icon}
-                                        onClick={() => navigator('/home', { replace: true })}
+                                        onClick={() => {
+                                            if (isDemo) navigator('/login', { replace: true });
+                                            else navigator('/home', { replace: true });
+                                        }}
                                     ></BackIcon>
                                     <div className={style.title}>{workspace.name}</div>
                                 </div>

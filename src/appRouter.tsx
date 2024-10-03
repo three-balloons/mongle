@@ -7,6 +7,8 @@ import { Workspace } from '@/pages/workspace/Workspace';
 import { Routed } from '@/Routed';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import { Signup } from '@/pages/signup/Signup';
+import { Privacy } from '@/pages/privacy/Privacy';
+import { Admin } from '@/pages/login/admin/Admin';
 
 export const appRouter = createBrowserRouter([
     {
@@ -47,10 +49,18 @@ export const appRouter = createBrowserRouter([
                         element: <Google />,
                     },
                     {
+                        path: 'admin',
+                        element: <Admin />,
+                    },
+                    {
                         path: 'signup',
                         element: <Signup />,
                     },
                 ],
+            },
+            {
+                path: '/privacy',
+                element: <Privacy />,
             },
             {
                 path: '/',

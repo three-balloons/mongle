@@ -6,8 +6,8 @@ export const mockedGetBubble = {
     message: '',
     data: [
         {
-            path: '/운영체제',
-            name: '운영체제',
+            path: '/몽글',
+            name: '몽글',
             top: -100,
             left: -100,
             width: 200,
@@ -29,8 +29,8 @@ export const mockedGetBubble = {
             ],
         },
         {
-            path: '/운영체제/세마포어',
-            name: '세마포어',
+            path: '/몽글/이름',
+            name: '이름',
             top: -50,
             left: -50,
             width: 50,

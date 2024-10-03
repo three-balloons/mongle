@@ -7,9 +7,11 @@ import { GOOGLE_LOGIN_URL } from '@/pages/login/google/Google';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import logo from '@/assets/img/mongle-logo.png';
+import { useRef } from 'react';
 
 export const Login = () => {
     const navigate = useNavigate();
+    const logoClickNumRef = useRef(0);
     const { loginWithDemo } = useAuthStore((state) => state);
 
     const useDemoHandler = () => {
@@ -17,9 +19,16 @@ export const Login = () => {
         navigate('/workspace/demo', { replace: true });
     };
 
+    const clickLogoHandler = () => {
+        logoClickNumRef.current += 1;
+        if (logoClickNumRef.current == 10) {
+            logoClickNumRef.current = 0;
+            navigate('/login/admin');
+        }
+    };
     return (
         <div className={style.defualt}>
-            <img src={logo} className={style.logo}></img>
+            <img src={logo} className={style.logo} onClick={clickLogoHandler}></img>
             <div className={style.slogan}>손글씨로 담아낸 몽글몽글한 순간!</div>
             <div className={style.loginWrapper}>
                 <button

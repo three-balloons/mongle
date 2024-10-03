@@ -4,7 +4,7 @@ export const mockedUser = {
     data: {
         oauth_id: '234709832',
         provider: 'KAKAO',
-        name: '지섭짱',
+        name: '몽글',
         deleted_at: null,
         email: 'example@gmail.com',
         refresh_token: null,

@@ -44,3 +44,43 @@ export const getAccessTokenAPI = async ({ provider, code, redirect_uri }: GetAcc
         throw error;
     }
 };
+
+type TestLoginReq = {
+    provider: Provider;
+    oauth_id: string;
+    name: string;
+};
+type TestLoginRes = {
+    accessToken: string;
+};
+
+export const testLoginAPI = async ({ provider, oauth_id, name }: TestLoginReq) => {
+    try {
+        if (IS_MOCK) {
+            const res = mockedAccessToken.data as TestLoginRes;
+            return res;
+        } else {
+            const res = await bubbleAPI.post<
+                TestLoginReq,
+                TestLoginRes,
+                'INAPPROPRIATE_PAYLOAD' | 'SIGN_UP_NEEDED' | 'NOT_MATCH_PASSWORD'
+            >(`/auth/test`, {
+                provider: provider,
+                oauth_id: oauth_id,
+                name: name,
+            });
+            return res;
+        }
+    } catch (error: unknown) {
+        if (error instanceof APIException) {
+            if (
+                error.code === 'INAPPROPRIATE_PAYLOAD' ||
+                error.code === 'SIGN_UP_NEEDED' ||
+                error.code === 'NOT_MATCH_PASSWORD'
+            ) {
+                console.error('TODO error handling');
+            }
+        }
+        throw error;
+    }
+};

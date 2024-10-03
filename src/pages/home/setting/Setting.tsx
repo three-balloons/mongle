@@ -3,8 +3,10 @@ import { BubbleToggle } from '@/components/toggle/bubbleToggle/BubbleToggle';
 import { TouchDrawToggle } from '@/components/toggle/touchDrawToggle/TouchDrawToggle';
 import style from '@/pages/home/setting/setting.module.css';
 import { cn } from '@/util/cn';
+import { useNavigate } from 'react-router-dom';
 
 export const Setting = () => {
+    const navigate = useNavigate();
     return (
         <div className={style.default}>
             <h1>환경 설정</h1>
@@ -23,7 +25,7 @@ export const Setting = () => {
                     이용약관
                 </div>
                 <div className={style.line} />
-                <div className={cn(style.setting, style.clickable)} onClick={() => alert('개인정보 정책 준비중입니다')}>
+                <div className={cn(style.setting, style.clickable)} onClick={() => navigate('/privacy')}>
                     개인정보 정책
                 </div>
             </div>
