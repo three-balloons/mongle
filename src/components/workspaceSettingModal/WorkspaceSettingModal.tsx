@@ -3,7 +3,7 @@ import style from '@/components/workspaceSettingModal/workspace-setting-modal.mo
 import colorStyle from '@/style/common/theme.module.css';
 import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { ReactComponent as DownIcon } from '@/assets/icon/button-down.svg';
@@ -19,6 +19,11 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
     const [isNameChange, setIsNameChange] = useState(false);
     const [name, setName] = useState(workspace.name);
     const [theme, setTheme] = useState<Theme>(workspace.theme);
+
+    useEffect(() => {
+        setName(workspace.name);
+        setTheme(workspace.theme);
+    }, [workspace]);
 
     const { mutate: updateWorkspace } = useMutation({
         mutationFn: ({ workspaceId, name, theme }: { workspaceId: string; name: string; theme: string }) =>

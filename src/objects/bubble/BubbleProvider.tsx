@@ -73,12 +73,6 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     });
     const { setIsReadyToShow } = useViewStore((state) => state);
     const isReadyToShowRef = useRef(false);
-    useEffect(() => {
-        setIsReadyToShow(false);
-        useViewStore.subscribe(({ isReadyToShow }) => {
-            isReadyToShowRef.current = isReadyToShow;
-        });
-    }, []);
 
     const bubbleQuery = useQuery({
         queryKey: ['bubbles'],
@@ -88,7 +82,44 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         },
     });
 
+    useEffect(() => {
+        setIsReadyToShow(false);
+        useViewStore.subscribe(({ isReadyToShow }) => {
+            isReadyToShowRef.current = isReadyToShow;
+        });
+    }, []);
+
+    const bubbles: Array<Bubble> = bubbleQuery.data ?? [];
+
+    /**
+     * 초기화(서버와 동기화) 코드
+     * TODO 버블 청크 구현 후 버블 트리로 목록 가져오기
+     */
+    useEffect(() => {
+        if (isReadyToShowRef.current == true) setIsReadyToShow(false);
+        if (!bubbleQuery.data) return;
+        if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
+        clearAllBubbles();
+        bubbleNumRef.current = 0;
+        bubbles.forEach((bubble) => {
+            if (bubble) {
+                if (bubble.name) {
+                    const regex = /^mongle\s(\d+)$/;
+                    const match = bubble.name.match(regex);
+
+                    bubbleNumRef.current = match
+                        ? Math.max(bubbleNumRef.current, Number(match[1]) + 1)
+                        : bubbleNumRef.current;
+                }
+
+                addBubble({ ...bubble, nameSizeInCanvas: 0 }, []);
+            }
+        });
+        if (isReadyToShowRef.current === false) setIsReadyToShow(true);
+    }, [bubbles]);
+
     const clearAllBubbles = () => {
+        _clearBubbleInTree();
         bubblesRef.current = [];
     };
 
@@ -114,6 +145,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     const addBubble = (bubble: Bubble, childrenPaths: Array<string>) => {
         bubblesRef.current = [...bubblesRef.current, bubble];
         _addBubbleInTree(bubble, childrenPaths);
+        console.log(bubblesRef.current);
     };
 
     const removeBubble = (bubbleToRemove: Bubble) => {
@@ -315,6 +347,18 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         dispatch({ type: 'REMOVE_BUBBLE_IN_TREE', payload: { bubble } });
     };
 
+    const _clearBubbleInTree = () => {
+        dispatch({
+            type: 'SET_BUBBLE_TREE',
+            payload: {
+                name: workspaceName,
+                children: [],
+                this: undefined,
+                parent: undefined,
+            },
+        });
+    };
+
     /**
      *
      * path 밑의 모든 bubble을 가져옴
@@ -361,32 +405,6 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         }
         return currentNode;
     };
-
-    const bubbles: Array<Bubble> = bubbleQuery.data ?? [];
-
-    /**
-     * TODO 버블 청크 구현 후 버블 트리로 목록 가져오기
-     */
-    useEffect(() => {
-        if (!bubbleQuery.data) return;
-        if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
-        console.log(bubbles);
-        bubbles.forEach((bubble) => {
-            if (bubble) {
-                if (bubble.name) {
-                    const regex = /^mongle\s(\d+)$/;
-                    const match = bubble.name.match(regex);
-
-                    bubbleNumRef.current = match
-                        ? Math.max(bubbleNumRef.current, Number(match[1]) + 1)
-                        : bubbleNumRef.current;
-                }
-
-                addBubble({ ...bubble, nameSizeInCanvas: 0 }, []);
-            }
-        });
-        if (isReadyToShowRef.current === false) setIsReadyToShow(true);
-    }, [bubbles]);
 
     return (
         <BubbleContext.Provider

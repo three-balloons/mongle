@@ -60,6 +60,15 @@
     margin-right: 10px;
 }
 
+.name-invalid-alert {
+    display: flex;
+    margin: 10px;
+    color: var(--color-error);
+    font-size: 12px;
+    justify-content: center;
+    align-content: center;
+}
+
 .option {
     width: 80%;
 }

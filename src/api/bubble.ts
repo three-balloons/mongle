@@ -6,7 +6,7 @@ const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetBubbleRes = Array<Bubble>;
 
-export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = 1) => {
+export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = 4) => {
     try {
         if (IS_MOCK) {
             const res = mockedGetBubble.data as GetBubbleRes;

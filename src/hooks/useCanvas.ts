@@ -14,7 +14,6 @@ import { useHand } from '@/hooks/useHand';
  */
 // control logic
 export const useCanvas = () => {
-    const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender } = useRenderer();
     const { mode } = useConfigStore((state) => state);
 
     /* state variable */
@@ -27,23 +26,16 @@ export const useCanvas = () => {
     const isEditRef = useRef(false);
 
     const { getNewCurve } = useCurve();
-    const { identifyTouchRegion } = useBubble();
+    const { identifyTouchRegion, getCreatingBubble } = useBubble();
 
     /* tools */
+    const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender, createBubbleRender } = useRenderer();
     const { startDrawing, draw, finishDrawing, cancelDrawing } = useDrawer();
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
     const { startEditing, editCurve, finishEditing } = useEditor();
-    const {
-        startCreateBubble,
-        createBubble,
-        finishCreateBubble,
-        startMoveBubble,
-        moveBubble,
-        // bubblize,
-        // unbubblize,
-        finishMoveBubble,
-    } = useBubbleGun();
+    const { startCreateBubble, createBubble, finishCreateBubble, startMoveBubble, moveBubble, finishMoveBubble } =
+        useBubbleGun();
 
     useEffect(() => {
         useConfigStore.subscribe(({ mode }) => {
@@ -110,6 +102,7 @@ export const useCanvas = () => {
             if (isCreateBubbleRef.current) {
                 createBubble(getCameraView(), currentPosition);
                 reRender();
+                createBubbleRender(getCreatingBubble());
             }
         } else if (modeRef.current == 'edit') {
             editCurve(getCameraView(), currentPosition);

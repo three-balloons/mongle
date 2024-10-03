@@ -3,7 +3,7 @@ import style from '@/components/createWorkspaceModal/create-workspace-modal.modu
 import colorStyle from '@/style/common/theme.module.css';
 import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { createWorkspaceAPI } from '@/api/workspace';
@@ -17,10 +17,27 @@ export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) =
     const [isNameChange, setIsNameChange] = useState(false);
     const [name, setName] = useState('제목없음');
     const [theme, setTheme] = useState<Theme>('하늘');
+    const [isNameValid, setIsNameValid] = useState(true);
+
+    useEffect(() => {
+        setName('');
+        setTheme('하늘');
+        setIsNameValid(true);
+    }, []);
 
     const { mutate: createWorkspace } = useMutation({
         mutationFn: ({ name, theme }: { name: string; theme: string }) => createWorkspaceAPI({ name, theme }),
     });
+
+    const checkNameValid = () => {
+        if (name == '') {
+            setIsNameValid(false);
+            return false;
+        } else {
+            setIsNameValid(true);
+            return true;
+        }
+    };
     const createHandler = () => {
         createWorkspace(
             { name: name, theme: theme as string },
@@ -41,19 +58,27 @@ export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) =
             </Modal.Opener>
             <Modal.Overlay className={style.overlay} zIndex={0} onClick={() => setTheme('하늘')} />
             <Modal.Content className={style.content}>
-                {isNameChange ? (
-                    <div className={style.nameEditor}>
-                        <input
-                            className={cn(style.name, style.input)}
-                            type="text"
-                            value={name}
-                            placeholder="이름을 입력해주세요"
-                            onKeyDown={(e) => e.key === 'Enter' && setIsNameChange(false)}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                        <button className={objectStyle.buttonSmall} onClick={() => setIsNameChange(false)}>
-                            완료
-                        </button>
+                {isNameChange || name == '' ? (
+                    <div>
+                        <div className={style.nameEditor}>
+                            <input
+                                className={cn(style.name, style.input)}
+                                type="text"
+                                value={name}
+                                placeholder="이름을 입력해주세요"
+                                onKeyDown={(e) => e.key === 'Enter' && setIsNameChange(false)}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            <button
+                                className={objectStyle.buttonSmall}
+                                onClick={() => {
+                                    if (checkNameValid()) setIsNameChange(false);
+                                }}
+                            >
+                                완료
+                            </button>
+                        </div>
+                        {!isNameValid && <div className={style.nameInvalidAlert}>* 이름을 입력해주세요</div>}
                     </div>
                 ) : (
                     <div className={style.nameEditor} onClick={() => setIsNameChange(true)}>

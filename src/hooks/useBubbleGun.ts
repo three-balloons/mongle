@@ -93,7 +93,7 @@ export const useBubbleGun = () => {
                 width: Math.abs(currentPosition.x - x),
             };
             setCreatingBubble(currentRect);
-            createBubbleRender(getCreatingBubble());
+            // createBubbleRender(getCreatingBubble());
         }
     }, []);
 
