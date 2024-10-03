@@ -49,7 +49,7 @@ export const useBubbleGun = () => {
         getChildBubbles,
         getDescendantBubbles,
     } = useBubble();
-    const { bubbleTransitAnimation, reRender, createBubbleRender } = useRenderer();
+    const { bubbleTransitAnimation, reRender } = useRenderer();
     const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
