@@ -9,9 +9,12 @@ type ModalProps = {
     disableClose?: boolean;
 };
 
-const Modal = ({ children, className, initialOpen = undefined }: ModalProps) => {
+const Modal = ({ children, className, initialOpen = undefined, disableClose = undefined }: ModalProps) => {
     return (
-        <ModalProvider initialIsOpen={initialOpen === undefined ? false : true}>
+        <ModalProvider
+            initialIsOpen={initialOpen === undefined ? false : true}
+            disableClose={disableClose === undefined ? false : true}
+        >
             <div className={cn(className)}>{children}</div>
         </ModalProvider>
     );
@@ -56,7 +59,7 @@ type ModalOverlayProps = {
     onClick?: () => void;
 };
 const ModalOverlay = ({ className, onClick, zIndex = 1 }: ModalOverlayProps) => {
-    const { isOpen, close } = useModal();
+    const { isOpen, isDisableClose, close } = useModal();
     return (
         <>
             {isOpen && (
@@ -64,8 +67,10 @@ const ModalOverlay = ({ className, onClick, zIndex = 1 }: ModalOverlayProps) => 
                     style={{ position: 'absolute', inset: 0, cursor: 'default', zIndex: zIndex }}
                     className={cn(className)}
                     onClick={() => {
-                        close();
-                        onClick && onClick();
+                        if (!isDisableClose) {
+                            close();
+                            onClick && onClick();
+                        }
                     }}
                 />
             )}

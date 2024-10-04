@@ -12,10 +12,11 @@ import { LogProvider } from '@/objects/log/LogProvider';
 import { CameraProvider } from '@/objects/camera/CameraProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWorkspaceAPI } from '@/api/workspace';
-import { ReactComponent as BackIcon } from '@/assets/icon/back.svg';
+import { ReactComponent as BackIcon } from '@/assets/icon/arrow-left.svg';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-// import { Tutorial } from '@/components/tutorial/Tutorial';
+import { Tutorial } from '@/components/tutorial/Tutorial';
+import { TutorialProvider } from '@/components/tutorial/TutorialProvider';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -71,37 +72,39 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const workspace = workspaceQuery.data;
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
-            <BubbleProvider workspaceName={workspace.name} workspaceId={workspaceId}>
-                <CurveProvider sensitivity={2} workspaceId={workspaceId}>
-                    <CameraProvider width={canvasSize.width} height={canvasSize.height}>
-                        <LogProvider>
-                            <RendererProvider theme={workspace.theme}>
-                                <div className={style.header}>
-                                    <BackIcon
-                                        className={style.icon}
-                                        onClick={() => {
-                                            if (isDemo) navigator('/login', { replace: true });
-                                            else navigator('/home', { replace: true });
-                                        }}
-                                    ></BackIcon>
-                                    <div className={style.title}>{workspace.name}</div>
-                                </div>
-                                <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                                <div className={cn(style.workspace)}>
-                                    {isShowExplorer && <Explorer />}
-                                    <Canvas
-                                        width={canvasSize.width}
-                                        height={canvasSize.height}
-                                        workspaceId={workspaceId}
-                                    />
-                                    {/* <NameInput /> */}
-                                </div>
-                            </RendererProvider>
-                        </LogProvider>
-                    </CameraProvider>
-                </CurveProvider>
-            </BubbleProvider>
-            {/* {<Tutorial />} */}
+            <TutorialProvider>
+                <Tutorial />
+                <BubbleProvider workspaceName={workspace.name} workspaceId={workspaceId}>
+                    <CurveProvider sensitivity={2} workspaceId={workspaceId}>
+                        <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                            <LogProvider>
+                                <RendererProvider theme={workspace.theme}>
+                                    <div className={style.header}>
+                                        <BackIcon
+                                            className={style.icon}
+                                            onClick={() => {
+                                                if (isDemo) navigator('/login', { replace: true });
+                                                else navigator('/home', { replace: true });
+                                            }}
+                                        ></BackIcon>
+                                        <div className={style.title}>{workspace.name}</div>
+                                    </div>
+                                    <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                                    <div className={cn(style.workspace)}>
+                                        {isShowExplorer && <Explorer />}
+                                        <Canvas
+                                            width={canvasSize.width}
+                                            height={canvasSize.height}
+                                            workspaceId={workspaceId}
+                                        />
+                                        {/* <NameInput /> */}
+                                    </div>
+                                </RendererProvider>
+                            </LogProvider>
+                        </CameraProvider>
+                    </CurveProvider>
+                </BubbleProvider>
+            </TutorialProvider>
         </div>
     );
 };

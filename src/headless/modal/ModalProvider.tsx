@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 
 type ModalContextType = {
     isOpen: boolean;
+    isDisableClose: boolean;
     open: () => void;
     close: () => void;
 };
@@ -11,14 +12,16 @@ const ModalContext = createContext<ModalContextType | undefined>(undefined);
 interface ModalProviderProps {
     children: React.ReactNode;
     initialIsOpen: boolean;
+    disableClose: boolean;
 }
 
-const ModalProvider = ({ children, initialIsOpen }: ModalProviderProps) => {
+const ModalProvider = ({ children, initialIsOpen, disableClose }: ModalProviderProps) => {
     const [isOpen, setIsOpen] = useState(initialIsOpen);
+    const [isDisableClose] = useState(disableClose);
     const open = useCallback(() => setIsOpen(true), []);
     const close = useCallback(() => setIsOpen(false), []);
 
-    return <ModalContext.Provider value={{ isOpen, open, close }}>{children}</ModalContext.Provider>;
+    return <ModalContext.Provider value={{ isOpen, isDisableClose, open, close }}>{children}</ModalContext.Provider>;
 };
 
 const useModal = () => {
