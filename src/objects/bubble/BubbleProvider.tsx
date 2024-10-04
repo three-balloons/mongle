@@ -116,7 +116,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
             }
         });
         if (isReadyToShowRef.current === false) setIsReadyToShow(true);
-    }, []);
+    }, [bubbles]);
 
     const clearAllBubbles = () => {
         _clearBubbleInTree();

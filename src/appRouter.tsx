@@ -9,6 +9,7 @@ import { Outlet, createBrowserRouter } from 'react-router-dom';
 import { Signup } from '@/pages/signup/Signup';
 import { Privacy } from '@/pages/privacy/Privacy';
 import { Admin } from '@/pages/login/admin/Admin';
+import { TermOfUse } from '@/pages/termOfUse/TermOfUse';
 
 export const appRouter = createBrowserRouter([
     {
@@ -52,6 +53,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: '/privacy',
                 element: <Privacy />,
+            },
+            {
+                path: '/term-of-use',
+                element: <TermOfUse />,
             },
             {
                 path: '/',

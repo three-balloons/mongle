@@ -6,7 +6,7 @@ import { cn } from '@/util/cn';
 import { useEffect, useState } from 'react';
 import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
-import { ReactComponent as DownIcon } from '@/assets/icon/button-down.svg';
+import { ReactComponent as SettingIcon } from '@/assets/icon/setting.svg';
 import { deleteWorkspaceAPI, updateWorkspaceAPI } from '@/api/workspace';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/react-query/quertClient';
@@ -61,7 +61,7 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
         <Modal className={cn(className)}>
             <Modal.Opener className={style.opener}>
                 <div className={style.openerName}>{name}</div>
-                <DownIcon className={style.iconDown} />
+                <SettingIcon className={style.iconDown} />
             </Modal.Opener>
             <Modal.Overlay className={style.overlay} zIndex={0} onClick={() => setTheme(workspace.theme)} />
             <Modal.Content className={style.content}>

@@ -21,7 +21,7 @@ export const Setting = () => {
                     손가락으로 그리기 <TouchDrawToggle />
                 </div>
                 <div className={style.line} />
-                <div className={cn(style.setting, style.clickable)} onClick={() => alert('이용약관 준비중입니다')}>
+                <div className={cn(style.setting, style.clickable)} onClick={() => navigate('/term-of-use')}>
                     이용약관
                 </div>
                 <div className={style.line} />
