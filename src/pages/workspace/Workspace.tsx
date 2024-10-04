@@ -15,12 +15,12 @@ import { getWorkspaceAPI } from '@/api/workspace';
 import { ReactComponent as BackIcon } from '@/assets/icon/back.svg';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { Tutorial } from '@/components/tutorial/Tutorial';
 
 type WorkspaceProps = {
     workspaceId: string;
-    workspaceName: string;
 };
-export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
+export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     const { isDemo } = useAuthStore();
@@ -69,10 +69,9 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
-
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
-            <BubbleProvider workspaceName={workspaceName} workspaceId={workspaceId}>
+            <BubbleProvider workspaceName={workspace.name} workspaceId={workspaceId}>
                 <CurveProvider sensitivity={2} workspaceId={workspaceId}>
                     <CameraProvider width={canvasSize.width} height={canvasSize.height}>
                         <LogProvider>
@@ -102,6 +101,7 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
                     </CameraProvider>
                 </CurveProvider>
             </BubbleProvider>
+            {<Tutorial />}
         </div>
     );
 };
