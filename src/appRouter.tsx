@@ -21,16 +21,7 @@ export const appRouter = createBrowserRouter([
         children: [
             {
                 path: 'workspace/:workspaceId',
-                element: (
-                    <Routed>
-                        {({ params }) => (
-                            <Workspace
-                                workspaceId={params.workspaceId ?? ''}
-                                workspaceName={params.workspaceName ?? '제목없음'}
-                            />
-                        )}
-                    </Routed>
-                ),
+                element: <Routed>{({ params }) => <Workspace workspaceId={params.workspaceId ?? ''} />}</Routed>,
             },
             {
                 path: 'home',
