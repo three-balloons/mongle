@@ -2,8 +2,6 @@ import style from '@/pages/termOfUse/termOfUse.module.css';
 
 export const TermOfUse = () => {
     const TermOfUseContent = `
-이용약관 샘플
-
 제 1 장 총칙
 제 1 조 (목적)
 본 약관은 쓰리벌룬즈(이하 “회사”라 합니다)이 운영하는 몽글(이하 "어플"이라 합니다)에서 제공하는 온라인 서비스(이하 “서비스”라 한다)를 이용함에 있어 사이버몰과 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
