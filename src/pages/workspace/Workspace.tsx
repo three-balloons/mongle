@@ -15,7 +15,7 @@ import { getWorkspaceAPI } from '@/api/workspace';
 import { ReactComponent as BackIcon } from '@/assets/icon/back.svg';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Tutorial } from '@/components/tutorial/Tutorial';
+// import { Tutorial } from '@/components/tutorial/Tutorial';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -101,7 +101,7 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
                     </CameraProvider>
                 </CurveProvider>
             </BubbleProvider>
-            {<Tutorial />}
+            {/* {<Tutorial />} */}
         </div>
     );
 };
