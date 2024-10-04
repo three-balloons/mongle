@@ -96,6 +96,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
      * TODO 버블 청크 구현 후 버블 트리로 목록 가져오기
      */
     useEffect(() => {
+        console.log('초기화');
         if (isReadyToShowRef.current == true) setIsReadyToShow(false);
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
@@ -111,12 +112,11 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                         ? Math.max(bubbleNumRef.current, Number(match[1]) + 1)
                         : bubbleNumRef.current;
                 }
-
                 addBubble({ ...bubble, nameSizeInCanvas: 0 }, []);
             }
         });
         if (isReadyToShowRef.current === false) setIsReadyToShow(true);
-    }, [bubbles]);
+    }, []);
 
     const clearAllBubbles = () => {
         _clearBubbleInTree();
@@ -144,8 +144,9 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
 
     const addBubble = (bubble: Bubble, childrenPaths: Array<string>) => {
         bubblesRef.current = [...bubblesRef.current, bubble];
+        console.log('생성', bubble, childrenPaths);
         _addBubbleInTree(bubble, childrenPaths);
-        console.log(bubblesRef.current);
+        console.log('bubbleTree', state.bubbleTree);
     };
 
     const removeBubble = (bubbleToRemove: Bubble) => {
@@ -336,7 +337,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     };
 
     const setBubbleTree = (bubbleTreeRoot: BubbleTreeNode) => {
-        dispatch({ type: 'SET_BUBBLE_TREE', payload: bubbleTreeRoot });
+        dispatch({ type: 'SET_BUBBLE_TREE', payload: { bubbleTreeNode: bubbleTreeRoot } });
     };
 
     const _addBubbleInTree = (bubble: Bubble, childrenPaths: Array<string>) => {
@@ -348,15 +349,13 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     };
 
     const _clearBubbleInTree = () => {
-        dispatch({
-            type: 'SET_BUBBLE_TREE',
-            payload: {
-                name: workspaceName,
-                children: [],
-                this: undefined,
-                parent: undefined,
-            },
-        });
+        const bubbleTreeNode: BubbleTreeNode = {
+            name: workspaceName,
+            children: [],
+            this: undefined,
+            parent: undefined,
+        };
+        setBubbleTree(bubbleTreeNode);
     };
 
     /**

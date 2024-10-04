@@ -1,5 +1,6 @@
 import { updateCurveAPI } from '@/api/bubble';
 import { useBubble } from '@/objects/bubble/useBubble';
+import { useAuthStore } from '@/store/authStore';
 import { useConfigStore } from '@/store/configStore';
 import { useMutation } from '@tanstack/react-query';
 import { createContext, useEffect, useRef } from 'react';
@@ -36,6 +37,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
     const selectedCurveRef = useRef<Array<Curve>>([]);
     const coolTime = useRef(sensitivity);
     const { penConfig } = useConfigStore((state) => state);
+    const { isDemo } = useAuthStore((state) => state);
     const { findBubble } = useBubble();
 
     const bufferedUpdateCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());
@@ -79,6 +81,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
     }, []);
 
     const _sendCurveToServer = () => {
+        if (isDemo) return;
         bufferedDeleteCurveRef.current.forEach(({ curve, path }) => {
             deleteCurveMutation({ bubblePath: path, curves: [curve] });
         });
