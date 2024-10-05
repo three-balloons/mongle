@@ -6,7 +6,7 @@ type BubbleState = {
 };
 type BubbleAction =
     | { type: 'GET_BUBBLE_TREE' }
-    | { type: 'SET_BUBBLE_TREE'; payload: BubbleTreeNode }
+    | { type: 'SET_BUBBLE_TREE'; payload: { bubbleTreeNode: BubbleTreeNode } }
     | { type: 'ADD_BUBBLE_IN_TREE'; payload: { bubble: Bubble; childrenPaths: Array<string> } }
     | { type: 'REMOVE_BUBBLE_IN_TREE'; payload: { bubble: Bubble } };
 
@@ -15,7 +15,7 @@ export const bubbleTreeReducer = (state: BubbleState, action: BubbleAction): Bub
         case 'GET_BUBBLE_TREE':
             return state;
         case 'SET_BUBBLE_TREE':
-            return { bubbleTree: action.payload };
+            return { ...state, bubbleTree: action.payload.bubbleTreeNode };
         case 'ADD_BUBBLE_IN_TREE': {
             const addBubbleInTree = (bubbleTreeRoot: BubbleTreeNode, bubble: Bubble, childrenPaths: Array<string>) => {
                 const pathList = pathToList(bubble.path);
