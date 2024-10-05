@@ -11,7 +11,7 @@ export const Profile = () => {
     const navigate = useNavigate();
 
     const getUserQuery = useQuery({
-        queryKey: ['user'],
+        queryKey: ['users'],
         queryFn: () => {
             return getUserAPI();
         },
