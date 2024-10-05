@@ -24,7 +24,7 @@ type WorkspaceProps = {
 export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
-    const { isDemo } = useAuthStore();
+    const { isDemo, needTutorial } = useAuthStore();
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
 
     const navigator = useNavigate();
@@ -66,14 +66,14 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
             setIsShowExplorer(true);
         }
     };
-
+    console.log(needTutorial);
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
             <TutorialProvider>
-                <Tutorial />
+                {needTutorial && <Tutorial />}
                 <BubbleProvider workspaceName={workspace.name} workspaceId={workspaceId}>
                     <CurveProvider sensitivity={2} workspaceId={workspaceId}>
                         <CameraProvider width={canvasSize.width} height={canvasSize.height}>
