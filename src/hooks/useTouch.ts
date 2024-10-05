@@ -82,22 +82,23 @@ export const useTouch = () => {
             currentPointersRef.current.set(event.pointerId, currentInput);
             changeTouchState();
         }
+        const currentPointerEventList = Array.from(currentPointersRef.current.values());
         if (touchStateRef.current == 'pan') {
             if (mainLayer) {
-                const position = getViewCoordinate(currentPointersRef.current.values().next().value, mainLayer);
+                const position = getViewCoordinate(currentPointerEventList[0], mainLayer);
                 drag(getCameraView(), position);
             }
         }
+
         if (touchStateRef.current == 'zoom') {
             if (zoomDistanceRef.current == null) {
-                const currentPointerEventList = Array.from(currentPointersRef.current.values());
                 zoomDistanceRef.current = calculateDistance(currentPointerEventList[0], currentPointerEventList[1]);
             }
             zoom(zoomScaleRef.current * 50 - 50, false);
         }
 
         if (mainLayer && touchStateRef.current == 'command') {
-            const currentPosition = getViewCoordinate(currentPointersRef.current.values().next().value, mainLayer);
+            const currentPosition = getViewCoordinate(currentPointerEventList[0], mainLayer);
             executeAction(currentPosition);
         }
     }, []);

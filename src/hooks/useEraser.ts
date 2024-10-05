@@ -81,7 +81,6 @@ export const useEraser = () => {
         // 카메라뷰 밑 버블 가져오기
         const descendants = getDescendantBubbles(cameraView.path);
         // 버블에 있는 커브마다 지우개 설정(local 좌표계로)
-        console.log('descendants', descendants);
         const curveWithErasers = descendants.flatMap((descendant) => {
             return findIntersectCurves(
                 descendant.curves.map((curve) => {

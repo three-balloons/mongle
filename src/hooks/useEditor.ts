@@ -12,7 +12,7 @@ import { useCallback, useRef } from 'react';
 export const useEditor = () => {
     const { setCreatingBubble, getCreatingBubble, identifyTouchRegion, view2BubbleWithRect, getChildBubbles } =
         useBubble();
-    const { setSelectedCurve, getSelectedCurve } = useCurve();
+    const { setSelectedCurve } = useCurve();
     const { createBubbleRender } = useRenderer();
     // 영역 잡을 때 사용하는 시작 영역
     const selectedStartPosRef = useRef<Vector2D | undefined>(undefined);
@@ -120,8 +120,6 @@ export const useEditor = () => {
                     }),
                 ]);
             }
-
-            console.log('selected Curve', getSelectedCurve());
             selectModeRef.current = 'none';
             selectedRectRef.current = { top: 0, left: 0, width: 0, height: 0 };
             setCreatingBubble(selectedRectRef.current);

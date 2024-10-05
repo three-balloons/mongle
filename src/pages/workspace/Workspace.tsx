@@ -66,7 +66,6 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
             setIsShowExplorer(true);
         }
     };
-    console.log(needTutorial);
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
