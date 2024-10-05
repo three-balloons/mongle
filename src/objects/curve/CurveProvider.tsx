@@ -73,7 +73,7 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
             penConfigRef.current = penConfig;
         });
 
-        const sendCurveToServerId = setInterval(_sendCurveToServer, 5000);
+        const sendCurveToServerId = setInterval(_sendCurveToServer, 1500);
 
         return () => {
             clearInterval(sendCurveToServerId);
