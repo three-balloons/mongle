@@ -36,7 +36,6 @@ export type BubbleContextProps = {
 
     /* 버블 트리 */
     bubbleTree: BubbleTreeNode;
-    setBubbleTree: (bubbleTreeRoot: BubbleTreeNode) => void;
     getBubbleInTree: (bubble: Bubble) => BubbleTreeNode | undefined;
     getDescendantBubbles: (path: string) => Array<Bubble>;
     getChildBubbles: (path: string) => Array<Bubble>;
@@ -96,7 +95,6 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
      * TODO 버블 청크 구현 후 버블 트리로 목록 가져오기
      */
     useEffect(() => {
-        console.log('초기화');
         if (isReadyToShowRef.current == true) setIsReadyToShow(false);
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
@@ -115,12 +113,14 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                 addBubble({ ...bubble, nameSizeInCanvas: 0 }, []);
             }
         });
+
         if (isReadyToShowRef.current === false) setIsReadyToShow(true);
     }, [bubbles]);
 
     const clearAllBubbles = () => {
-        _clearBubbleInTree();
         bubblesRef.current = [];
+        // TODO
+        // _clearBubbleInTree();
     };
 
     const setFocusBubblePath = (path: string | undefined) => {
@@ -144,9 +144,9 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
 
     const addBubble = (bubble: Bubble, childrenPaths: Array<string>) => {
         bubblesRef.current = [...bubblesRef.current, bubble];
-        console.log('생성', bubble, childrenPaths);
+        // console.log('생성', bubble, childrenPaths);
         _addBubbleInTree(bubble, childrenPaths);
-        console.log('bubbleTree', state.bubbleTree);
+        // console.log('bubbleTree', state.bubbleTree);
     };
 
     const removeBubble = (bubbleToRemove: Bubble) => {
@@ -238,7 +238,6 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                         height: RENDERED_FONT_SIZE,
                     })
                 ) {
-                    console.log('name touch');
                     return {
                         region: 'name',
                         bubble: bubble,
@@ -336,9 +335,9 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         }
     };
 
-    const setBubbleTree = (bubbleTreeRoot: BubbleTreeNode) => {
-        dispatch({ type: 'SET_BUBBLE_TREE', payload: { bubbleTreeNode: bubbleTreeRoot } });
-    };
+    // const _setBubbleTree = (bubbleTreeRoot: BubbleTreeNode) => {
+    //     dispatch({ type: 'SET_BUBBLE_TREE', payload: bubbleTreeRoot });
+    // };
 
     const _addBubbleInTree = (bubble: Bubble, childrenPaths: Array<string>) => {
         dispatch({ type: 'ADD_BUBBLE_IN_TREE', payload: { bubble, childrenPaths } });
@@ -348,15 +347,15 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         dispatch({ type: 'REMOVE_BUBBLE_IN_TREE', payload: { bubble } });
     };
 
-    const _clearBubbleInTree = () => {
-        const bubbleTreeNode: BubbleTreeNode = {
-            name: workspaceName,
-            children: [],
-            this: undefined,
-            parent: undefined,
-        };
-        setBubbleTree(bubbleTreeNode);
-    };
+    // const _clearBubbleInTree = () => {
+    //     const bubbleTreeRoot: BubbleTreeNode = {
+    //         name: workspaceName,
+    //         children: [],
+    //         this: undefined,
+    //         parent: undefined,
+    //     };
+    //     _setBubbleTree(bubbleTreeRoot);
+    // };
 
     /**
      *
@@ -428,7 +427,6 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                 view2BubbleWithVector2D,
                 view2BubbleWithRect,
                 bubbleTree: state.bubbleTree,
-                setBubbleTree,
                 getBubbleInTree,
             }}
         >
