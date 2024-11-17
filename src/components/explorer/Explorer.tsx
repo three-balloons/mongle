@@ -7,6 +7,7 @@ import { useTutorial } from '@/components/tutorial/useTutorial';
 export const Explorer = () => {
     const { bubbleTree } = useBubble();
     const { explorerRef } = useTutorial();
+
     return (
         <div ref={explorerRef} className={cn(style.default)}>
             {

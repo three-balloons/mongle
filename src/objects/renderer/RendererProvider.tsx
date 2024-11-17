@@ -64,6 +64,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         // Rerenders when canvas view changes
         useViewStore.subscribe(({ isReadyToShow }) => {
             if (!isReadyToShow) return;
+            console.log('reRender');
             reRender();
         });
         useConfigStore.subscribe(({ isShowAnimation, isShowBubble, eraseConfig, mode }) => {
@@ -197,6 +198,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
+            console.log('test', getBubbles());
             const bubbles = [...getBubbles()];
             for (const bubble of bubbles) {
                 if (!bubble.isBubblized) {

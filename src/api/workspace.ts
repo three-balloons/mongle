@@ -15,7 +15,10 @@ type WorkspaceRes = {
     delete_date: string;
 } & Workspace;
 type GetWorkspaceRes = WorkspaceRes;
-export const getWorkspaceAPI = async (workspaceId: string) => {
+type WorkspacePrams = {
+    workspaceId: string;
+};
+export const getWorkspaceAPI = async ({ workspaceId }: WorkspacePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedGetWorkspace.data as GetWorkspaceRes;
@@ -88,7 +91,10 @@ export const updateWorkspaceAPI = async ({ workspaceId, name, theme }: UpdateWor
 };
 
 type DeleteWorkspaceRes = WorkspaceRes;
-export const deleteWorkspaceAPI = async (workspaceId: string) => {
+type DeleteBubblePrams = {
+    workspaceId: string;
+};
+export const deleteWorkspaceAPI = async ({ workspaceId }: DeleteBubblePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedDeleteWorkspace.data as DeleteWorkspaceRes;

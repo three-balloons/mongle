@@ -30,7 +30,7 @@ export const WorkspaceSettingModal = ({ workspace, className }: WorkspaceSetting
             updateWorkspaceAPI({ workspaceId, name, theme }),
     });
     const { mutate: deleteWorkspace } = useMutation({
-        mutationFn: ({ workspaceId }: { workspaceId: string }) => deleteWorkspaceAPI(workspaceId),
+        mutationFn: ({ workspaceId }: { workspaceId: string }) => deleteWorkspaceAPI({ workspaceId }),
     });
     const saveHandler = () => {
         updateWorkspace(

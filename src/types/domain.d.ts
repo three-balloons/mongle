@@ -1,3 +1,7 @@
+/**
+ * 비즈니스 로직에서 필요한 객체 타입
+ */
+
 // TODO: penConfig 추가할 것
 interface Curve {
     position: Curve2D;

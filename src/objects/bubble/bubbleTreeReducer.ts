@@ -4,6 +4,9 @@ import { getParentPath, pathToList } from '@/util/path/path';
 type BubbleState = {
     bubbleTree: BubbleTreeNode;
 };
+
+// 추가
+// getBubble
 type BubbleAction =
     | { type: 'GET_BUBBLE_TREE' }
     | { type: 'SET_BUBBLE_TREE'; payload: { bubbleTreeNode: BubbleTreeNode } }

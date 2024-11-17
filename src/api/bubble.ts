@@ -6,7 +6,7 @@ const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetBubbleRes = Array<Bubble>;
 
-export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = 4) => {
+export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = -1) => {
     try {
         if (IS_MOCK) {
             const res = mockedGetBubble.data as GetBubbleRes;
@@ -57,15 +57,26 @@ type GetBubbleTreeRes = {
         children: Array<BubbleTreeNode>;
     }>;
 };
-export const getBubbleTreeAPI = async (workspaceId: string, path: string = '/', depth: number = -1) => {
+type GetBubbleTreePrams = {
+    workspaceId: string;
+    path?: string;
+    depth?: string;
+};
+export const getBubbleTreeAPI = async ({ workspaceId, depth, path = '/' }: GetBubbleTreePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedBubbleTree.data as GetBubbleTreeRes;
             return res;
         }
-        const res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
-            `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
-        );
+        let res;
+        if (depth)
+            res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+                `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
+            );
+        else
+            res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+                `/bubble/tree/${workspaceId}?path=${path}`,
+            );
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -94,7 +105,11 @@ interface CreateBubbleRes extends Rect {
     isVisible: boolean;
 }
 
-export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
+type CreateBubblePrams = {
+    workspaceId: string;
+    bubble: Bubble;
+};
+export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedCreateBubble.data as CreateBubbleRes;
