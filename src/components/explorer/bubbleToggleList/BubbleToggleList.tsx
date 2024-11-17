@@ -8,6 +8,10 @@ import { useCamera } from '@/objects/camera/useCamera';
 import { useLog } from '@/objects/log/useLog';
 import { useBubble } from '@/objects/bubble/useBubble';
 import { useEffect, useRef, useState } from 'react';
+import { changeBubbleNameAPI } from '@/api/bubble';
+import { useParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/react-query/quertClient';
 
 type BubbleToggleListProps = {
     name: string;
@@ -22,6 +26,8 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
     const { setFocusBubblePath } = useBubble();
     const { pushLog } = useLog();
     const { mode } = useConfigStore((state) => state);
+    const { workspaceId } = useParams();
+
     const zoomAtBubble = (bubblePath: string) => {
         if (mode == 'animate') return;
         const originView = { ...getCameraView() };
@@ -52,11 +58,13 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
     type EditNamePrams = {
         isEdit: Array<boolean>;
         title: Array<string>;
+        path: Array<string>;
         buttonRef: React.MutableRefObject<null[] | HTMLDivElement[]>;
     };
     const [editStates, setEditStates] = useState<EditNamePrams>({
         isEdit: [false, ...children.map(() => false)],
         title: [name, ...children.map((child) => child.name)],
+        path: [path, ...children.map((child) => child.this.path)],
         buttonRef: useRef<null[] | HTMLDivElement[]>([null, ...children.map(() => null)]),
     });
 
@@ -65,6 +73,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
             return {
                 isEdit: [false, ...children.map(() => false)],
                 title: [name, ...children.map((child) => child.name)],
+                path: [path, ...children.map((child) => child.this.path)],
                 buttonRef: prev.buttonRef,
             };
         });
@@ -84,6 +93,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
         setEditStates((prevStates) => {
             const newIsEdit = [...prevStates.isEdit];
             newIsEdit[index] = true;
+
             return {
                 ...prevStates,
                 isEdit: newIsEdit,
@@ -102,7 +112,31 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
         });
     };
 
-    const handleBlur = (index: number) => {
+    const { mutate: changeBubbleName } = useMutation({
+        mutationFn: ({ workspaceId, path, name }: { workspaceId: string; path: string; name: string }) =>
+            changeBubbleNameAPI({
+                workspaceId: workspaceId,
+                path: path,
+                name: name,
+            }),
+    });
+
+    const handleBlur = async (index: number) => {
+        if (workspaceId) {
+            changeBubbleName(
+                { workspaceId, path, name },
+                {
+                    onSuccess: () => {
+                        console.log('이름 변경 성공');
+                        queryClient.invalidateQueries({ queryKey: ['bubbles', workspaceId] });
+                    },
+                    onError: () => {
+                        console.log('이름 변경 실패');
+                        queryClient.invalidateQueries({ queryKey: ['bubbles', workspaceId] });
+                    },
+                },
+            );
+        }
         setEditStates((prevStates) => {
             const newIsEdit = [...prevStates.isEdit];
             newIsEdit[index] = false;
@@ -112,6 +146,8 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
                 isEdit: newIsEdit,
             };
         });
+
+        // name change api call
     };
 
     return (
@@ -153,7 +189,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
                             children.map((child, index) => {
                                 if (child.children.length == 0)
                                     return (
-                                        <div key={index + 1}>
+                                        <div key={child.name + index}>
                                             {editStates.isEdit[index + 1] ? (
                                                 <input
                                                     className={cn(style.titleTextButton, style.marginLeft24)}

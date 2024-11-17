@@ -241,3 +241,43 @@ export const updateCurveAPI = async ({
         throw error;
     }
 };
+
+type ChangeNameBubbleReq = {
+    name: string;
+};
+
+interface ChangeNameBubbleRes extends Rect {
+    path: string;
+    name: string;
+    curves: Array<Curve>;
+    isBubblized: boolean;
+    isVisible: boolean;
+}
+
+type ChangeNameBubblePrams = {
+    workspaceId: string;
+    path: string;
+    name: string;
+};
+export const changeBubbleNameAPI = async ({ workspaceId, path, name }: ChangeNameBubblePrams) => {
+    try {
+        if (IS_MOCK) {
+            const res = mockedCreateBubble.data as ChangeNameBubbleRes;
+            return res;
+        }
+        const res = await bubbleAPI.post<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
+            `/bubble/${workspaceId}?path=${path}`,
+            {
+                name: name,
+            },
+        );
+        return res;
+    } catch (error: unknown) {
+        if (error instanceof APIException) {
+            if (error.code === 'NO_PARENT' || error.code === 'ALREADY_EXEIST') {
+                console.error('TODO error handling');
+            }
+        }
+        throw error;
+    }
+};

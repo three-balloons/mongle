@@ -198,7 +198,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         const context = canvas.getContext('2d');
         if (context) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            console.log('test', getBubbles());
             const bubbles = [...getBubbles()];
             for (const bubble of bubbles) {
                 if (!bubble.isBubblized) {

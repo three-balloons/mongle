@@ -38,6 +38,8 @@ export type BubbleContextProps = {
     bubbleTree: BubbleTreeNode;
     getDescendantBubbles: (path: string) => Array<Bubble>;
     getChildBubbles: (path: string) => Array<Bubble>;
+    workspaceId: string;
+    /* 워크스페이스 id (임시 추가, TODO 삭제할 것)*/
 };
 
 export const BubbleContext = createContext<BubbleContextProps | undefined>(undefined);
@@ -55,7 +57,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
     const bubbleTreeRef = useRef<BubbleTreeNode>({
         name: workspaceName,
         children: [],
-        this: undefined,
+        this: {} as Bubble,
         parent: undefined,
     });
     const bubbleNumRef = useRef<number>(0);
@@ -133,7 +135,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         const newBubbleTree: BubbleTreeNode = {
             name: workspaceName,
             children: [],
-            this: undefined,
+            this: {} as Bubble,
             parent: undefined,
         };
         console.log('ddd');
@@ -190,7 +192,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         let ret: Array<Bubble> = [];
         if (currentNode.children.length == 0 && currentNode.this) return [currentNode.this];
         currentNode.children.forEach((child) => {
-            if (currentNode.this) ret = [currentNode.this, ...ret];
+            if (currentNode != bubbleTreeRef.current && currentNode.this) ret = [currentNode.this, ...ret];
             ret = [...ret, ...getBubbles(child)];
         });
         return ret;
@@ -407,7 +409,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
         const bubbleTreeRoot: BubbleTreeNode = {
             name: workspaceName,
             children: [],
-            this: undefined,
+            this: {} as Bubble,
             parent: undefined,
         };
         _setBubbleTree(bubbleTreeRoot);
@@ -472,6 +474,7 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({
                 view2BubbleWithVector2D,
                 view2BubbleWithRect,
                 bubbleTree: bubbleTreeRef.current,
+                workspaceId: workspaceId,
             }}
         >
             {children}

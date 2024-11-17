@@ -22,7 +22,7 @@ type BubbleTreeNode = {
     name: string;
     children: Array<BubbleTreeNode>;
     parent: BubbleTreeNode | undefined;
-    this: Bubble | undefined;
+    this: Bubble; //| undefined;
 };
 
 interface Workspace {
