@@ -6,11 +6,19 @@ import {
     mockedUpdateWorkspace,
     mockedDeleteWorkspace,
     mockedCreateWorkspace,
+    mockedGetDeletedWorkspaces,
 } from '@/mock/workspace';
 const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
-type GetWorkspaceRes = Workspace;
-export const getWorkspaceAPI = async (workspaceId: string) => {
+type WorkspaceRes = {
+    update_date: string;
+    delete_date: string;
+} & Workspace;
+type GetWorkspaceRes = WorkspaceRes;
+type WorkspacePrams = {
+    workspaceId: string;
+};
+export const getWorkspaceAPI = async ({ workspaceId }: WorkspacePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedGetWorkspace.data as GetWorkspaceRes;
@@ -28,7 +36,7 @@ export const getWorkspaceAPI = async (workspaceId: string) => {
     }
 };
 
-type GetAllWorkspaceRes = Array<Workspace>;
+type GetAllWorkspaceRes = Array<WorkspaceRes>;
 export const getAllWorkspaceAPI = async () => {
     try {
         if (IS_MOCK) {
@@ -57,7 +65,7 @@ type UpdateWorkspaceReq = {
     name: string;
     theme: string;
 };
-type UpdateWorkspaceRes = Workspace;
+type UpdateWorkspaceRes = WorkspaceRes;
 export const updateWorkspaceAPI = async ({ workspaceId, name, theme }: UpdateWorkspacePrams) => {
     try {
         if (IS_MOCK) {
@@ -82,14 +90,17 @@ export const updateWorkspaceAPI = async ({ workspaceId, name, theme }: UpdateWor
     }
 };
 
-type DeleteWorkspaceRes = Workspace;
-export const deleteBubbleAPI = async (workspaceId: string) => {
+type DeleteWorkspaceRes = WorkspaceRes;
+type DeleteBubblePrams = {
+    workspaceId: string;
+};
+export const deleteWorkspaceAPI = async ({ workspaceId }: DeleteBubblePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedDeleteWorkspace.data as DeleteWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.delete<DeleteWorkspaceRes, 'NOT_EXIST'>(`/bubble/${workspaceId}`);
+        const res = await bubbleAPI.delete<DeleteWorkspaceRes, 'NOT_EXIST'>(`/workspace/${workspaceId}`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -105,7 +116,7 @@ type CreateWorkspaceReq = {
     name: string;
     theme: string;
 };
-type CreateWorkspaceRes = Workspace;
+type CreateWorkspaceRes = WorkspaceRes;
 export const createWorkspaceAPI = async ({ name, theme }: CreateWorkspaceReq) => {
     try {
         if (IS_MOCK) {
@@ -120,6 +131,26 @@ export const createWorkspaceAPI = async ({ name, theme }: CreateWorkspaceReq) =>
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'ALREADY_EXEIST') {
+                console.error('TODO error handling');
+            }
+        }
+        throw error;
+    }
+};
+
+type GetDeletedWorkspaceRes = Array<WorkspaceRes>;
+export const getDeletedWorkspaceAPI = async () => {
+    try {
+        if (IS_MOCK) {
+            const res = mockedGetDeletedWorkspaces.data as GetDeletedWorkspaceRes;
+            return res;
+        }
+        const res = await bubbleAPI.get<GetDeletedWorkspaceRes, 'NOT_EXIST'>(`/workspace/deleted`);
+        return res;
+    } catch (error: unknown) {
+        if (error instanceof APIException) {
+            // TODO remove this error code
+            if (error.code === 'NOT_EXIST') {
                 console.error('TODO error handling');
             }
         }

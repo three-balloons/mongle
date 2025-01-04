@@ -20,14 +20,18 @@
     gap: 8px;
     border-radius: 48px;
     font-size: 16px;
-    border: 1px solid black;
+    font-family: 'monggeulR';
+    cursor: pointer;
+    border: none;
 }
 
 .button-big {
     align-items: center;
     border-radius: 48px;
     font-size: 26px;
+    font-family: 'monggeulR';
     padding: 14px 16px;
-    border: 1px solid black;
+    cursor: pointer;
+    border: none;
     gap: 8px;
 }

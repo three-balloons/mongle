@@ -27,6 +27,7 @@ export type RendererContextProps = {
     reRender: () => void;
     lineRenderer: (startPoint: Vector2D, endPoint: Vector2D) => void;
     curveRenderer: (curve: Curve2D) => void;
+    eraseRender: (curretPosition: Vector2D) => void;
     renderer: () => void;
     createBubbleRender: (rect: Rect) => void;
     bubbleRender: (bubble: Bubble) => void;
@@ -41,10 +42,11 @@ type RendererProviderProps = {
 };
 
 export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
-    const { isShowAnimation, isShowBubble } = useConfigStore((state) => state);
+    const { isShowAnimation, isShowBubble, eraseConfig } = useConfigStore((state) => state);
     const { setMode } = useConfigStore((state) => state);
     const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const isShowBubbleRef = useRef<boolean>(isShowBubble);
+    const ereaseRadiusRef = useRef(eraseConfig.radius);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
@@ -53,7 +55,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     // use for animation
     const modeRef = useRef<ControlMode>('none');
 
-    const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio } = useCurve();
+    const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio, getSelectedCurve } = useCurve();
     const { getFocusBubblePath, getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
     const { pushLog } = useLog();
     const { getCameraView } = useCamera();
@@ -62,12 +64,14 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         // Rerenders when canvas view changes
         useViewStore.subscribe(({ isReadyToShow }) => {
             if (!isReadyToShow) return;
+            console.log('reRender');
             reRender();
         });
-        useConfigStore.subscribe(({ isShowAnimation, isShowBubble, mode }) => {
+        useConfigStore.subscribe(({ isShowAnimation, isShowBubble, eraseConfig, mode }) => {
             isShowAnimationRef.current = isShowAnimation;
             isShowBubbleRef.current = isShowBubble;
             modeRef.current = mode;
+            ereaseRadiusRef.current = eraseConfig.radius;
         });
     }, []);
 
@@ -169,6 +173,19 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                         );
                 }
             }
+            context.stroke();
+        }
+    };
+
+    const eraseRender = (curretPosition: Vector2D) => {
+        if (!mainLayerRef.current) return;
+        const canvas: HTMLCanvasElement = mainLayerRef.current;
+        const context = canvas.getContext('2d');
+        if (context) {
+            context.strokeStyle = 'gray';
+            context.lineWidth = 1;
+            context.beginPath();
+            context.arc(curretPosition.x, curretPosition.y, ereaseRadiusRef.current, 0, Math.PI * 2);
             context.stroke();
         }
     };
@@ -287,6 +304,14 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 const beziers = catmullRom2Bezier(curve2View(c, cameraView));
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(cameraView));
+                if (getSelectedCurve().find((cuv) => cuv === curve)) {
+                    context.shadowColor = getThemeMainColor(theme);
+                    context.shadowBlur = 5;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                } else {
+                    context.shadowBlur = 0;
+                }
                 context.beginPath();
                 // TODO: 실제 커브를 그리는 부분과 그릴지 말지 결정하는 부분 분리 할 것
                 if (beziers.length > 0) {
@@ -313,6 +338,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 }
                 context.stroke();
             });
+            context.shadowBlur = 0;
         }
     };
 
@@ -346,22 +372,6 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 context.strokeStyle = getThemeSecondColor(theme);
                 context.lineWidth = 3;
                 context.strokeRect(rect.left, rect.top, rect.width, rect.height);
-                // context.moveTo(rect.left, rect.top);
-                // context.arc(rect.left, rect.top, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width / 2, rect.top);
-                // context.arc(rect.left + rect.width / 2, rect.top, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width, rect.top);
-                // context.arc(rect.left + rect.width, rect.top, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width, rect.top + rect.height / 2);
-                // context.arc(rect.left + rect.width, rect.top + rect.height / 2, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width, rect.top + rect.height);
-                // context.arc(rect.left + rect.width, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left + rect.width / 2, rect.top + rect.height);
-                // context.arc(rect.left + rect.width / 2, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left, rect.top + rect.height);
-                // context.arc(rect.left, rect.top + rect.height, 3, 0, 2 * Math.PI, false);
-                // context.moveTo(rect.left, rect.top + rect.height / 2);
-                // context.arc(rect.left, rect.top + rect.height / 2, 3, 0, 2 * Math.PI, false);
 
                 context.stroke();
             });
@@ -381,6 +391,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                 reRender,
                 lineRenderer,
                 curveRenderer,
+                eraseRender,
                 renderer,
                 createBubbleRender,
                 bubbleRender,

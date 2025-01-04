@@ -12,15 +12,23 @@ import { LogProvider } from '@/objects/log/LogProvider';
 import { CameraProvider } from '@/objects/camera/CameraProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWorkspaceAPI } from '@/api/workspace';
+import { ReactComponent as BackIcon } from '@/assets/icon/arrow-left.svg';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import { Tutorial } from '@/components/tutorial/Tutorial';
+import { TutorialProvider } from '@/components/tutorial/TutorialProvider';
+import { getBubbleTreeAPI } from '@/api/bubble';
 
 type WorkspaceProps = {
     workspaceId: string;
-    workspaceName: string;
 };
-export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
+export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
+    const { isDemo, needTutorial } = useAuthStore();
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
+
+    const navigator = useNavigate();
 
     useEffect(() => {
         const handleResize = () => {
@@ -38,15 +46,28 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
     }, [isShowExplorer]);
 
     const workspaceQuery = useQuery({
-        queryKey: ['workspace'],
+        queryKey: ['workspace', workspaceId],
         queryFn: () => {
-            if (workspaceId !== 'demo') return getWorkspaceAPI(workspaceId);
+            if (workspaceId !== 'demo') return getWorkspaceAPI({ workspaceId });
             else
                 return {
                     id: 'demo',
                     theme: '하늘',
-                    name: '데모',
+                    name: '데모입니다 :)',
                 } as Workspace;
+        },
+    });
+    const bubbleTreeQuery = useQuery({
+        queryKey: ['bubbleTree', workspaceId],
+        queryFn: () => {
+            if (workspaceId !== 'demo') return getBubbleTreeAPI({ workspaceId: workspaceId });
+            // else
+            //     return {
+            //         id: 'demo',
+            //         theme: '하늘',
+            //         name: '데모입니다 :)',
+            //     };
+            return getBubbleTreeAPI({ workspaceId: workspaceId });
         },
     });
 
@@ -59,33 +80,48 @@ export const Workspace = ({ workspaceId, workspaceName }: WorkspaceProps) => {
             setIsShowExplorer(true);
         }
     };
-
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
+    if (bubbleTreeQuery.isPending || bubbleTreeQuery.isLoading) return <>로딩중...</>;
+    if (bubbleTreeQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
-
+    const bubbleTree = bubbleTreeQuery.data;
+    console.log('bubbleTreeQuery', bubbleTree);
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
-            <BubbleProvider workspaceName={workspaceName} workspaceId={workspaceId}>
-                <CurveProvider sensitivity={2}>
-                    <CameraProvider width={canvasSize.width} height={canvasSize.height}>
-                        <LogProvider>
-                            <RendererProvider theme={workspace.theme}>
-                                <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                                <div className={cn(style.workspace)}>
-                                    {isShowExplorer && <Explorer />}
-                                    <Canvas
-                                        width={canvasSize.width}
-                                        height={canvasSize.height}
-                                        workspaceId={workspaceId}
-                                    />
-                                    {/* <NameInput /> */}
-                                </div>
-                            </RendererProvider>
-                        </LogProvider>
-                    </CameraProvider>
-                </CurveProvider>
-            </BubbleProvider>
+            <TutorialProvider>
+                {needTutorial && <Tutorial />}
+                <BubbleProvider workspaceName={workspace.name} workspaceId={workspaceId}>
+                    <CurveProvider sensitivity={2} workspaceId={workspaceId}>
+                        <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                            <LogProvider>
+                                <RendererProvider theme={workspace.theme}>
+                                    <div className={style.header}>
+                                        <BackIcon
+                                            className={style.icon}
+                                            onClick={() => {
+                                                if (isDemo) navigator('/login', { replace: true });
+                                                else navigator('/home', { replace: true });
+                                            }}
+                                        ></BackIcon>
+                                        <div className={style.title}>{workspace.name}</div>
+                                    </div>
+                                    <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                                    <div className={cn(style.workspace)}>
+                                        {isShowExplorer && <Explorer />}
+                                        <Canvas
+                                            width={canvasSize.width}
+                                            height={canvasSize.height}
+                                            workspaceId={workspaceId}
+                                        />
+                                        {/* <NameInput /> */}
+                                    </div>
+                                </RendererProvider>
+                            </LogProvider>
+                        </CameraProvider>
+                    </CurveProvider>
+                </BubbleProvider>
+            </TutorialProvider>
         </div>
     );
 };

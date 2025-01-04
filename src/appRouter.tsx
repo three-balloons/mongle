@@ -7,6 +7,9 @@ import { Workspace } from '@/pages/workspace/Workspace';
 import { Routed } from '@/Routed';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import { Signup } from '@/pages/signup/Signup';
+import { Privacy } from '@/pages/privacy/Privacy';
+import { Admin } from '@/pages/login/admin/Admin';
+import { TermOfUse } from '@/pages/termOfUse/TermOfUse';
 
 export const appRouter = createBrowserRouter([
     {
@@ -19,16 +22,7 @@ export const appRouter = createBrowserRouter([
         children: [
             {
                 path: 'workspace/:workspaceId',
-                element: (
-                    <Routed>
-                        {({ params }) => (
-                            <Workspace
-                                workspaceId={params.workspaceId ?? ''}
-                                workspaceName={params.workspaceName ?? '제목없음'}
-                            />
-                        )}
-                    </Routed>
-                ),
+                element: <Routed>{({ params }) => <Workspace workspaceId={params.workspaceId ?? ''} />}</Routed>,
             },
             {
                 path: 'home',
@@ -47,10 +41,22 @@ export const appRouter = createBrowserRouter([
                         element: <Google />,
                     },
                     {
+                        path: 'admin',
+                        element: <Admin />,
+                    },
+                    {
                         path: 'signup',
                         element: <Signup />,
                     },
                 ],
+            },
+            {
+                path: '/privacy',
+                element: <Privacy />,
+            },
+            {
+                path: '/term-of-use',
+                element: <TermOfUse />,
             },
             {
                 path: '/',

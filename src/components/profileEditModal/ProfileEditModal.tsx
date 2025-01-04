@@ -27,7 +27,7 @@ export const ProfileEditModal = ({ user, className }: ProfileEditModalProps) => 
             {
                 onSuccess: () => {
                     console.log('저장 성공');
-                    queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+                    queryClient.invalidateQueries({ queryKey: ['users'] });
                 },
             },
         );

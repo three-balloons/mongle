@@ -1,9 +1,12 @@
+/**
+ * 비즈니스 로직에서 필요한 객체 타입
+ */
+
 // TODO: penConfig 추가할 것
 interface Curve {
     position: Curve2D;
     config: PenConfig;
-    isVisible: boolean;
-    id: string | undefined;
+    id: number;
 }
 
 interface Bubble extends Rect {
@@ -19,7 +22,7 @@ type BubbleTreeNode = {
     name: string;
     children: Array<BubbleTreeNode>;
     parent: BubbleTreeNode | undefined;
-    this: Bubble | undefined;
+    this: Bubble; //| undefined;
 };
 
 interface Workspace {

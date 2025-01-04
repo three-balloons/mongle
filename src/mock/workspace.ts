@@ -3,50 +3,52 @@ export const mockedGetWorkspaces = {
     message: '',
     data: [
         {
-            name: '3학년 1학기',
+            name: '몽글이의 노트',
             id: '42094830',
             theme: '하늘',
         },
         {
-            name: '아주매우굉장히굉장히긴이름아주매우굉장히긴이름',
+            name: 'TO DO',
             id: '123567',
             theme: '노랑',
         },
         {
-            name: 'test',
+            name: '수학 공부',
             id: '1235367',
             theme: '분홍',
         },
-        {
-            name: 'mock',
-            id: '1235267',
-            theme: '하양',
-        },
-        {
-            name: '하이',
-            id: '1223567',
-            theme: '연두',
-        },
-        {
-            name: '테스트2',
-            id: '1235667',
-            theme: '분홍',
-        },
-        {
-            name: '테스트',
-            id: '1523567',
-            theme: '연두',
-        },
+        // {
+        //     name: '하이',
+        //     id: '1223567',
+        //     theme: '연두',
+        // },
+        // {
+        //     name: '테스트2',
+        //     id: '1235667',
+        //     theme: '분홍',
+        // },
+        // {
+        //     name: '테스트',
+        //     id: '1523567',
+        //     theme: '연두',
+        // },
 
+        // {
+        //     name: 'test',
+        //     id: '1235697',
+        //     theme: '하늘',
+        // },
+    ],
+};
+
+export const mockedGetDeletedWorkspaces = {
+    code: 'OK',
+    message: '',
+    data: [
         {
-            name: 'test',
-            id: '1235697',
+            name: '삭제띠',
+            id: '42094830',
             theme: '하늘',
-        },
-        {
-            name: 'test',
-            id: '1235670',
-            theme: '검정',
         },
     ],
 };
@@ -56,7 +58,7 @@ export const mockedGetWorkspace = {
     message: '',
     data: {
         id: '1',
-        name: 'workspace1',
+        name: '몽글이의 노트',
         theme: '하늘',
     },
 };

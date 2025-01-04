@@ -2,26 +2,21 @@ import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
-import { BUBBLE_BORDER_WIDTH, MINIMUN_RENDERED_BUBBLE_SIZE, RENDERED_FONT_SIZE } from '@/util/constant';
+import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
-import { getParentPath, getPathDepth } from '@/util/path/path';
-import {
-    isCollisionPointWithRect,
-    isCollisionWithRect,
-    isCollisionWithRectExceptIncluding,
-} from '@/util/shapes/collision';
+import { getParentPath } from '@/util/path/path';
+import { isCollisionWithRect, isCollisionWithRectExceptIncluding } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 import { createBubbleAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
 
-const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
+const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<Bubble | undefined> => {
     if (workspaceId === 'demo') return;
     try {
-        const data = await createBubbleAPI(workspaceId, bubble);
-        console.log('dddd', workspaceId, bubble);
-        console.log('Fetched User Data:', data);
-        return data;
+        console.log(bubble);
+        const data = await createBubbleAPI({ workspaceId, bubble });
+        return { ...data, nameSizeInCanvas: 0 };
     } catch (error) {
         console.error('Error fetching user data:', error);
     }
@@ -29,12 +24,12 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
 
 /**
  * functions about bubble
- * features: create bubble, bubblize, unbubblize, move bubble
+ * features: create bubble, move bubble
  */
 export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');
-    const bubbleIdRef = useRef<number>(0);
+    // const bubbleIdRef = useRef<number>(0);
     const startMoveBubblePosRef = useRef<Vector2D | undefined>();
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
@@ -46,14 +41,15 @@ export const useBubbleGun = () => {
         getBubbles,
         getRatioWithCamera,
         findBubble,
+        setBubbleNum,
+        getBubbleNum,
         descendant2child,
         view2BubbleWithVector2D,
         view2BubbleWithRect,
-        getBubbleInTree,
         getChildBubbles,
         getDescendantBubbles,
     } = useBubble();
-    const { bubbleTransitAnimation, reRender, createBubbleRender } = useRenderer();
+    const { bubbleTransitAnimation, reRender } = useRenderer();
     const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
@@ -97,7 +93,7 @@ export const useBubbleGun = () => {
                 width: Math.abs(currentPosition.x - x),
             };
             setCreatingBubble(currentRect);
-            createBubbleRender(getCreatingBubble());
+            // createBubbleRender(getCreatingBubble());
         }
     }, []);
 
@@ -127,7 +123,7 @@ export const useBubbleGun = () => {
             console.error('생성하려는 버블이 겹칩니다');
             return;
         }
-        const bubbleName = 'mongle ' + bubbleIdRef.current.toString();
+        const bubbleName = 'mongle ' + getBubbleNum().toString();
 
         const bubble: Bubble = {
             ...bubbleRect,
@@ -179,7 +175,7 @@ export const useBubbleGun = () => {
         setFocusBubblePath(bubble.path);
         pushLog(createBubbleLog);
 
-        bubbleIdRef.current += 1;
+        setBubbleNum(getBubbleNum() + 1);
         createdBubblePathRef.current = '/';
         setCreatingBubble({
             top: 0,
@@ -188,15 +184,6 @@ export const useBubbleGun = () => {
             width: 0,
         });
     }, []);
-
-    // bubbleID를 useBubble로 옮기고 제거
-    const getBubbleId = () => {
-        return bubbleIdRef.current;
-    };
-    // bubbleID를 useBubble로 옮기고 제거
-    const setBubbleId = (id: number) => {
-        bubbleIdRef.current = id;
-    };
 
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
         let pos = view2Point(
@@ -317,106 +304,6 @@ export const useBubbleGun = () => {
         }
     }, []);
 
-    /**
-     * 버블 안인지 밖인지 테두리인지 판단하는 함수
-     */
-    // TODO renaming
-    const identifyTouchRegion = (
-        cameraView: ViewCoord,
-        position: Vector2D,
-        bubbles: Array<Bubble>,
-    ): { region: 'inside' | 'outside' | 'border' | 'name'; bubble: Bubble | undefined } => {
-        bubbles.sort((a, b) => getPathDepth(b.path) - getPathDepth(a.path));
-        for (const bubble of bubbles) {
-            if (!bubble.isVisible) continue;
-            const bubbleView = descendant2child(bubble, cameraView.path);
-            if (bubbleView) {
-                const rect = rect2View(
-                    {
-                        top: bubbleView.top,
-                        left: bubbleView.left,
-                        width: bubbleView.width,
-                        height: bubbleView.height,
-                    },
-                    cameraView,
-                );
-                if (
-                    isCollisionPointWithRect(position, {
-                        top: rect.top - RENDERED_FONT_SIZE,
-                        left: rect.left,
-                        width: bubble.nameSizeInCanvas,
-                        height: RENDERED_FONT_SIZE,
-                    })
-                ) {
-                    console.log('name touch');
-                    return {
-                        region: 'name',
-                        bubble: bubble,
-                    };
-                } else if (
-                    isCollisionPointWithRect(position, {
-                        top: rect.top - BUBBLE_BORDER_WIDTH,
-                        left: rect.left - BUBBLE_BORDER_WIDTH,
-                        width: rect.width + BUBBLE_BORDER_WIDTH * 2,
-                        height: rect.height + BUBBLE_BORDER_WIDTH * 2,
-                    })
-                )
-                    if (
-                        isCollisionPointWithRect(position, {
-                            top: rect.top + BUBBLE_BORDER_WIDTH,
-                            left: rect.left + BUBBLE_BORDER_WIDTH,
-                            width: rect.width - BUBBLE_BORDER_WIDTH * 2,
-                            height: rect.height - BUBBLE_BORDER_WIDTH * 2,
-                        })
-                    )
-                        return {
-                            region: 'inside',
-                            bubble: bubble,
-                        };
-                    else
-                        return {
-                            region: 'border',
-                            bubble: bubble,
-                        };
-            }
-        }
-        return {
-            region: 'outside',
-            bubble: undefined,
-        };
-    };
-
-    const bubblize = (bubble: Bubble) => {
-        bubble.isBubblized = true;
-        bubble.curves.forEach((curve) => (curve.isVisible = false));
-
-        const node = getBubbleInTree(bubble);
-        if (node == undefined) return;
-        for (const child of node.children) {
-            if (child.this) _setIsVisibleAll(child.this, false);
-        }
-    };
-
-    const unbubblize = (bubble: Bubble) => {
-        bubble.isBubblized = false;
-        bubble.curves.forEach((curve) => (curve.isVisible = true));
-        const node = getBubbleInTree(bubble);
-        if (node == undefined) return;
-        for (const child of node.children) {
-            if (child.this) _setIsVisibleAll(child.this, true);
-        }
-    };
-
-    const _setIsVisibleAll = (bubble: Bubble, isVisible: boolean) => {
-        bubble.isVisible = isVisible;
-        if (!bubble.isBubblized) bubble.curves.forEach((curve) => (curve.isVisible = isVisible));
-        const node = getBubbleInTree(bubble);
-        if (node == undefined) return;
-        for (const child of node.children) {
-            if (child.this) _setIsVisibleAll(child.this, isVisible);
-        }
-    };
-
     return {
         startCreateBubble,
         createBubble,
@@ -424,10 +311,5 @@ export const useBubbleGun = () => {
         startMoveBubble,
         moveBubble,
         finishMoveBubble,
-        identifyTouchRegion,
-        bubblize,
-        unbubblize,
-        getBubbleId,
-        setBubbleId,
     };
 };

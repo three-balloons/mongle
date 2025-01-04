@@ -3,12 +3,14 @@ import { createStore } from '@/store/store';
 type State = {
     accessToken: string | null;
     isDemo: boolean;
+    needTutorial: boolean;
 };
 
 type Action = {
     login: (accessToken: string) => void;
     logout: () => void;
     loginWithDemo: () => void;
+    showTutorial: () => void;
 };
 type Store = State & Action;
 
@@ -16,13 +18,19 @@ export const useAuthStore = createStore<Store, State>(
     (set) => ({
         accessToken: null,
         isDemo: false,
+        needTutorial: true,
         login: (accessToken) => set({ accessToken: accessToken, isDemo: false }),
         loginWithDemo: () => set({ accessToken: null, isDemo: true }),
         logout: () => set({ accessToken: null }),
+        showTutorial: () => set({ needTutorial: false }),
     }),
     {
         name: 'authStorage',
-        partialize: (state) => ({ accessToken: state.accessToken, isDemo: state.isDemo }),
+        partialize: (state) => ({
+            accessToken: state.accessToken,
+            isDemo: state.isDemo,
+            needTutorial: state.needTutorial,
+        }),
     },
 );
 

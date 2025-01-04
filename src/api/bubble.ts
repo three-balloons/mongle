@@ -6,7 +6,7 @@ const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetBubbleRes = Array<Bubble>;
 
-export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = 1) => {
+export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = -1) => {
     try {
         if (IS_MOCK) {
             const res = mockedGetBubble.data as GetBubbleRes;
@@ -57,15 +57,26 @@ type GetBubbleTreeRes = {
         children: Array<BubbleTreeNode>;
     }>;
 };
-export const getBubbleTreeAPI = async (workspaceId: string, path: string = '/', depth: number = -1) => {
+type GetBubbleTreePrams = {
+    workspaceId: string;
+    path?: string;
+    depth?: string;
+};
+export const getBubbleTreeAPI = async ({ workspaceId, depth, path = '/' }: GetBubbleTreePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedBubbleTree.data as GetBubbleTreeRes;
             return res;
         }
-        const res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
-            `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
-        );
+        let res;
+        if (depth)
+            res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+                `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
+            );
+        else
+            res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+                `/bubble/tree/${workspaceId}?path=${path}`,
+            );
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -78,6 +89,7 @@ export const getBubbleTreeAPI = async (workspaceId: string, path: string = '/', 
 };
 
 type CreateBubbleReq = {
+    name: string;
     top: number;
     left: number;
     height: number;
@@ -93,7 +105,11 @@ interface CreateBubbleRes extends Rect {
     isVisible: boolean;
 }
 
-export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
+type CreateBubblePrams = {
+    workspaceId: string;
+    bubble: Bubble;
+};
+export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedCreateBubble.data as CreateBubbleRes;
@@ -106,6 +122,7 @@ export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
                 left: bubble.left,
                 height: bubble.height,
                 width: bubble.width,
+                name: bubble.name,
                 isBubblized: bubble.isBubblized,
                 isVisible: bubble.isVisible,
             },
@@ -121,33 +138,143 @@ export const createBubbleAPI = async (workspaceId: string, bubble: Bubble) => {
     }
 };
 
-type UpdateBubbleReq = {
-    delete: Array<{ id: number }>;
-    update: Array<{
+type UpdateCurveReq = {
+    delete?: Array<{ id: number }>;
+    update?: Array<{
         id: number;
-        curve: Curve;
+        curve: {
+            config: PenConfig;
+            position: Array<{
+                x: number;
+                y: number;
+                isVisible: boolean;
+            }>;
+        };
     }>;
-    create: Array<{ curve: Curve }>;
+    create?: Array<{
+        curve: {
+            config: PenConfig;
+            position: Array<{
+                x: number;
+                y: number;
+                isVisible: boolean;
+            }>;
+        };
+    }>;
 };
 
-type UpdateBubbleRes = {
-    delete: Array<{ id: string; successYn: boolean }>;
-    update: Array<{ id: string; successYn: boolean }>;
-    create: Array<{ id: string; successYn: boolean }>;
+type UpdateCurveRes = {
+    delete: Array<{ id: number; successYn: boolean }>;
+    update: Array<{ id: number; successYn: boolean }>;
+    create: Array<{ id: number; successYn: boolean }>;
 };
-export const updateBubbleAPI = async (workspaceId: string, path: string) => {
+
+type updateCurvePrams = {
+    workspaceId: string;
+    bubblePath: string;
+    deleteCurves?: Array<{ id: number }>;
+    updateCurves?: Array<Curve>;
+    createCurves?: Array<Curve>;
+};
+/**
+ * 버블에 포함된 커브 수정하는 API
+ * @param workspaceId workspaceId
+ * @param bubblePath curve가 업데이트 될 Bubble의 path
+ * @returns
+ */
+export const updateCurveAPI = async ({
+    workspaceId,
+    bubblePath,
+    deleteCurves,
+    updateCurves,
+    createCurves,
+}: updateCurvePrams) => {
     try {
         if (IS_MOCK) {
-            const res = mockedUpdateBubble.data as UpdateBubbleRes;
+            const res = mockedUpdateBubble.data as UpdateCurveRes;
             return res;
         }
-        const res = await bubbleAPI.put<UpdateBubbleReq, UpdateBubbleRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
-            `/bubble/${workspaceId}?path=${path}`,
+        const res = await bubbleAPI.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
+            `/bubble/${workspaceId}/curve?path=${bubblePath}`,
+            {
+                delete: deleteCurves ?? [],
+                update:
+                    updateCurves?.map((curve) => {
+                        return {
+                            id: curve.id ?? 0,
+                            curve: {
+                                config: curve.config,
+                                position: curve.position.map((point) => {
+                                    return {
+                                        x: point.x,
+                                        y: point.y,
+                                        isVisible: point.isVisible,
+                                    };
+                                }),
+                            },
+                        };
+                    }) ?? [],
+                create:
+                    createCurves?.map((curve) => {
+                        return {
+                            curve: {
+                                config: curve.config,
+                                position: curve.position.map((point) => {
+                                    return {
+                                        x: point.x,
+                                        y: point.y,
+                                        isVisible: point.isVisible,
+                                    };
+                                }),
+                            },
+                        };
+                    }) ?? [],
+            },
         );
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'NO_EXEIST_BUBBLE' || error.code === 'FAIL_EXEIT') {
+                console.error('TODO error handling');
+            }
+        }
+        throw error;
+    }
+};
+
+type ChangeNameBubbleReq = {
+    name: string;
+};
+
+interface ChangeNameBubbleRes extends Rect {
+    path: string;
+    name: string;
+    curves: Array<Curve>;
+    isBubblized: boolean;
+    isVisible: boolean;
+}
+
+type ChangeNameBubblePrams = {
+    workspaceId: string;
+    path: string;
+    name: string;
+};
+export const changeBubbleNameAPI = async ({ workspaceId, path, name }: ChangeNameBubblePrams) => {
+    try {
+        if (IS_MOCK) {
+            const res = mockedCreateBubble.data as ChangeNameBubbleRes;
+            return res;
+        }
+        const res = await bubbleAPI.post<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
+            `/bubble/${workspaceId}?path=${path}`,
+            {
+                name: name,
+            },
+        );
+        return res;
+    } catch (error: unknown) {
+        if (error instanceof APIException) {
+            if (error.code === 'NO_PARENT' || error.code === 'ALREADY_EXEIST') {
                 console.error('TODO error handling');
             }
         }

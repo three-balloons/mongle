@@ -7,6 +7,7 @@ type State = {
     mode: ControlMode;
     isShowAnimation: boolean;
     isShowBubble: boolean;
+    isTouchDraw: boolean;
 };
 
 type Action = {
@@ -19,6 +20,7 @@ type Action = {
     setMode: (mode: ControlMode) => void;
     setIsShowAnimation: (isShowAnimation: boolean) => void;
     setIsShowBubble: (isShowBubble: boolean) => void;
+    setIsTouchDraw: (isTouchDraw: boolean) => void;
 };
 type Store = State & Action;
 
@@ -40,7 +42,8 @@ export const useConfigStore = createStore<Store, State>(
         },
         mode: 'move',
         isShowAnimation: true,
-        isShowBubble: false,
+        isShowBubble: true,
+        isTouchDraw: false,
         setPenColor: (color) =>
             set((state) => ({
                 penConfig: {
@@ -86,6 +89,7 @@ export const useConfigStore = createStore<Store, State>(
         setMode: (mode) => set({ mode: mode }),
         setIsShowAnimation: (isShowAnimation) => set({ isShowAnimation: isShowAnimation }),
         setIsShowBubble: (isShowBubble) => set({ isShowBubble: isShowBubble }),
+        setIsTouchDraw: (isTouchDraw) => set({ isTouchDraw: isTouchDraw }),
     }),
     {
         name: 'configStorage',
@@ -96,6 +100,7 @@ export const useConfigStore = createStore<Store, State>(
             mode: state.mode,
             isShowAnimation: state.isShowAnimation,
             isShowBubble: state.isShowBubble,
+            isTouchDraw: state.isTouchDraw,
         }),
     },
 );
