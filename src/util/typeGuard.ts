@@ -45,6 +45,7 @@ export const isCurve = (obj: unknown): obj is Curve => {
 
 export const isBubble = (obj: unknown): obj is Bubble => {
     return (
+        (obj as LogBubble).object !== undefined &&
         isRect(obj) &&
         typeof (obj as Bubble).path === 'string' &&
         typeof (obj as Bubble).name === 'string' &&
@@ -70,14 +71,14 @@ export const isCamera = (obj: unknown): obj is ViewCoord => {
     );
 };
 
-export const isLogBubble = (logElement: LogElement): logElement is LogBubble => {
-    return 'object' in logElement && isBubble(logElement.object);
+export const isLogBubble = (log: LogElement): log is LogElement<LogBubble, LogBubble> => {
+    return isBubble(log.modified.object as Bubble);
 };
 
-export const isLogCurve = (logElement: LogElement): logElement is LogCurve => {
-    return 'object' in logElement && isCurve(logElement.object);
+export const isLogCurve = (log: LogElement): log is LogElement<LogCurve, LogCurve> => {
+    return isCurve(log.modified.object as Curve);
 };
 
-export const isLogCamera = (logElement: LogElement): logElement is LogCamera => {
-    return logElement.type === 'move' && isCamera(logElement.object);
+export const isLogCamera = (log: LogElement): log is LogElement<LogCamera> => {
+    return log.type === 'update' && isCamera(log.modified.object as ViewCoord);
 };

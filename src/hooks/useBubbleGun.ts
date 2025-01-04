@@ -1,4 +1,3 @@
-
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
@@ -52,7 +51,7 @@ export const useBubbleGun = () => {
     const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
-    const { pushLog } = useLog();
+    const { commitLog, addBubbleCreationLog, addBubbleUpdateLog } = useLog();
 
     const { isShowAnimation } = useConfigStore((state) => state);
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
@@ -161,9 +160,9 @@ export const useBubbleGun = () => {
                 return child.path;
             });
 
-        const createBubbleLog: LogGroup = [];
+        addBubbleCreationLog(bubble, childrenPaths);
+        commitLog();
 
-        createBubbleLog.push({ type: 'create', object: bubble, options: { childrenPaths: childrenPaths } });
         if (workspaceId) {
             saveBubbleToServer(workspaceId, bubble);
             if (childrenPaths.length > 0) {
@@ -172,7 +171,6 @@ export const useBubbleGun = () => {
         }
         addBubble(bubble, childrenPaths);
         setFocusBubblePath(bubble.path);
-        pushLog(createBubbleLog);
 
         setBubbleLabel(getBubbleLabel() + 1);
         createdBubblePathRef.current = '/';
@@ -228,6 +226,9 @@ export const useBubbleGun = () => {
         if (!moveBubbleRef.current) return;
         const bubbleView = descendant2child(moveBubbleRef.current, cameraView.path);
         if (bubbleView == undefined) return;
+        const prevChildrenPaths = getChildBubbles(moveBubbleRef.current.path).map((child) => {
+            return child.path;
+        });
         const moveRect: Rect = {
             height: bubbleView.height,
             width: bubbleView.width,
@@ -287,18 +288,14 @@ export const useBubbleGun = () => {
             });
             console.log(moveBubbleRef.current);
             //
-            pushLog([
-                {
-                    type: 'delete',
-                    object: { ...moveBubbleRef.current, ...startMoveBubblePosRef.current },
-                    options: { childrenPaths: childrenPaths },
-                },
-                {
-                    type: 'create',
-                    object: moveBubbleRef.current,
-                    options: { childrenPaths: childrenPaths },
-                },
-            ]);
+
+            addBubbleUpdateLog(
+                { ...moveBubbleRef.current, ...startMoveBubblePosRef.current },
+                moveBubbleRef.current,
+                prevChildrenPaths,
+                childrenPaths,
+            );
+            commitLog();
             moveBubbleRef.current;
         }
     }, []);

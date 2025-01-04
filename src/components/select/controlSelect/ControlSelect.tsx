@@ -11,11 +11,14 @@ import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useBubbleStore } from '@/store/bubbleStore';
+import { useLogStore } from '@/store/useLogStore';
 
 export const ControlSelect = () => {
     const { cameraView } = useViewStore((state) => state);
     const { mode } = useConfigStore((state) => state);
-    const { isUndoAvailable, isRedoAvailable, undo, redo } = useLog();
+    const { undo, redo } = useLog();
+    const isUndoAvailable = useLogStore((state) => state.isUndoAvailable);
+    const isRedoAvailable = useLogStore((state) => state.isRedoAvailable);
     const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
     const { reRender } = useRenderer();
     const { updateCameraView } = useCamera();
@@ -35,6 +38,8 @@ export const ControlSelect = () => {
             { ...cameraView },
         );
     };
+    // addCameraUpdateLog(originView, newView);
+    //         commitLog();
 
     return (
         <Select className={style.default} initialOpen disableClose>

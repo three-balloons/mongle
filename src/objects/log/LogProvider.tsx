@@ -1,16 +1,27 @@
 import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
-import { LogReducer } from '@/objects/log/LogReducer';
+// import { LogReducer } from '@/objects/log/LogReducer';
 import { useBubbleStore } from '@/store/bubbleStore';
+import { useLogStore } from '@/store/useLogStore';
 import { isLogBubble, isLogCamera, isLogCurve } from '@/util/typeGuard';
-import { createContext, useReducer } from 'react';
+import { createContext, useRef } from 'react';
 
 export type LogContextProps = {
-    isUndoAvailable: boolean;
-    isRedoAvailable: boolean;
     undo: () => void;
     redo: () => void;
-    pushLog: (log: LogGroup) => void;
+    commitLog: () => void;
+    addBubbleCreationLog: (bubble: Bubble, childrenPaths?: string[]) => void;
+    addBubbleDeletionLog: (bubble: Bubble, childrenPaths?: string[]) => void;
+    addBubbleUpdateLog: (
+        originBubble: Bubble,
+        modifiedBubble: Bubble,
+        originChildrenPaths?: string[],
+        modifiedBubblePath?: string[],
+    ) => void;
+    addCurveCreationLog: (curve: Curve, path: string) => void;
+    addCurveDeletionLog: (curve: Curve, path: string) => void;
+    addCurveUpdateLog: (originCurve: Curve, modifiedCurve: Curve, originPath: string, modifiedPath: string) => void;
+    addCameraUpdateLog: (originCameraView: ViewCoord, modifiedCameraView: ViewCoord) => void;
 };
 
 export const LogContext = createContext<LogContextProps | undefined>(undefined);
@@ -36,78 +47,177 @@ type LogProviderProps = {
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     const addBubble = useBubbleStore((state) => state.addBubble);
     const removeBubble = useBubbleStore((state) => state.removeBubble);
-    const getBubbles = useBubbleStore((state) => state.getBubbles);
 
     const { addCurve, removeCurve } = useCurve();
     const { updateCameraView } = useCamera();
-    const [state, dispatch] = useReducer(LogReducer, {
-        logStack: [],
-        redoStack: [],
-    });
+    const { undoLog, redoLog, pushLog } = useLogStore();
+    const uncommitedLogsRef = useRef<Array<LogElement>>([]);
 
     /**
      * 실행 취소
+     * create, delete: modified 역연산
+     * update, move: modified => origin
      */
     const undo = () => {
-        if (state.logStack.length == 0) return;
-        const logGroup = state.logStack[state.logStack.length - 1];
-        logGroup.forEach((log) => {
-            if (log.type == 'create') {
-                if (isLogBubble(log)) {
-                    removeBubble(log.object);
-                } else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
-            } else if (log.type == 'delete') {
-                if (isLogBubble(log)) addBubble(log.object, log.options.childrenPaths ?? []);
-                else if (isLogCurve(log)) addCurve(log.options.path, log.object);
-            } else if (log.type == 'move') {
-                if (isLogCamera(log)) updateCameraView({ ...log.object }, { ...log.options.newCameraView });
-                // if(isLogBubble(log))
+        const logs = undoLog();
+        if (!logs) return;
+
+        logs.forEach((log) => {
+            switch (log.type) {
+                case 'create':
+                    if (isLogBubble(log)) {
+                        removeBubble(log.modified.object);
+                    } else if (isLogCurve(log)) {
+                        removeCurve(log.modified.path, log.modified.object);
+                    }
+                    break;
+                case 'delete':
+                    if (isLogBubble(log)) addBubble(log.modified.object, log.modified.childrenPaths);
+                    else if (isLogCurve(log)) addCurve(log.modified.path, log.modified.object);
+                    break;
+                case 'update': // path 변경 없는 경우, 크기 등만 변함
+                    if (isLogBubble(log)) {
+                        // 제거 후 생성하는 방식
+                        removeBubble(log.modified.object);
+                        addBubble(log.origin.object, log.origin.childrenPaths);
+                    } else if (isLogCurve(log)) {
+                        removeCurve(log.modified.path, log.modified.object);
+                        addCurve(log.origin.path, log.origin.object);
+                    } else if (isLogCamera(log)) {
+                        updateCameraView(log.origin.object, log.modified.object);
+                    }
+                    break;
+                default:
+                    break;
             }
-            // else if (log.type == 'update') {
-            //     if (isLogBubble(log)) {
-            //         updateBubble(log.object.path, log.object);
-            //     } else if (isLogCurve(log)) addCurve(log.options.path, log.object);
-            // }
         });
-        console.log(getBubbles());
-        dispatch({ type: 'UNDO' });
-        console.log(getBubbles());
     };
 
     /**
      * 실행 취소 되돌리기
+     * create, delete: modified 그대로
+     * update, move: origin => modified
      */
     const redo = () => {
-        if (state.redoStack.length == 0) return;
-        const logGroup = state.redoStack[state.redoStack.length - 1];
-        logGroup.forEach((log) => {
-            if (log.type == 'create') {
-                if (isLogBubble(log)) {
-                    addBubble(log.object, log.options.childrenPaths ?? []);
-                } else if (isLogCurve(log)) addCurve(log.options.path, log.object);
-            } else if (log.type == 'delete') {
-                if (isLogBubble(log)) removeBubble(log.object);
-                else if (isLogCurve(log)) removeCurve(log.options.path, log.object);
-            } else if (log.type == 'move') {
-                if (isLogCamera(log)) updateCameraView({ ...log.options.newCameraView }, { ...log.object });
+        const logs = redoLog();
+        if (!logs) return;
+
+        logs.forEach((log) => {
+            switch (log.type) {
+                case 'create':
+                    if (isLogBubble(log)) {
+                        addBubble(log.modified.object, log.modified.childrenPaths);
+                    } else if (isLogCurve(log)) {
+                        addCurve(log.modified.path, log.modified.object);
+                    }
+                    break;
+                case 'delete':
+                    if (isLogBubble(log)) removeBubble(log.modified.object);
+                    else if (isLogCurve(log)) removeCurve(log.modified.path, log.modified.object);
+                    break;
+                case 'update':
+                    if (isLogBubble(log)) {
+                        // 제거 후 생성하는 방식
+                        removeBubble(log.origin.object);
+                        addBubble(log.modified.object, log.modified.childrenPaths ?? []);
+                    } else if (isLogCurve(log)) {
+                        removeCurve(log.origin.path, log.origin.object);
+                        addCurve(log.modified.path, log.modified.object);
+                    } else if (isLogCamera(log)) {
+                        updateCameraView(log.modified.object, log.origin.object);
+                    }
+                    break;
+                default:
+                    break;
             }
         });
-
-        dispatch({ type: 'REDO' });
     };
 
-    const pushLog = (log: LogGroup) => {
-        dispatch({ type: 'PUSH_LOG', payload: { log } });
+    const commitLog = () => {
+        console.log('log commit');
+        pushLog(uncommitedLogsRef.current);
+        uncommitedLogsRef.current = [];
+    };
+
+    const addBubbleCreationLog = (bubble: Bubble, childrenPaths?: string[]) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            { type: 'create', modified: { object: bubble, childrenPaths: childrenPaths ?? [] } },
+        ];
+    };
+
+    const addBubbleDeletionLog = (bubble: Bubble, childrenPaths?: string[]) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            { type: 'delete', modified: { object: bubble, childrenPaths: childrenPaths ?? [] } },
+        ];
+    };
+
+    const addBubbleUpdateLog = (
+        originBubble: Bubble,
+        modifiedBubble: Bubble,
+        originChildrenPaths?: string[],
+        modifiedBubblePath?: string[],
+    ) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            {
+                type: 'update',
+                modified: { object: modifiedBubble, childrenPaths: modifiedBubblePath ?? [] },
+                origin: { object: originBubble, childrenPaths: originChildrenPaths ?? [] },
+            },
+        ];
+    };
+
+    const addCurveCreationLog = (curve: Curve, path: string) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            { type: 'create', modified: { object: curve, path: path } },
+        ];
+    };
+
+    const addCurveDeletionLog = (curve: Curve, path: string) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            { type: 'delete', modified: { object: curve, path: path } },
+        ];
+    };
+
+    const addCurveUpdateLog = (originCurve: Curve, modifiedCurve: Curve, originPath: string, modifiedPath: string) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            {
+                type: 'update',
+                modified: { object: modifiedCurve, path: modifiedPath },
+                origin: { object: originCurve, path: originPath },
+            },
+        ];
+    };
+
+    const addCameraUpdateLog = (originCameraView: ViewCoord, modifiedCameraView: ViewCoord) => {
+        uncommitedLogsRef.current = [
+            ...uncommitedLogsRef.current,
+            {
+                type: 'update',
+                modified: { object: modifiedCameraView },
+                origin: { object: originCameraView },
+            },
+        ];
     };
 
     return (
         <LogContext.Provider
             value={{
-                isUndoAvailable: state.logStack.length !== 0,
-                isRedoAvailable: state.redoStack.length !== 0,
                 undo,
                 redo,
-                pushLog,
+                commitLog,
+                addBubbleCreationLog,
+                addBubbleDeletionLog,
+                addBubbleUpdateLog,
+                addCurveCreationLog,
+                addCurveDeletionLog,
+                addCurveUpdateLog,
+                addCameraUpdateLog,
             }}
         >
             {children}

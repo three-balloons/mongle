@@ -24,17 +24,17 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
     const { getCameraView } = useRenderer();
     const { zoomBubble, updateCameraView } = useCamera();
     const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
-    const { pushLog } = useLog();
+    const { addCameraUpdateLog, commitLog } = useLog();
     const { mode } = useConfigStore((state) => state);
     const { workspaceId } = useParams();
 
     const zoomAtBubble = (bubblePath: string) => {
         if (mode == 'animate') return;
-        const originView = { ...getCameraView() };
+        const originView: ViewCoord = { ...getCameraView() };
         if (bubblePath == '') {
             setFocusBubblePath(undefined);
             const { y: height, x: width } = getCameraView().size;
-            const newView = {
+            const newView: ViewCoord = {
                 pos: {
                     top: -height / 2,
                     left: -width / 2,
@@ -48,12 +48,17 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
                 path: '/',
             };
             updateCameraView(newView, originView);
-            pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
+            addCameraUpdateLog(originView, newView);
+            commitLog();
+
             return;
         }
         setFocusBubblePath(bubblePath);
         const newView = zoomBubble(bubblePath);
-        if (newView) pushLog([{ type: 'move', object: originView, options: { newCameraView: newView } }]);
+        if (newView) {
+            addCameraUpdateLog(originView, newView);
+            commitLog();
+        }
     };
     type EditNamePrams = {
         isEdit: Array<boolean>;

@@ -60,7 +60,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const findBubble = useBubbleStore((state) => state.findBubble);
     const descendant2child = useBubbleStore((state) => state.descendant2child);
     const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
-    const { pushLog } = useLog();
+    const { addCurveDeletionLog } = useLog();
     const { getCameraView } = useCamera();
 
     useEffect(() => {
@@ -336,7 +336,8 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
                     // TODO sweep 로직 다른 곳으로 옮기기
                     if (isSweep) {
                         removeCurve(bubble.path, curve);
-                        pushLog([{ type: 'delete', object: curve, options: { path: bubble.path } }]);
+                        addCurveDeletionLog(curve, bubble.path);
+                        // commitLog();
                     }
                 }
                 context.stroke();

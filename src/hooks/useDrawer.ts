@@ -36,7 +36,7 @@ export const useDrawer = () => {
     const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
-    const { pushLog } = useLog();
+    const { commitLog, addCurveCreationLog } = useLog();
 
     const startDrawing = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {
         positionRef.current = currentPosition;
@@ -135,7 +135,8 @@ export const useDrawer = () => {
                 ]);
             } else {
                 const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
-                pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
+                addCurveCreationLog(newCurve, getNewCurvePath());
+                commitLog();
             }
         },
 
