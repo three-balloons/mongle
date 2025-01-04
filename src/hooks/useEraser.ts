@@ -4,8 +4,8 @@ import { view2Point } from '@/util/coordSys/conversion';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { isCollisionCapsuleWithCircle, isCollisionRectWithCircle } from '@/util/shapes/collision';
 import { useConfigStore } from '@/store/configStore';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 type CurveAndEraser = {
     path: string;
@@ -27,14 +27,13 @@ export const useEraser = () => {
     const earseLog = useRef<LogGroup>([]);
     const earseAreaCurves = useRef<Array<{ origin: Curve; earsed: Curve; isModified: boolean }>>([]);
     const { removeCurve, removeCurvesWithPath, updateCurve } = useCurve();
-    const {
-        view2BubbleWithVector2D,
-        removeBubble,
-        getChildBubbles,
-        getDescendantBubbles,
-        getRatioWithCamera,
-        identifyTouchRegion,
-    } = useBubble();
+
+    const view2BubbleWithVector2D = useBubbleStore((state) => state.view2BubbleWithVector2D);
+    const removeBubble = useBubbleStore((state) => state.removeBubble);
+    const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
+    const getDescendantBubbles = useBubbleStore((state) => state.getDescendantBubbles);
+    const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
+    const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
 
     /* logs */
     const { pushLog } = useLog();

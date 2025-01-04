@@ -1,11 +1,11 @@
 import { cn } from '@/util/cn';
 import style from '@/components/explorer/explorer.module.css';
 import { BubbleToggleList } from '@/components/explorer/bubbleToggleList/BubbleToggleList';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useTutorial } from '@/components/tutorial/useTutorial';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 export const Explorer = () => {
-    const { bubbleTree } = useBubble();
+    const bubbleTreeRoot = useBubbleStore((state) => state.bubbleTreeRoot);
     const { explorerRef } = useTutorial();
 
     return (
@@ -13,8 +13,8 @@ export const Explorer = () => {
             {
                 <BubbleToggleList
                     className={style.workSpaceName}
-                    name={bubbleTree.name}
-                    children={bubbleTree.children}
+                    name={bubbleTreeRoot.name}
+                    children={bubbleTreeRoot.children}
                     path={''}
                 />
             }

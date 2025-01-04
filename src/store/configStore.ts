@@ -1,4 +1,4 @@
-import { createStore } from '@/store/store';
+import { createStoreWithPersist } from '@/store/store';
 
 type State = {
     penConfig: PenConfig;
@@ -24,7 +24,7 @@ type Action = {
 };
 type Store = State & Action;
 
-export const useConfigStore = createStore<Store, State>(
+export const useConfigStore = createStoreWithPersist<Store, State>(
     (set) => ({
         penConfig: {
             color: 'black',

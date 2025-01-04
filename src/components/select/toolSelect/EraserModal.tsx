@@ -2,13 +2,13 @@ import style from '@/components/select/toolSelect/eraser-select.module.css';
 import { useConfigStore } from '@/store/configStore';
 import { cn } from '@/util/cn';
 import { ReactComponent as EraserIcon } from '@/assets/icon/eraser.svg';
-import { useBubble } from '@/objects/bubble/useBubble';
 import Modal from '@/headless/modal/Modal';
 import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 export const EraserModal = () => {
     const { eraseConfig, setEraseMode } = useConfigStore((state) => state);
-    const { clearAllBubbles } = useBubble();
+    const clearAllBubbles = useBubbleStore((state) => state.clearAllBubbles);
     const { reRender } = useRenderer();
 
     return (

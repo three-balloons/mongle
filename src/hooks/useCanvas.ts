@@ -4,10 +4,10 @@ import { useDrawer } from '@/hooks/useDrawer';
 import { useConfigStore } from '@/store/configStore';
 import { useEraser } from '@/hooks/useEraser';
 import { useBubbleGun } from '@/hooks/useBubbleGun';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useEditor } from '@/hooks/useEditor';
 import { useHand } from '@/hooks/useHand';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 /**
  * store canvas infromation and command functions
@@ -26,7 +26,8 @@ export const useCanvas = () => {
     const isEditRef = useRef(false);
 
     const { getNewCurve } = useCurve();
-    const { identifyTouchRegion, getCreatingBubble } = useBubble();
+    const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
+    const getCreatingBubble = useBubbleStore((state) => state.getCreatingBubble);
 
     /* tools */
     const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender, createBubbleRender } = useRenderer();

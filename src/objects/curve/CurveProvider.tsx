@@ -1,6 +1,6 @@
 import { updateCurveAPI } from '@/api/bubble';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useAuthStore } from '@/store/authStore';
+import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useMutation } from '@tanstack/react-query';
 import { createContext, useEffect, useRef } from 'react';
@@ -36,9 +36,9 @@ export const CurveProvider: React.FC<CurveProviderProps> = ({ children, workspac
     // editor에 의해 선택된 커브를 나타냄
     const selectedCurveRef = useRef<Array<Curve>>([]);
     const coolTime = useRef(sensitivity);
-    const { penConfig } = useConfigStore((state) => state);
-    const { isDemo } = useAuthStore((state) => state);
-    const { findBubble } = useBubble();
+    const penConfig = useConfigStore((state) => state.penConfig);
+    const isDemo = useAuthStore((state) => state.isDemo);
+    const findBubble = useBubbleStore((state) => state.findBubble);
 
     const bufferedUpdateCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());
     const bufferedDeleteCurveRef = useRef<Map<number, { curve: Curve; path: string }>>(new Map());

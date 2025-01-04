@@ -1,7 +1,7 @@
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
+import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
@@ -42,9 +42,8 @@ type RendererProviderProps = {
 };
 
 export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
-    const { isShowAnimation, isShowBubble, eraseConfig } = useConfigStore((state) => state);
+    const { isShowBubble, eraseConfig } = useConfigStore((state) => state);
     const { setMode } = useConfigStore((state) => state);
-    const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const isShowBubbleRef = useRef<boolean>(isShowBubble);
     const ereaseRadiusRef = useRef(eraseConfig.radius);
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
@@ -56,19 +55,23 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const modeRef = useRef<ControlMode>('none');
 
     const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio, getSelectedCurve } = useCurve();
-    const { getFocusBubblePath, getBubbles, findBubble, descendant2child, getRatioWithCamera } = useBubble();
+    const getFocusBubblePath = useBubbleStore((state) => state.getFocusBubblePath);
+    const getBubbles = useBubbleStore((state) => state.getBubbles);
+    const findBubble = useBubbleStore((state) => state.findBubble);
+    const descendant2child = useBubbleStore((state) => state.descendant2child);
+    const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
     const { pushLog } = useLog();
     const { getCameraView } = useCamera();
 
     useEffect(() => {
         // Rerenders when canvas view changes
-        useViewStore.subscribe(({ isReadyToShow }) => {
-            if (!isReadyToShow) return;
-            console.log('reRender');
-            reRender();
+        useViewStore.subscribe((state) => {
+            if (state.cameraView) {
+                console.log('reRender');
+                reRender();
+            }
         });
-        useConfigStore.subscribe(({ isShowAnimation, isShowBubble, eraseConfig, mode }) => {
-            isShowAnimationRef.current = isShowAnimation;
+        useConfigStore.subscribe(({ isShowBubble, eraseConfig, mode }) => {
             isShowBubbleRef.current = isShowBubble;
             modeRef.current = mode;
             ereaseRadiusRef.current = eraseConfig.radius;

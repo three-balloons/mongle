@@ -6,12 +6,12 @@ import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useLog } from '@/objects/log/useLog';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useEffect, useRef, useState } from 'react';
 import { changeBubbleNameAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/react-query/quertClient';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 type BubbleToggleListProps = {
     name: string;
@@ -23,7 +23,7 @@ type BubbleToggleListProps = {
 export const BubbleToggleList = ({ name, children, path, className }: BubbleToggleListProps) => {
     const { getCameraView } = useRenderer();
     const { zoomBubble, updateCameraView } = useCamera();
-    const { setFocusBubblePath } = useBubble();
+    const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
     const { pushLog } = useLog();
     const { mode } = useConfigStore((state) => state);
     const { workspaceId } = useParams();

@@ -1,9 +1,13 @@
 import { create, StateCreator } from 'zustand';
 import { devtools, persist, PersistOptions } from 'zustand/middleware';
 
-type CustomMis = [['zustand/devtools', never], ['zustand/persist', unknown]];
+type CustomMis = [['zustand/devtools', never]];
+type CustomMisWithPersist = [['zustand/devtools', never], ['zustand/persist', unknown]];
 
-export const createStore = <T extends object, U extends object = T>(
-    initializer: StateCreator<T, CustomMis>,
+export const createStore = <T extends object>(initializer: StateCreator<T, CustomMis>) =>
+    create<T, CustomMis>(devtools(initializer));
+
+export const createStoreWithPersist = <T extends object, U extends object = T>(
+    initializer: StateCreator<T, CustomMisWithPersist>,
     persistOptions: PersistOptions<T, U>, // persist의 옵션 타입 지정
-) => create<T, CustomMis>(devtools(persist(initializer, persistOptions)));
+) => create<T, CustomMisWithPersist>(devtools(persist(initializer, persistOptions)));
