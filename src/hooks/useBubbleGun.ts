@@ -7,20 +7,19 @@ import { getParentPath } from '@/util/path/path';
 import { isCollisionWithRect, isCollisionWithRectExceptIncluding } from '@/util/shapes/collision';
 import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
-import { createBubbleAPI } from '@/api/bubble';
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
 import { useBubbleStore } from '@/store/bubbleStore';
 
-const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<Bubble | undefined> => {
-    if (workspaceId === 'demo') return;
-    try {
-        console.log(bubble);
-        const data = await createBubbleAPI({ workspaceId, bubble });
-        return { ...data, nameSizeInCanvas: 0 };
-    } catch (error) {
-        console.error('Error fetching user data:', error);
-    }
-};
+// const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<Bubble | undefined> => {
+//     if (workspaceId === 'demo') return;
+//     try {
+//         console.log(bubble);
+//         const data = await createBubbleAPI({ workspaceId, bubble });
+//         return { ...data, nameSizeInCanvas: 0 };
+//     } catch (error) {
+//         console.error('Error fetching user data:', error);
+//     }
+// };
 
 /**
  * functions about bubble
@@ -48,7 +47,7 @@ export const useBubbleGun = () => {
     const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
     const getDescendantBubbles = useBubbleStore((state) => state.getDescendantBubbles);
     const { bubbleTransitAnimation, reRender } = useRenderer();
-    const { workspaceId } = useParams<{ workspaceId: string }>();
+    // const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
     const { commitLog, addBubbleCreationLog, addBubbleUpdateLog } = useLog();
@@ -163,12 +162,12 @@ export const useBubbleGun = () => {
         addBubbleCreationLog(bubble, childrenPaths);
         commitLog();
 
-        if (workspaceId) {
-            saveBubbleToServer(workspaceId, bubble);
-            if (childrenPaths.length > 0) {
-                // TODO: 자식 path 변경 사항 api로 전달
-            }
-        }
+        // if (workspaceId) {
+        //     saveBubbleToServer(workspaceId, bubble);
+        //     if (childrenPaths.length > 0) {
+        //         // TODO: 자식 path 변경 사항 api로 전달
+        //     }
+        // }
         addBubble(bubble, childrenPaths);
         setFocusBubblePath(bubble.path);
 

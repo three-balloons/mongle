@@ -4,21 +4,9 @@ import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { curve2Rect } from '@/util/shapes/conversion';
-import { createBubbleAPI } from '@/api/bubble';
-import { useParams } from 'react-router-dom';
+// import { createBubbleAPI } from '@/api/bubble';
+// import { useParams } from 'react-router-dom';
 import { useBubbleStore } from '@/store/bubbleStore';
-
-// TODO 서버와 통신하는 부분 따로 옮기기
-const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
-    if (workspaceId === 'demo') return;
-    try {
-        console.log(bubble);
-        const data = await createBubbleAPI({ workspaceId, bubble });
-        return { ...data, nameSizeInCanvas: 0 };
-    } catch (error) {
-        console.error('Error fetching user data:', error);
-    }
-};
 
 // functions about pen drawing
 // features: draw curve
@@ -33,10 +21,10 @@ export const useDrawer = () => {
 
     const { reRender } = useRenderer();
 
-    const { workspaceId } = useParams<{ workspaceId: string }>();
+    // const { workspaceId } = useParams<{ workspaceId: string }>();
 
     /* logs */
-    const { commitLog, addCurveCreationLog } = useLog();
+    const { commitLog, addCurveCreationLog, addBubbleCreationLog } = useLog();
 
     const startDrawing = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string | undefined) => {
         positionRef.current = currentPosition;
@@ -122,9 +110,10 @@ export const useDrawer = () => {
                 };
                 setBubbleLabel(getBubbleLabel() + 1);
                 addBubble(bubble, []);
-                if (workspaceId) {
-                    saveBubbleToServer(workspaceId, bubble);
-                }
+                addBubbleCreationLog(bubble, []); // TODO 버블을 벗어나는 영역에 그릴 경우 예외 발생
+                // if (workspaceId) {
+                //     saveBubbleToServer(workspaceId, bubble);
+                // }
                 setNewCurvePath('/' + bubbleName);
                 setFocusBubblePath('/' + bubbleName);
                 setNewCurve([
@@ -133,11 +122,10 @@ export const useDrawer = () => {
                         return { x: pos.x, y: pos.y, isVisible: point.isVisible };
                     }),
                 ]);
-            } else {
-                const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
-                addCurveCreationLog(newCurve, getNewCurvePath());
-                commitLog();
             }
+            const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
+            addCurveCreationLog(newCurve, getNewCurvePath());
+            commitLog();
         },
 
         [addNewCurve],

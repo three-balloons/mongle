@@ -18,6 +18,8 @@ import { Tutorial } from '@/components/tutorial/Tutorial';
 import { TutorialProvider } from '@/components/tutorial/TutorialProvider';
 import { getBubbleAPI } from '@/api/bubble';
 import { useBubbleStore } from '@/store/bubbleStore';
+import { useLogStore } from '@/store/useLogStore';
+import { useLogSender } from '@/hooks/useLogSender';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -26,7 +28,9 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     const { isDemo, needTutorial } = useAuthStore();
+    const setCurrentWorkspaceId = useLogStore((state) => state.setCurrentWorkspaceId);
     const addBubblesInNode = useBubbleStore((state) => state.addBubblesInNode);
+    const { sendLogsToServer } = useLogSender();
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
 
     const navigator = useNavigate();
@@ -40,16 +44,28 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     });
 
     const initBubbles: Array<Bubble> = bubbleQuery.data ?? [];
+
+    useEffect(() => {
+        setCurrentWorkspaceId(workspaceId);
+    }, [workspaceId]);
     /**
      * 초기화(서버와 동기화) 코드
      */
     useEffect(() => {
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
-
-        console.log(initBubbles);
+        console.log('initBubbles');
+        sendLogsToServer(true);
         addBubblesInNode(initBubbles);
     }, [initBubbles]);
+
+    useEffect(() => {
+        const sendCurveToServerId = setInterval(() => sendLogsToServer(), 5000);
+
+        return () => {
+            clearInterval(sendCurveToServerId);
+        };
+    }, []);
 
     useEffect(() => {
         const handleResize = () => {
@@ -78,19 +94,6 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
                 } as Workspace;
         },
     });
-    // const bubbleTreeQuery = useQuery({
-    //     queryKey: ['bubbleTree', workspaceId],
-    //     queryFn: () => {
-    //         if (workspaceId !== 'demo') return getBubbleTreeAPI({ workspaceId: workspaceId });
-    //         // else
-    //         //     return {
-    //         //         id: 'demo',
-    //         //         theme: '하늘',
-    //         //         name: '데모입니다 :)',
-    //         //     };
-    //         return getBubbleTreeAPI({ workspaceId: workspaceId });
-    //     },
-    // });
 
     const WorkspaceResizeHandler = () => {
         if (isShowExplorer) {
@@ -103,16 +106,12 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     };
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
-    // if (bubbleTreeQuery.isPending || bubbleTreeQuery.isLoading) return <>로딩중...</>;
-    // if (bubbleTreeQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
-    // const bubbleTree = bubbleTreeQuery.data;
-    // console.log('bubbleTreeQuery', bubbleTree);
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
             <TutorialProvider>
                 {needTutorial && <Tutorial />}
-                <CurveProvider sensitivity={2} workspaceId={workspaceId}>
+                <CurveProvider sensitivity={2}>
                     <CameraProvider width={canvasSize.width} height={canvasSize.height}>
                         <LogProvider>
                             <RendererProvider theme={workspace.theme}>

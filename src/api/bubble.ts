@@ -27,7 +27,12 @@ export const getBubbleAPI = async (workspaceId: string, path: string, depth: num
 };
 
 type DeleteBubbleRes = Bubble;
-export const deleteBubbleAPI = async (workspaceId: string, path: string, isCascade: boolean = true) => {
+interface DeleteBubblePrams {
+    workspaceId: string;
+    path: string;
+    isCascade?: boolean;
+}
+export const deleteBubbleAPI = async ({ workspaceId, path, isCascade = true }: DeleteBubblePrams) => {
     try {
         if (IS_MOCK) {
             const res = mockedDeleteBubble.data as DeleteBubbleRes;
@@ -62,6 +67,7 @@ type GetBubbleTreePrams = {
     path?: string;
     depth?: string;
 };
+
 export const getBubbleTreeAPI = async ({ workspaceId, depth, path = '/' }: GetBubbleTreePrams) => {
     try {
         if (IS_MOCK) {

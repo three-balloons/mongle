@@ -32,8 +32,3 @@ type LogElement<T extends U | LogCamera = U | LogCamera, U extends LogBubble | L
       };
 
 type LogGroup = LogElement[];
-
-type LogState = {
-    logStack: Array<LogGroup>;
-    redoStack: Array<LogGroup>;
-};

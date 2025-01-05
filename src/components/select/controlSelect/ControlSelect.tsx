@@ -17,8 +17,8 @@ export const ControlSelect = () => {
     const { cameraView } = useViewStore((state) => state);
     const { mode } = useConfigStore((state) => state);
     const { undo, redo } = useLog();
-    const isUndoAvailable = useLogStore((state) => state.isUndoAvailable);
-    const isRedoAvailable = useLogStore((state) => state.isRedoAvailable);
+    const getIsUndoAvailable = useLogStore((state) => state.getIsUndoAvailable);
+    const getIsRedoAvailable = useLogStore((state) => state.getIsRedoAvailable);
     const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
     const { reRender } = useRenderer();
     const { updateCameraView } = useCamera();
@@ -67,28 +67,30 @@ export const ControlSelect = () => {
                     </Select.Option>
                     <Select.Option
                         className={cn(style.option, style.large)}
-                        value={<UndoIcon className={cn(style.large, !isUndoAvailable && style.disabled)}></UndoIcon>}
+                        value={
+                            <UndoIcon className={cn(style.large, !getIsUndoAvailable() && style.disabled)}></UndoIcon>
+                        }
                         onSelect={() => {
-                            if (!isUndoAvailable) return;
+                            if (!getIsUndoAvailable()) return;
                             if (mode == 'animate') return;
                             undo();
                             reRender();
                         }}
                     >
                         {/* <Icon src={undoIcon} className={cn(style.large)} /> */}
-                        <UndoIcon className={cn(style.large, !isUndoAvailable && style.disabled)} />
+                        <UndoIcon className={cn(style.large, !getIsUndoAvailable() && style.disabled)} />
                     </Select.Option>
                     <Select.Option
                         className={cn(style.option, style.large)}
-                        value={<RedoIcon className={cn(style.large, !isRedoAvailable && style.disabled)} />}
+                        value={<RedoIcon className={cn(style.large, !getIsRedoAvailable() && style.disabled)} />}
                         onSelect={() => {
-                            if (!isRedoAvailable) return;
+                            if (!getIsRedoAvailable()) return;
                             if (mode == 'animate') return;
                             redo();
                             reRender();
                         }}
                     >
-                        <RedoIcon className={cn(style.large, !isRedoAvailable && style.disabled)} />
+                        <RedoIcon className={cn(style.large, !getIsRedoAvailable() && style.disabled)} />
                     </Select.Option>
                 </div>
             </Select.Content>

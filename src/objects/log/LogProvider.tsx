@@ -1,6 +1,6 @@
+import { useLogSender } from '@/hooks/useLogSender';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
-// import { LogReducer } from '@/objects/log/LogReducer';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { useLogStore } from '@/store/useLogStore';
 import { isLogBubble, isLogCamera, isLogCurve } from '@/util/typeGuard';
@@ -30,6 +30,30 @@ type LogProviderProps = {
     children: React.ReactNode;
 };
 
+// deep copy해도 됨
+const getInverseLog = (log: LogElement): LogElement => {
+    switch (log.type) {
+        case 'create':
+            return {
+                type: 'delete',
+                modified: { ...log.modified, object: { ...log.modified.object } } as LogBubble | LogCurve,
+            };
+        case 'delete':
+            return {
+                type: 'create',
+                modified: { ...log.modified, object: { ...log.modified.object } } as LogBubble | LogCurve,
+            };
+        case 'update': // path 변경 없는 경우, 크기 등만 변함
+            return {
+                type: 'update',
+                modified: { ...log.origin, object: { ...log.origin.object } },
+                origin: { ...log.modified, object: { ...log.modified.object } },
+            };
+        default:
+            throw new Error(`Unsupported log type`);
+    }
+};
+
 /**
  * update
  * => 이전 object를 저장 => 교체
@@ -47,10 +71,11 @@ type LogProviderProps = {
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     const addBubble = useBubbleStore((state) => state.addBubble);
     const removeBubble = useBubbleStore((state) => state.removeBubble);
-
+    const { commitToServer } = useLogSender();
     const { addCurve, removeCurve } = useCurve();
     const { updateCameraView } = useCamera();
-    const { undoLog, redoLog, pushLog } = useLogStore();
+    const { undoLog, redoLog, pushLog, isRollbackNeeded, decreaseCheckpoint } = useLogStore();
+
     const uncommitedLogsRef = useRef<Array<LogElement>>([]);
 
     /**
@@ -61,7 +86,10 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     const undo = () => {
         const logs = undoLog();
         if (!logs) return;
-
+        if (isRollbackNeeded()) {
+            logs.forEach((log) => commitToServer(getInverseLog(log)));
+            decreaseCheckpoint();
+        }
         logs.forEach((log) => {
             switch (log.type) {
                 case 'create':
