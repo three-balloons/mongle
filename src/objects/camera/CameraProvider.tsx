@@ -1,4 +1,4 @@
-import { useBubble } from '@/objects/bubble/useBubble';
+import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { bubble2globalWithRect, global2bubbleWithRect } from '@/util/coordSys/conversion';
@@ -28,7 +28,9 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
     const isShowAnimationRef = useRef<boolean>(isShowAnimation);
     const modeRef = useRef<ControlMode>('none');
 
-    const { findBubble, descendant2child, getChildBubbles } = useBubble();
+    const findBubble = useBubbleStore((state) => state.findBubble);
+    const descendant2child = useBubbleStore((state) => state.descendant2child);
+    const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
 
     const cameraViewRef = useRef<ViewCoord>({
         pos: {
@@ -151,6 +153,7 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
         let canUpdateCamera = true;
         while (canUpdateCamera) {
             canUpdateCamera = false;
+
             const children = getChildBubbles(path);
             for (const child of children) {
                 // TODO isInside 유틸함수 만들기
@@ -271,7 +274,7 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
             } else {
                 pos = easeInCubic(time / duration, middleViewPos, endViewPos);
             }
-
+            console.log('dddd');
             setCameraView({ ...cameraViewRef.current, pos: pos });
             if (time >= duration) {
                 // setCameraView({ ...cameraViewRef.current, pos: endViewPos });

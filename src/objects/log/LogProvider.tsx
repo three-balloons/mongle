@@ -1,7 +1,7 @@
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
 import { LogReducer } from '@/objects/log/LogReducer';
+import { useBubbleStore } from '@/store/bubbleStore';
 import { isLogBubble, isLogCamera, isLogCurve } from '@/util/typeGuard';
 import { createContext, useReducer } from 'react';
 
@@ -34,7 +34,10 @@ type LogProviderProps = {
  *
  */
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
-    const { addBubble, removeBubble, getBubbles } = useBubble();
+    const addBubble = useBubbleStore((state) => state.addBubble);
+    const removeBubble = useBubbleStore((state) => state.removeBubble);
+    const getBubbles = useBubbleStore((state) => state.getBubbles);
+
     const { addCurve, removeCurve } = useCurve();
     const { updateCameraView } = useCamera();
     const [state, dispatch] = useReducer(LogReducer, {

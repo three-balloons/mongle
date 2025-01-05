@@ -1,4 +1,4 @@
-import { createStore } from '@/store/store';
+import { createStoreWithPersist } from '@/store/store';
 
 type State = {
     accessToken: string | null;
@@ -14,7 +14,7 @@ type Action = {
 };
 type Store = State & Action;
 
-export const useAuthStore = createStore<Store, State>(
+export const useAuthStore = createStoreWithPersist<Store, State>(
     (set) => ({
         accessToken: null,
         isDemo: false,

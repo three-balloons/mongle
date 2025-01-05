@@ -6,7 +6,6 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { Explorer } from '@/components/explorer/Explorer';
 import { CurveProvider } from '@/objects/curve/CurveProvider';
 import { getThemeStyle } from '@/util/getThemeStyle';
-import { BubbleProvider } from '@/objects/bubble/BubbleProvider';
 import { RendererProvider } from '@/objects/renderer/RendererProvider';
 import { LogProvider } from '@/objects/log/LogProvider';
 import { CameraProvider } from '@/objects/camera/CameraProvider';
@@ -17,7 +16,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Tutorial } from '@/components/tutorial/Tutorial';
 import { TutorialProvider } from '@/components/tutorial/TutorialProvider';
-import { getBubbleTreeAPI } from '@/api/bubble';
+import { getBubbleAPI } from '@/api/bubble';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -26,9 +26,30 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     const { isDemo, needTutorial } = useAuthStore();
+    const addBubblesInNode = useBubbleStore((state) => state.addBubblesInNode);
     // 캔버스 크기는 js로 관리, 캔버스가 화면 밖으로 넘어가지 않음을 보장해야 함
 
     const navigator = useNavigate();
+
+    const bubbleQuery = useQuery({
+        queryKey: ['bubbles', workspaceId],
+        queryFn: () => {
+            if (workspaceId === 'demo') return [] as Array<Bubble>;
+            else return getBubbleAPI(workspaceId, '/');
+        },
+    });
+
+    const initBubbles: Array<Bubble> = bubbleQuery.data ?? [];
+    /**
+     * 초기화(서버와 동기화) 코드
+     */
+    useEffect(() => {
+        if (!bubbleQuery.data) return;
+        if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
+
+        console.log(initBubbles);
+        addBubblesInNode(initBubbles);
+    }, [initBubbles]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -57,19 +78,19 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
                 } as Workspace;
         },
     });
-    const bubbleTreeQuery = useQuery({
-        queryKey: ['bubbleTree', workspaceId],
-        queryFn: () => {
-            if (workspaceId !== 'demo') return getBubbleTreeAPI({ workspaceId: workspaceId });
-            // else
-            //     return {
-            //         id: 'demo',
-            //         theme: '하늘',
-            //         name: '데모입니다 :)',
-            //     };
-            return getBubbleTreeAPI({ workspaceId: workspaceId });
-        },
-    });
+    // const bubbleTreeQuery = useQuery({
+    //     queryKey: ['bubbleTree', workspaceId],
+    //     queryFn: () => {
+    //         if (workspaceId !== 'demo') return getBubbleTreeAPI({ workspaceId: workspaceId });
+    //         // else
+    //         //     return {
+    //         //         id: 'demo',
+    //         //         theme: '하늘',
+    //         //         name: '데모입니다 :)',
+    //         //     };
+    //         return getBubbleTreeAPI({ workspaceId: workspaceId });
+    //     },
+    // });
 
     const WorkspaceResizeHandler = () => {
         if (isShowExplorer) {
@@ -82,45 +103,43 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     };
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
-    if (bubbleTreeQuery.isPending || bubbleTreeQuery.isLoading) return <>로딩중...</>;
-    if (bubbleTreeQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
+    // if (bubbleTreeQuery.isPending || bubbleTreeQuery.isLoading) return <>로딩중...</>;
+    // if (bubbleTreeQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
-    const bubbleTree = bubbleTreeQuery.data;
-    console.log('bubbleTreeQuery', bubbleTree);
+    // const bubbleTree = bubbleTreeQuery.data;
+    // console.log('bubbleTreeQuery', bubbleTree);
     return (
         <div className={cn(style.default, getThemeStyle(workspace.theme))}>
             <TutorialProvider>
                 {needTutorial && <Tutorial />}
-                <BubbleProvider workspaceName={workspace.name} workspaceId={workspaceId}>
-                    <CurveProvider sensitivity={2} workspaceId={workspaceId}>
-                        <CameraProvider width={canvasSize.width} height={canvasSize.height}>
-                            <LogProvider>
-                                <RendererProvider theme={workspace.theme}>
-                                    <div className={style.header}>
-                                        <BackIcon
-                                            className={style.icon}
-                                            onClick={() => {
-                                                if (isDemo) navigator('/login', { replace: true });
-                                                else navigator('/home', { replace: true });
-                                            }}
-                                        ></BackIcon>
-                                        <div className={style.title}>{workspace.name}</div>
-                                    </div>
-                                    <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                                    <div className={cn(style.workspace)}>
-                                        {isShowExplorer && <Explorer />}
-                                        <Canvas
-                                            width={canvasSize.width}
-                                            height={canvasSize.height}
-                                            workspaceId={workspaceId}
-                                        />
-                                        {/* <NameInput /> */}
-                                    </div>
-                                </RendererProvider>
-                            </LogProvider>
-                        </CameraProvider>
-                    </CurveProvider>
-                </BubbleProvider>
+                <CurveProvider sensitivity={2} workspaceId={workspaceId}>
+                    <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                        <LogProvider>
+                            <RendererProvider theme={workspace.theme}>
+                                <div className={style.header}>
+                                    <BackIcon
+                                        className={style.icon}
+                                        onClick={() => {
+                                            if (isDemo) navigator('/login', { replace: true });
+                                            else navigator('/home', { replace: true });
+                                        }}
+                                    ></BackIcon>
+                                    <div className={style.title}>{workspace.name}</div>
+                                </div>
+                                <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                                <div className={cn(style.workspace)}>
+                                    {isShowExplorer && <Explorer />}
+                                    <Canvas
+                                        width={canvasSize.width}
+                                        height={canvasSize.height}
+                                        workspaceId={workspaceId}
+                                    />
+                                    {/* <NameInput /> */}
+                                </div>
+                            </RendererProvider>
+                        </LogProvider>
+                    </CameraProvider>
+                </CurveProvider>
             </TutorialProvider>
         </div>
     );

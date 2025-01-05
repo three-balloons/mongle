@@ -1,6 +1,6 @@
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useBubbleStore } from '@/store/bubbleStore';
 import { BUBBLE_BORDER_WIDTH } from '@/util/constant';
 import { view2Point } from '@/util/coordSys/conversion';
 import { isCollisionRectWithLine } from '@/util/shapes/collision';
@@ -10,8 +10,12 @@ import { useCallback, useRef } from 'react';
 // functions about pen drawing
 // features: draw curve
 export const useEditor = () => {
-    const { setCreatingBubble, getCreatingBubble, identifyTouchRegion, view2BubbleWithRect, getChildBubbles } =
-        useBubble();
+    const setCreatingBubble = useBubbleStore((state) => state.setCreatingBubble);
+    const getCreatingBubble = useBubbleStore((state) => state.getCreatingBubble);
+    const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
+    const view2BubbleWithRect = useBubbleStore((state) => state.view2BubbleWithRect);
+    const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
+
     const { setSelectedCurve } = useCurve();
     const { createBubbleRender } = useRenderer();
     // 영역 잡을 때 사용하는 시작 영역

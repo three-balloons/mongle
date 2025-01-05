@@ -9,13 +9,14 @@ import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { createWorkspaceAPI } from '@/api/workspace';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/react-query/quertClient';
+import { UNNAMED } from '@/util/constant';
 
 type CreateWorkspaceModalProps = {
     className: string;
 };
 export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) => {
     const [isNameChange, setIsNameChange] = useState(false);
-    const [name, setName] = useState('제목없음');
+    const [name, setName] = useState(UNNAMED);
     const [theme, setTheme] = useState<Theme>('하늘');
     const [isNameValid, setIsNameValid] = useState(true);
 

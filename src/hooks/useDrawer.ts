@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react';
 import { useCurve } from '@/objects/curve/useCurve';
 import { getThicknessRatio, view2Point } from '@/util/coordSys/conversion';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { createBubbleAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 // TODO 서버와 통신하는 부분 따로 옮기기
 const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
@@ -25,7 +25,12 @@ const saveBubbleToServer = async (workspaceId: string, bubble: Bubble) => {
 export const useDrawer = () => {
     const positionRef = useRef<Vector2D | undefined>();
     const { getNewCurve, setNewCurve, getNewCurvePath, setNewCurvePath, addControlPoint, addNewCurve } = useCurve();
-    const { view2BubbleWithVector2D, setFocusBubblePath, addBubble, getBubbleNum, setBubbleNum } = useBubble();
+    const view2BubbleWithVector2D = useBubbleStore((state) => state.view2BubbleWithVector2D);
+    const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
+    const addBubble = useBubbleStore((state) => state.addBubble);
+    const getBubbleLabel = useBubbleStore((state) => state.getBubbleLabel);
+    const setBubbleLabel = useBubbleStore((state) => state.setBubbleLabel);
+
     const { reRender } = useRenderer();
 
     const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -102,7 +107,7 @@ export const useDrawer = () => {
                 // 버블 밖에 커브를 그린 경우
                 const rect = curve2Rect(getNewCurve(), 10);
                 // TODO: useBubble로 id옮기고 bubble => mongle로 변경
-                const bubbleName = 'mongle ' + getBubbleNum().toString();
+                const bubbleName = 'mongle ' + getBubbleLabel().toString();
                 const bubble: Bubble = {
                     top: rect.top,
                     left: rect.left,
@@ -115,7 +120,7 @@ export const useDrawer = () => {
                     isVisible: true,
                     nameSizeInCanvas: 0,
                 };
-                setBubbleNum(getBubbleNum() + 1);
+                setBubbleLabel(getBubbleLabel() + 1);
                 addBubble(bubble, []);
                 if (workspaceId) {
                     saveBubbleToServer(workspaceId, bubble);
@@ -128,9 +133,10 @@ export const useDrawer = () => {
                         return { x: pos.x, y: pos.y, isVisible: point.isVisible };
                     }),
                 ]);
+            } else {
+                const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
+                pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
             }
-            const newCurve: Curve = addNewCurve(getThicknessRatio(cameraView));
-            pushLog([{ type: 'create', object: newCurve, options: { path: getNewCurvePath() } }]);
         },
 
         [addNewCurve],

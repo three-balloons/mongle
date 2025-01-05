@@ -265,7 +265,7 @@ export const changeBubbleNameAPI = async ({ workspaceId, path, name }: ChangeNam
             const res = mockedCreateBubble.data as ChangeNameBubbleRes;
             return res;
         }
-        const res = await bubbleAPI.post<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
+        const res = await bubbleAPI.put<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
             `/bubble/${workspaceId}?path=${path}`,
             {
                 name: name,

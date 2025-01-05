@@ -1,11 +1,10 @@
 import { useCanvas } from '@/hooks/useCanvas';
 import { useHand } from '@/hooks/useHand';
-import { useBubble } from '@/objects/bubble/useBubble';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useRenderer } from '@/objects/renderer/useRenderer';
+import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useCallback, useEffect, useRef } from 'react';
-// import { useViewStore } from '@/store/viewStore';
 
 type InputPoint = {
     type: string;
@@ -18,7 +17,7 @@ type InputPoint = {
  * touchState에 의해 이동하는 경우, 이동 관련 함수 호출
  */
 export const useTouch = () => {
-    const { setFocusBubblePath } = useBubble();
+    const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
     const { getMainLayer, getCameraView } = useRenderer();
     const { updateCameraView } = useCamera();
     const { grab, drag, release } = useHand();

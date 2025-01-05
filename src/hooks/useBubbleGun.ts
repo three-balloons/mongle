@@ -1,4 +1,4 @@
-import { useBubble } from '@/objects/bubble/useBubble';
+
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useConfigStore } from '@/store/configStore';
@@ -10,6 +10,7 @@ import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 import { createBubbleAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
+import { useBubbleStore } from '@/store/bubbleStore';
 
 const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<Bubble | undefined> => {
     if (workspaceId === 'demo') return;
@@ -33,22 +34,20 @@ export const useBubbleGun = () => {
     const startMoveBubblePosRef = useRef<Vector2D | undefined>();
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
-    const {
-        setFocusBubblePath,
-        setCreatingBubble,
-        addBubble,
-        getCreatingBubble,
-        getBubbles,
-        getRatioWithCamera,
-        findBubble,
-        setBubbleNum,
-        getBubbleNum,
-        descendant2child,
-        view2BubbleWithVector2D,
-        view2BubbleWithRect,
-        getChildBubbles,
-        getDescendantBubbles,
-    } = useBubble();
+    const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
+    const setCreatingBubble = useBubbleStore((state) => state.setCreatingBubble);
+    const addBubble = useBubbleStore((state) => state.addBubble);
+    const getCreatingBubble = useBubbleStore((state) => state.getCreatingBubble);
+    const getBubbles = useBubbleStore((state) => state.getBubbles);
+    const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
+    const findBubble = useBubbleStore((state) => state.findBubble);
+    const setBubbleLabel = useBubbleStore((state) => state.setBubbleLabel);
+    const getBubbleLabel = useBubbleStore((state) => state.getBubbleLabel);
+    const descendant2child = useBubbleStore((state) => state.descendant2child);
+    const view2BubbleWithVector2D = useBubbleStore((state) => state.view2BubbleWithVector2D);
+    const view2BubbleWithRect = useBubbleStore((state) => state.view2BubbleWithRect);
+    const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
+    const getDescendantBubbles = useBubbleStore((state) => state.getDescendantBubbles);
     const { bubbleTransitAnimation, reRender } = useRenderer();
     const { workspaceId } = useParams<{ workspaceId: string }>();
 
@@ -123,7 +122,7 @@ export const useBubbleGun = () => {
             console.error('생성하려는 버블이 겹칩니다');
             return;
         }
-        const bubbleName = 'mongle ' + getBubbleNum().toString();
+        const bubbleName = 'mongle ' + getBubbleLabel().toString();
 
         const bubble: Bubble = {
             ...bubbleRect,
@@ -175,7 +174,7 @@ export const useBubbleGun = () => {
         setFocusBubblePath(bubble.path);
         pushLog(createBubbleLog);
 
-        setBubbleNum(getBubbleNum() + 1);
+        setBubbleLabel(getBubbleLabel() + 1);
         createdBubblePathRef.current = '/';
         setCreatingBubble({
             top: 0,
