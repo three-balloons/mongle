@@ -33,9 +33,9 @@ export const useBubbleGun = () => {
     const moveBubbleRef = useRef<Bubble | undefined>();
     const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
     const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
-    const setCreatingBubble = useBubbleStore((state) => state.setCreatingBubble);
+
     const addBubble = useBubbleStore((state) => state.addBubble);
-    const getCreatingBubble = useBubbleStore((state) => state.getCreatingBubble);
+
     const getBubbles = useBubbleStore((state) => state.getBubbles);
     const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
     const findBubble = useBubbleStore((state) => state.findBubble);
@@ -49,6 +49,7 @@ export const useBubbleGun = () => {
     const { bubbleTransitAnimation, reRender } = useRenderer();
     // const { workspaceId } = useParams<{ workspaceId: string }>();
 
+    const { setDraggingRect, getDraggingRect } = useRenderer();
     /* logs */
     const { commitLog, addBubbleCreationLog, addBubbleUpdateLog } = useLog();
 
@@ -89,13 +90,14 @@ export const useBubbleGun = () => {
                 height: Math.abs(currentPosition.y - y),
                 width: Math.abs(currentPosition.x - x),
             };
-            setCreatingBubble(currentRect);
-            // createBubbleRender(getCreatingBubble());
+            setDraggingRect(currentRect);
+            // draggingRectRender(getCreatingBubble());
         }
     }, []);
 
     const finishCreateBubble = useCallback((cameraView: ViewCoord) => {
-        const bubbleRect = getCreatingBubble();
+        const bubbleRect = getDraggingRect();
+        if (!bubbleRect) return;
         const { height, width } = rect2View(bubbleRect, cameraView);
         if (height < MINIMUN_RENDERED_BUBBLE_SIZE || width < MINIMUN_RENDERED_BUBBLE_SIZE) {
             console.error('생성하려는 버블의 크기가 너무 작습니다');
@@ -173,12 +175,7 @@ export const useBubbleGun = () => {
 
         setBubbleLabel(getBubbleLabel() + 1);
         createdBubblePathRef.current = '/';
-        setCreatingBubble({
-            top: 0,
-            left: 0,
-            height: 0,
-            width: 0,
-        });
+        setDraggingRect(undefined);
     }, []);
 
     const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {

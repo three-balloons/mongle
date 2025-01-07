@@ -5,19 +5,35 @@ import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
-import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
+import {
+    bubble2globalWithCurve,
+    curve2View,
+    getThicknessRatio,
+    rect2View,
+    view2Rect,
+} from '@/util/coordSys/conversion';
 import { getThemeMainColor, getThemeSecondColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { easeInOutCubic } from '@/util/transition/transtion';
 import { createContext, useEffect, useRef } from 'react';
 
 export type RendererContextProps = {
-    getCameraView: () => ViewCoord;
-    getMainLayer: () => HTMLCanvasElement | null;
+    /* canvas layer */
     mainLayerRef: React.RefObject<HTMLCanvasElement>;
     creationLayerRef: React.RefObject<HTMLCanvasElement>;
     movementLayerRef: React.RefObject<HTMLCanvasElement>;
     interfaceLayerRef: React.RefObject<HTMLCanvasElement>;
+
+    getCameraView: () => ViewCoord;
+    getMainLayer: () => HTMLCanvasElement | null;
+
+    /** created & edited objects */
+    getDraggingRect: () => Rect | undefined;
+    setDraggingRect: (rect: Rect | undefined) => void;
+    getEditingRect: () => Rect | undefined;
+    setEditingRect: (rect: Rect | undefined) => void;
+
+    /** renderers */
     bubbleTransitAnimation: (
         bubble: Bubble,
         startBubblePos: Vector2D,
@@ -29,7 +45,7 @@ export type RendererContextProps = {
     curveRenderer: (curve: Curve2D) => void;
     eraseRender: (curretPosition: Vector2D) => void;
     renderer: () => void;
-    createBubbleRender: (rect: Rect) => void;
+    draggingRectRender: (rect: Rect) => void;
     bubbleRender: (bubble: Bubble) => void;
     movementBubbleRender: () => void;
 };
@@ -46,6 +62,11 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     const { setMode } = useConfigStore((state) => state);
     const isShowBubbleRef = useRef<boolean>(isShowBubble);
     const ereaseRadiusRef = useRef(eraseConfig.radius);
+
+    const draggingRectRef = useRef<Rect | undefined>(undefined);
+    const editingRectRef = useRef<Rect | undefined>(undefined);
+
+    /** layers */
     const mainLayerRef = useRef<HTMLCanvasElement>(null);
     const creationLayerRef = useRef<HTMLCanvasElement>(null); // 그릴때 사용하는 레이어
     const movementLayerRef = useRef<HTMLCanvasElement>(null); // 이동할때 쓰이는 레이어
@@ -82,6 +103,22 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         return mainLayerRef.current;
     };
 
+    const setDraggingRect = (rect: Rect | undefined) => {
+        draggingRectRef.current = rect;
+    };
+
+    const getDraggingRect = () => {
+        return draggingRectRef.current;
+    };
+
+    const setEditingRect = (rect: Rect | undefined) => {
+        editingRectRef.current = rect;
+    };
+
+    const getEditingRect = () => {
+        return editingRectRef.current;
+    };
+
     const bubbleTransitAnimation = (
         bubble: Bubble,
         startBubblePos: Vector2D,
@@ -110,6 +147,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
         if (movementLayerRef.current) clearLayerRenderer(movementLayerRef.current);
         renderer();
 
+        editingRectRef.current && draggingRectRender(editingRectRef.current);
         movementBubbleRender();
     };
 
@@ -213,7 +251,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     /**
      * usage: create bubble drag
      */
-    const createBubbleRender = (rect: Rect) => {
+    const draggingRectRender = (rect: Rect) => {
         if (!creationLayerRef.current) return;
         const canvas: HTMLCanvasElement = creationLayerRef.current;
         const context = canvas.getContext('2d');
@@ -385,19 +423,23 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
     return (
         <RendererContext.Provider
             value={{
-                getCameraView,
-                getMainLayer,
                 mainLayerRef,
                 creationLayerRef,
                 movementLayerRef,
                 interfaceLayerRef,
+                getCameraView,
+                getMainLayer,
+                setDraggingRect,
+                getDraggingRect,
+                setEditingRect,
+                getEditingRect,
                 bubbleTransitAnimation,
                 reRender,
                 lineRenderer,
                 curveRenderer,
                 eraseRender,
                 renderer,
-                createBubbleRender,
+                draggingRectRender,
                 bubbleRender,
                 movementBubbleRender,
             }}

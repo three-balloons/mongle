@@ -13,15 +13,12 @@ type State = {
     workspaceId: string | undefined;
     bubbleLabel: number; // bubbleNum
     focusBubblePath: string | undefined;
-    creatingBubble: Rect;
     bubbleTreeRoot: BubbleTreeNode;
 };
 
 type Action = {
     setFocusBubblePath: (path: string | undefined) => void;
     getFocusBubblePath: () => string | undefined;
-    getCreatingBubble: () => Rect;
-    setCreatingBubble: (rect: Rect) => void;
     clearAllBubbles: () => void;
     getBubbles: (node?: BubbleTreeNode) => Array<Bubble>;
     addBubble: (bubble: Bubble, childrenPaths: Array<string>) => void;
@@ -58,17 +55,9 @@ export const useBubbleStore = createStore<Store>((set, get) => ({
         this: {} as Bubble,
         parent: undefined,
     },
-    creatingBubble: {
-        top: 0,
-        left: 0,
-        width: 0,
-        height: 0,
-    },
     workspaceId: undefined,
     getFocusBubblePath: () => get().focusBubblePath,
     setFocusBubblePath: (path) => set({ focusBubblePath: path }),
-    getCreatingBubble: () => get().creatingBubble,
-    setCreatingBubble: (rect) => set({ creatingBubble: rect }),
     clearAllBubbles: () =>
         set({
             bubbleTreeRoot: {

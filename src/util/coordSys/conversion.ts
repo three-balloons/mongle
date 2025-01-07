@@ -68,6 +68,19 @@ export const view2Point = (point: Vector2D, cameraView: ViewCoord): Vector2D => 
     };
 };
 
+export const view2Curve = (curve: Curve2D, cameraView: ViewCoord): Curve2D => {
+    const ret: Curve2D = curve.map((point) => {
+        const { left, top, width, height } = cameraView.pos;
+        const { x: canvasWidth, y: canvasHeight } = cameraView.size;
+        return {
+            isVisible: point.isVisible,
+            x: (point.x * width) / canvasWidth + left,
+            y: (point.y * height) / canvasHeight + top,
+        };
+    });
+    return ret;
+};
+
 export const view2Rect = (rect: Rect, cameraView: ViewCoord): Rect => {
     const { left, top, width, height } = cameraView.pos;
     const { x: canvasWidth, y: canvasHeight } = cameraView.size;
@@ -147,6 +160,21 @@ export const global2bubbleWithVector2D = (point: Vector2D, bubble: Bubble | unde
             y: ((point.y - bubble.top) * 200) / bubble.height - 100,
             x: ((point.x - bubble.left) * 200) / bubble.width - 100,
         };
+};
+
+/**
+ * point과 bubble은 좌표계가 같음 => point을 bubble의 좌표계 안으로 넣음
+ */
+export const global2bubbleWithCurve = (curve: Curve2D, bubble: Bubble | undefined): Curve2D => {
+    if (bubble == undefined) return curve;
+    else
+        return curve.map(({ x, y, isVisible }) => {
+            return {
+                y: ((y - bubble.top) * 200) / bubble.height - 100,
+                x: ((x - bubble.left) * 200) / bubble.width - 100,
+                isVisible: isVisible,
+            };
+        });
 };
 
 /**

@@ -65,10 +65,10 @@ export const isCollisionWithRectExceptIncluding = (rectA: Rect, rectB: Rect): bo
 
 export const isCollisionPointWithRect = (point: Vector2D, rect: Rect): boolean => {
     if (
-        rect.left < point.x &&
-        point.x < rect.left + rect.width &&
-        rect.top < point.y &&
-        point.y < rect.top + rect.height
+        rect.left <= point.x &&
+        point.x <= rect.left + rect.width &&
+        rect.top <= point.y &&
+        point.y <= rect.top + rect.height
     )
         return true;
     return false;

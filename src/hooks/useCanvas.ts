@@ -27,10 +27,10 @@ export const useCanvas = () => {
 
     const { getNewCurve } = useCurve();
     const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
-    const getCreatingBubble = useBubbleStore((state) => state.getCreatingBubble);
 
     /* tools */
-    const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender, createBubbleRender } = useRenderer();
+    const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender, draggingRectRender, getDraggingRect } =
+        useRenderer();
     const { startDrawing, draw, finishDrawing, cancelDrawing } = useDrawer();
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
@@ -103,7 +103,8 @@ export const useCanvas = () => {
             if (isCreateBubbleRef.current) {
                 createBubble(getCameraView(), currentPosition);
                 reRender();
-                createBubbleRender(getCreatingBubble());
+                const rect = getDraggingRect();
+                if (rect) draggingRectRender(rect);
             }
         } else if (modeRef.current == 'edit') {
             editCurve(getCameraView(), currentPosition);
