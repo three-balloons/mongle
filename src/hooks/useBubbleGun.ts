@@ -10,17 +10,6 @@ import { useCallback, useRef } from 'react';
 // import { useParams } from 'react-router-dom';
 import { useBubbleStore } from '@/store/bubbleStore';
 
-// const saveBubbleToServer = async (workspaceId: string, bubble: Bubble): Promise<Bubble | undefined> => {
-//     if (workspaceId === 'demo') return;
-//     try {
-//         console.log(bubble);
-//         const data = await createBubbleAPI({ workspaceId, bubble });
-//         return { ...data, nameSizeInCanvas: 0 };
-//     } catch (error) {
-//         console.error('Error fetching user data:', error);
-//     }
-// };
-
 /**
  * functions about bubble
  * features: create bubble, move bubble
@@ -107,7 +96,6 @@ export const useBubbleGun = () => {
         // bubble내의 좌표계로 전환
         const siblings = getDescendantBubbles(createdBubblePathRef.current);
         let isCollision = siblings.some((sibling) => isCollisionWithRectExceptIncluding(sibling as Rect, bubbleRect));
-        console.log(createdBubblePathRef.current);
         const currentRect = view2BubbleWithRect(bubbleRect, cameraView, createdBubblePathRef.current);
         if (
             createdBubblePathRef.current != '/' &&
@@ -118,7 +106,6 @@ export const useBubbleGun = () => {
         )
             isCollision = true;
         if (isCollision) {
-            console.log(currentRect);
             console.error('생성하려는 버블이 겹칩니다');
             return;
         }
@@ -277,12 +264,6 @@ export const useBubbleGun = () => {
                 .map((child) => {
                     return child.path;
                 });
-            console.log({
-                ...moveBubbleRef.current,
-                left: startMoveBubblePosRef.current?.x,
-                top: startMoveBubblePosRef.current?.y,
-            });
-            console.log(moveBubbleRef.current);
             //
 
             addBubbleUpdateLog(

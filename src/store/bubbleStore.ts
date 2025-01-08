@@ -416,15 +416,12 @@ export const useBubbleStore = createStore<Store>((set, get) => ({
             }
         };
 
-        // clearAllBubbles();
-
         const newBubbleTree: BubbleTreeNode = {
             name: workspaceName,
             children: [],
             this: {} as Bubble,
             parent: undefined,
         };
-        console.log('ddd');
         bubbleNum = 0;
         bubbles.forEach((bubble) => {
             if (bubble) {

@@ -274,7 +274,6 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children, height
             } else {
                 pos = easeInCubic(time / duration, middleViewPos, endViewPos);
             }
-            console.log('dddd');
             setCameraView({ ...cameraViewRef.current, pos: pos });
             if (time >= duration) {
                 // setCameraView({ ...cameraViewRef.current, pos: endViewPos });

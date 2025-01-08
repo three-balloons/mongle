@@ -2,7 +2,7 @@ import { useCurve } from '@/objects/curve/useCurve';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { BUBBLE_BORDER_WIDTH } from '@/util/constant';
-import { bubble2globalWithCurve, curve2View, global2bubbleWithCurve, view2Point } from '@/util/coordSys/conversion';
+import { bubble2globalWithCurve, global2bubbleWithCurve, view2Point } from '@/util/coordSys/conversion';
 import { isCollisionRectWithLine } from '@/util/shapes/collision';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { getTouchRegion, ResizeMode } from '@/util/shapes/getTouchRegion';
@@ -25,7 +25,6 @@ const resizeMapping: { [key in ResizeMode]?: ResizeMode } = {
 export const useEditor = () => {
     const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
     const view2BubbleWithRect = useBubbleStore((state) => state.view2BubbleWithRect);
-    const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
     const descendant2child = useBubbleStore((state) => state.descendant2child);
 
     const { setSelectedCurve, getSelectedCurve } = useCurve();
@@ -51,7 +50,6 @@ export const useEditor = () => {
         selectedBubbleRef.current = undefined;
         selectedRectRef.current = { top: 0, left: 0, width: 0, height: 0 };
         selectedStartPosRef.current = undefined;
-
         setSelectedCurve([]);
         setEditingRect(undefined);
     };
@@ -114,7 +112,7 @@ export const useEditor = () => {
         }
     }, []);
 
-    const editCurve = useCallback((cameraView: ViewCoord, pos: Vector2D) => {
+    const editCurve = (cameraView: ViewCoord, pos: Vector2D) => {
         const currentPosition = view2Point(
             {
                 x: pos.x,
@@ -386,9 +384,9 @@ export const useEditor = () => {
                     break;
             }
         }
-    }, []);
+    };
 
-    const finishEditing = useCallback((cameraView: ViewCoord) => {
+    const finishEditing = (cameraView: ViewCoord) => {
         if (selectModeRef.current == 'area') {
             // TODO 선택한 curve 고르기
             if (selectedBubbleRef.current) {
@@ -475,7 +473,7 @@ export const useEditor = () => {
         } else if (selectModeRef.current !== 'none') {
             selectModeRef.current = 'move';
         }
-    }, []);
+    };
 
-    return { startEditing, editCurve, finishEditing };
+    return { startEditing, editCurve, finishEditing, initEditing };
 };

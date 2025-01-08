@@ -5,13 +5,7 @@ import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
-import {
-    bubble2globalWithCurve,
-    curve2View,
-    getThicknessRatio,
-    rect2View,
-    view2Rect,
-} from '@/util/coordSys/conversion';
+import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
 import { getThemeMainColor, getThemeSecondColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { easeInOutCubic } from '@/util/transition/transtion';

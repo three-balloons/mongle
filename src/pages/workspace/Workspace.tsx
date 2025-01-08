@@ -54,7 +54,6 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     useEffect(() => {
         if (!bubbleQuery.data) return;
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
-        console.log('initBubbles');
         sendLogsToServer(true);
         addBubblesInNode(initBubbles);
     }, [initBubbles]);

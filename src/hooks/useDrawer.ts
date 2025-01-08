@@ -111,9 +111,6 @@ export const useDrawer = () => {
                 setBubbleLabel(getBubbleLabel() + 1);
                 addBubble(bubble, []);
                 addBubbleCreationLog(bubble, []); // TODO 버블을 벗어나는 영역에 그릴 경우 예외 발생
-                // if (workspaceId) {
-                //     saveBubbleToServer(workspaceId, bubble);
-                // }
                 setNewCurvePath('/' + bubbleName);
                 setFocusBubblePath('/' + bubbleName);
                 setNewCurve([

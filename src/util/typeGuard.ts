@@ -45,7 +45,6 @@ export const isCurve = (obj: unknown): obj is Curve => {
 
 export const isBubble = (obj: unknown): obj is Bubble => {
     return (
-        (obj as LogBubble).object !== undefined &&
         isRect(obj) &&
         typeof (obj as Bubble).path === 'string' &&
         typeof (obj as Bubble).name === 'string' &&

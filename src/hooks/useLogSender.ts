@@ -16,6 +16,10 @@ interface BubbleMutationProps {
     bubble: Bubble;
 }
 
+/**
+ *
+ * 서버에 데이터 전송 담당
+ */
 export const useLogSender = () => {
     const { setCheckpoint, clearAllLog } = useLogStore();
     const workspaceIdRef = useRef(useLogStore.getState().currentWorkspaceId);

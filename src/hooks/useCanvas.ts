@@ -34,13 +34,17 @@ export const useCanvas = () => {
     const { startDrawing, draw, finishDrawing, cancelDrawing } = useDrawer();
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
-    const { startEditing, editCurve, finishEditing } = useEditor();
+    const { startEditing, editCurve, finishEditing, initEditing } = useEditor();
     const { startCreateBubble, createBubble, finishCreateBubble, startMoveBubble, moveBubble, finishMoveBubble } =
         useBubbleGun();
 
     useEffect(() => {
         useConfigStore.subscribe(({ mode }) => {
             modeRef.current = mode;
+            if (modeRef.current !== 'edit') {
+                initEditing();
+                reRender();
+            }
         });
     }, []);
 

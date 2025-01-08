@@ -97,7 +97,6 @@ export const useEraser = () => {
                 }),
             );
         });
-        console.log(curveWithErasers);
 
         // 지워주면 됨 => log가 생기면 log씌움
         curveWithErasers.forEach(({ path, curve, eraser }) => {
