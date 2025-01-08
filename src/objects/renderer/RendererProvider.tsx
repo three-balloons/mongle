@@ -48,10 +48,11 @@ export const RendererContext = createContext<RendererContextProps | undefined>(u
 
 type RendererProviderProps = {
     children: React.ReactNode;
+    isReadyToShow: boolean;
     theme?: Theme;
 };
 
-export const RendererProvider: React.FC<RendererProviderProps> = ({ children, theme = '하늘' }) => {
+export const RendererProvider: React.FC<RendererProviderProps> = ({ children, isReadyToShow, theme = '하늘' }) => {
     const { isShowBubble, eraseConfig } = useConfigStore((state) => state);
     const { setMode } = useConfigStore((state) => state);
     const isShowBubbleRef = useRef<boolean>(isShowBubble);
@@ -92,6 +93,10 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, th
             ereaseRadiusRef.current = eraseConfig.radius;
         });
     }, []);
+
+    useEffect(() => {
+        if (isReadyToShow) reRender();
+    }, [isReadyToShow]);
 
     const getMainLayer = () => {
         return mainLayerRef.current;

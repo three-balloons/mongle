@@ -1,11 +1,11 @@
 import { useLog } from '@/objects/log/useLog';
 import { useRenderer } from '@/objects/renderer/useRenderer';
-import { useConfigStore } from '@/store/configStore';
+// import { useConfigStore } from '@/store/configStore';
 import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
 import { global2bubbleWithRect, rect2View, view2Point } from '@/util/coordSys/conversion';
-import { getParentPath } from '@/util/path/path';
-import { isCollisionWithRect, isCollisionWithRectExceptIncluding } from '@/util/shapes/collision';
-import { subVector2D } from '@/util/shapes/operator';
+// import { getParentPath } from '@/util/path/path';
+import { /*isCollisionWithRect, */ isCollisionWithRectExceptIncluding } from '@/util/shapes/collision';
+// import { subVector2D } from '@/util/shapes/operator';
 import { useCallback, useRef } from 'react';
 // import { useParams } from 'react-router-dom';
 import { useBubbleStore } from '@/store/bubbleStore';
@@ -18,31 +18,31 @@ export const useBubbleGun = () => {
     const createdBubblePosRef = useRef<Vector2D | undefined>();
     const createdBubblePathRef = useRef<string>('/');
     // const bubbleIdRef = useRef<number>(0);
-    const startMoveBubblePosRef = useRef<Vector2D | undefined>();
-    const moveBubbleRef = useRef<Bubble | undefined>();
-    const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
+    // const startMoveBubblePosRef = useRef<Vector2D | undefined>();
+    // const moveBubbleRef = useRef<Bubble | undefined>();
+    // const moveBubbleOffsetRef = useRef<Vector2D | undefined>();
     const setFocusBubblePath = useBubbleStore((state) => state.setFocusBubblePath);
 
     const addBubble = useBubbleStore((state) => state.addBubble);
 
-    const getBubbles = useBubbleStore((state) => state.getBubbles);
-    const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
+    // const getBubbles = useBubbleStore((state) => state.getBubbles);
+    // const getRatioWithCamera = useBubbleStore((state) => state.getRatioWithCamera);
     const findBubble = useBubbleStore((state) => state.findBubble);
     const setBubbleLabel = useBubbleStore((state) => state.setBubbleLabel);
     const getBubbleLabel = useBubbleStore((state) => state.getBubbleLabel);
     const descendant2child = useBubbleStore((state) => state.descendant2child);
-    const view2BubbleWithVector2D = useBubbleStore((state) => state.view2BubbleWithVector2D);
+    // const view2BubbleWithVector2D = useBubbleStore((state) => state.view2BubbleWithVector2D);
     const view2BubbleWithRect = useBubbleStore((state) => state.view2BubbleWithRect);
     const getChildBubbles = useBubbleStore((state) => state.getChildBubbles);
     const getDescendantBubbles = useBubbleStore((state) => state.getDescendantBubbles);
-    const { bubbleTransitAnimation, reRender } = useRenderer();
+    const { /*bubbleTransitAnimation, */ reRender } = useRenderer();
     // const { workspaceId } = useParams<{ workspaceId: string }>();
 
     const { setDraggingRect, getDraggingRect } = useRenderer();
     /* logs */
-    const { commitLog, addBubbleCreationLog, addBubbleUpdateLog } = useLog();
+    const { commitLog, addBubbleCreationLog /*addBubbleUpdateLog*/ } = useLog();
 
-    const { isShowAnimation } = useConfigStore((state) => state);
+    // const { isShowAnimation } = useConfigStore((state) => state);
     const startCreateBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, path: string) => {
         const pos = view2Point(
             {
@@ -165,124 +165,125 @@ export const useBubbleGun = () => {
         setDraggingRect(undefined);
     }, []);
 
-    const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
-        let pos = view2Point(
-            {
-                x: currentPosition.x,
-                y: currentPosition.y,
-            },
-            cameraView,
-        );
-        if (pos == undefined) return;
+    // unused
+    // const startMoveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D, bubble: Bubble) => {
+    //     let pos = view2Point(
+    //         {
+    //             x: currentPosition.x,
+    //             y: currentPosition.y,
+    //         },
+    //         cameraView,
+    //     );
+    //     if (pos == undefined) return;
 
-        const parentPath = getParentPath(bubble.path);
-        if (parentPath) {
-            pos = view2BubbleWithVector2D(pos, cameraView, parentPath);
-        }
-        moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
-        startMoveBubblePosRef.current = subVector2D(pos, moveBubbleOffsetRef.current);
-        moveBubbleRef.current = bubble;
-    }, []);
+    //     const parentPath = getParentPath(bubble.path);
+    //     if (parentPath) {
+    //         pos = view2BubbleWithVector2D(pos, cameraView, parentPath);
+    //     }
+    //     moveBubbleOffsetRef.current = subVector2D(pos, { y: bubble.top, x: bubble.left });
+    //     startMoveBubblePosRef.current = subVector2D(pos, moveBubbleOffsetRef.current);
+    //     moveBubbleRef.current = bubble;
+    // }, []);
 
-    const moveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
-        let currentPos = view2Point(
-            {
-                x: currentPosition.x,
-                y: currentPosition.y,
-            },
-            cameraView,
-        );
-        if (!moveBubbleRef.current) return;
+    // const moveBubble = useCallback((cameraView: ViewCoord, currentPosition: Vector2D) => {
+    //     let currentPos = view2Point(
+    //         {
+    //             x: currentPosition.x,
+    //             y: currentPosition.y,
+    //         },
+    //         cameraView,
+    //     );
+    //     if (!moveBubbleRef.current) return;
 
-        const parentPath = getParentPath(moveBubbleRef.current.path);
-        if (parentPath) {
-            currentPos = view2BubbleWithVector2D(currentPos, cameraView, parentPath);
-            const { x, y } = subVector2D(currentPos, moveBubbleOffsetRef.current as Vector2D);
-            if (moveBubbleOffsetRef.current) {
-                moveBubbleRef.current.top = y;
-                moveBubbleRef.current.left = x;
-            }
-        }
-    }, []);
+    //     const parentPath = getParentPath(moveBubbleRef.current.path);
+    //     if (parentPath) {
+    //         currentPos = view2BubbleWithVector2D(currentPos, cameraView, parentPath);
+    //         const { x, y } = subVector2D(currentPos, moveBubbleOffsetRef.current as Vector2D);
+    //         if (moveBubbleOffsetRef.current) {
+    //             moveBubbleRef.current.top = y;
+    //             moveBubbleRef.current.left = x;
+    //         }
+    //     }
+    // }, []);
 
-    const finishMoveBubble = useCallback((cameraView: ViewCoord) => {
-        if (!moveBubbleRef.current) return;
-        const bubbleView = descendant2child(moveBubbleRef.current, cameraView.path);
-        if (bubbleView == undefined) return;
-        const prevChildrenPaths = getChildBubbles(moveBubbleRef.current.path).map((child) => {
-            return child.path;
-        });
-        const moveRect: Rect = {
-            height: bubbleView.height,
-            width: bubbleView.width,
-            top: bubbleView.top,
-            left: bubbleView.left,
-        };
-        const parentPath = getParentPath(moveBubbleRef.current.path) ?? '/';
-        const isCanMove = !getBubbles().find((bubble) => {
-            if (!bubble.isVisible) return false;
-            if (bubble == moveBubbleRef.current) return false;
-            if (bubble.path == parentPath) return false;
-            const ratio = getRatioWithCamera(bubble, cameraView);
-            if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
-                return false;
-            }
-            const bubbleView = descendant2child(bubble, cameraView.path);
-            if (bubbleView == undefined) return false;
-            return isCollisionWithRect(moveRect, {
-                height: bubbleView.height,
-                width: bubbleView.width,
-                top: bubbleView.top,
-                left: bubbleView.left,
-            });
-        });
-        if (!isCanMove && startMoveBubblePosRef.current) {
-            if (isShowAnimation)
-                bubbleTransitAnimation(
-                    moveBubbleRef.current,
-                    { x: moveBubbleRef.current.left, y: moveBubbleRef.current.top },
-                    { x: startMoveBubblePosRef.current.x, y: startMoveBubblePosRef.current.y },
-                );
-            else {
-                moveBubbleRef.current.left = startMoveBubblePosRef.current.x;
-                moveBubbleRef.current.top = startMoveBubblePosRef.current.y;
-            }
-        } else {
-            // 이동 성공, 로그 추가
-            const bubble = moveBubbleRef.current;
-            const childrenPaths = getChildBubbles(bubble.path)
-                .filter((child) => {
-                    // isInside 유틸함수 만들기
-                    if (
-                        bubble.top < child.top &&
-                        bubble.left < child.left &&
-                        child.top + child.height < bubble.top + bubble.height &&
-                        child.left + child.width < bubble.left + bubble.width
-                    )
-                        return true;
-                })
-                .map((child) => {
-                    return child.path;
-                });
-            //
+    // const finishMoveBubble = useCallback((cameraView: ViewCoord) => {
+    //     if (!moveBubbleRef.current) return;
+    //     const bubbleView = descendant2child(moveBubbleRef.current, cameraView.path);
+    //     if (bubbleView == undefined) return;
+    //     const prevChildrenPaths = getChildBubbles(moveBubbleRef.current.path).map((child) => {
+    //         return child.path;
+    //     });
+    //     const moveRect: Rect = {
+    //         height: bubbleView.height,
+    //         width: bubbleView.width,
+    //         top: bubbleView.top,
+    //         left: bubbleView.left,
+    //     };
+    //     const parentPath = getParentPath(moveBubbleRef.current.path) ?? '/';
+    //     const isCanMove = !getBubbles().find((bubble) => {
+    //         if (!bubble.isVisible) return false;
+    //         if (bubble == moveBubbleRef.current) return false;
+    //         if (bubble.path == parentPath) return false;
+    //         const ratio = getRatioWithCamera(bubble, cameraView);
+    //         if (ratio && ratio * cameraView.size.x < MINIMUN_RENDERED_BUBBLE_SIZE) {
+    //             return false;
+    //         }
+    //         const bubbleView = descendant2child(bubble, cameraView.path);
+    //         if (bubbleView == undefined) return false;
+    //         return isCollisionWithRect(moveRect, {
+    //             height: bubbleView.height,
+    //             width: bubbleView.width,
+    //             top: bubbleView.top,
+    //             left: bubbleView.left,
+    //         });
+    //     });
+    //     if (!isCanMove && startMoveBubblePosRef.current) {
+    //         if (isShowAnimation)
+    //             bubbleTransitAnimation(
+    //                 moveBubbleRef.current,
+    //                 { x: moveBubbleRef.current.left, y: moveBubbleRef.current.top },
+    //                 { x: startMoveBubblePosRef.current.x, y: startMoveBubblePosRef.current.y },
+    //             );
+    //         else {
+    //             moveBubbleRef.current.left = startMoveBubblePosRef.current.x;
+    //             moveBubbleRef.current.top = startMoveBubblePosRef.current.y;
+    //         }
+    //     } else {
+    //         // 이동 성공, 로그 추가
+    //         const bubble = moveBubbleRef.current;
+    //         const childrenPaths = getChildBubbles(bubble.path)
+    //             .filter((child) => {
+    //                 // isInside 유틸함수 만들기
+    //                 if (
+    //                     bubble.top < child.top &&
+    //                     bubble.left < child.left &&
+    //                     child.top + child.height < bubble.top + bubble.height &&
+    //                     child.left + child.width < bubble.left + bubble.width
+    //                 )
+    //                     return true;
+    //             })
+    //             .map((child) => {
+    //                 return child.path;
+    //             });
+    //         //
 
-            addBubbleUpdateLog(
-                { ...moveBubbleRef.current, ...startMoveBubblePosRef.current },
-                moveBubbleRef.current,
-                prevChildrenPaths,
-                childrenPaths,
-            );
-            commitLog();
-            moveBubbleRef.current;
-        }
-    }, []);
+    //         addBubbleUpdateLog(
+    //             { ...moveBubbleRef.current, ...startMoveBubblePosRef.current },
+    //             moveBubbleRef.current,
+    //             prevChildrenPaths,
+    //             childrenPaths,
+    //         );
+    //         commitLog();
+    //         moveBubbleRef.current;
+    //     }
+    // }, []);
 
     return {
         startCreateBubble,
         createBubble,
         finishCreateBubble,
-        startMoveBubble,
-        moveBubble,
-        finishMoveBubble,
+        // startMoveBubble,
+        // moveBubble,
+        // finishMoveBubble,
     };
 };

@@ -22,7 +22,7 @@ export const useCanvas = () => {
     const isPaintingRef = useRef(false);
     const isMoveRef = useRef(false);
     const isCreateBubbleRef = useRef(false);
-    const isMoveBubbleRef = useRef(false);
+    // const isMoveBubbleRef = useRef(false);
     const isEditRef = useRef(false);
 
     const { getNewCurve } = useCurve();
@@ -35,7 +35,7 @@ export const useCanvas = () => {
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
     const { startEditing, editCurve, finishEditing, initEditing } = useEditor();
-    const { startCreateBubble, createBubble, finishCreateBubble, startMoveBubble, moveBubble, finishMoveBubble } =
+    const { startCreateBubble, createBubble, finishCreateBubble /*,startMoveBubble, moveBubble, finishMoveBubble*/ } =
         useBubbleGun();
 
     useEffect(() => {
@@ -73,13 +73,14 @@ export const useCanvas = () => {
                 } else if (region === 'border') {
                     reRender();
                 } else {
-                    if (region == 'inside' && bubble && bubble.isBubblized == true) {
-                        isMoveBubbleRef.current = true;
-                        startMoveBubble(getCameraView(), currentPosition, bubble);
-                    } else {
-                        isCreateBubbleRef.current = true;
-                        startCreateBubble(getCameraView(), currentPosition, bubble?.path ?? '/');
-                    }
+                    // isBubblized is always ture in this business logic
+                    // if (region == 'inside' && bubble && bubble.isBubblized == true) {
+                    //     isMoveBubbleRef.current = true;
+                    //     startMoveBubble(getCameraView(), currentPosition, bubble);
+                    // } else {
+                    isCreateBubbleRef.current = true;
+                    startCreateBubble(getCameraView(), currentPosition, bubble?.path ?? '/');
+                    // }
                 }
             }
         } else if (modeRef.current == 'edit') {
@@ -100,10 +101,10 @@ export const useCanvas = () => {
             reRender();
             eraseRender(currentPosition);
         } else if (modeRef.current == 'bubble') {
-            if (isMoveBubbleRef.current) {
-                moveBubble(getCameraView(), currentPosition);
-                reRender();
-            }
+            // if (isMoveBubbleRef.current) {
+            //     moveBubble(getCameraView(), currentPosition);
+            //     reRender();
+            // }
             if (isCreateBubbleRef.current) {
                 createBubble(getCameraView(), currentPosition);
                 reRender();
@@ -134,11 +135,11 @@ export const useCanvas = () => {
                 finishCreateBubble(getCameraView());
                 reRender();
             }
-            if (isMoveBubbleRef.current) {
-                isMoveBubbleRef.current = false;
-                finishMoveBubble(getCameraView());
-                reRender();
-            }
+            // if (isMoveBubbleRef.current) {
+            //     isMoveBubbleRef.current = false;
+            //     finishMoveBubble(getCameraView());
+            //     reRender();
+            // }
         } else if (modeRef.current == 'edit') {
             isEditRef.current = false;
             finishEditing(getCameraView());

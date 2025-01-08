@@ -6,6 +6,7 @@ import { bubble2globalWithCurve, global2bubbleWithCurve, view2Point } from '@/ut
 import { isCollisionRectWithLine } from '@/util/shapes/collision';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { getTouchRegion, ResizeMode } from '@/util/shapes/getTouchRegion';
+import { subVector2D } from '@/util/shapes/operator';
 
 import { useCallback, useRef } from 'react';
 
@@ -36,13 +37,15 @@ export const useEditor = () => {
     // 선택 영역을 나타냄
     const selectedRectRef = useRef<Rect>({ top: 0, left: 0, width: 0, height: 0 });
 
-    // 사이즈 조정 전의 영역
+    // 사이즈 조정 전의 영역 (move일때도 사용)
     const beforeResizeRectRef = useRef<Rect>({ top: 0, left: 0, width: 0, height: 0 });
 
     const selectModeRef = useRef<'area' | 'move' | 'resize' | 'none'>('none');
     // 움직이는 영역
     const resizeModeRef = useRef<ResizeMode | undefined>(undefined);
     const isFlipRef = useRef<{ x: boolean; y: boolean }>({ x: false, y: false });
+
+    const moveRectOffsetRef = useRef<Vector2D | undefined>();
 
     const initEditing = () => {
         selectModeRef.current = 'none';
@@ -78,6 +81,8 @@ export const useEditor = () => {
                         initEditing();
                         break;
                     case 'inside':
+                        beforeResizeRectRef.current = rect;
+                        moveRectOffsetRef.current = subVector2D(pos, { y: rect.top, x: rect.left });
                         break;
                     default:
                         if (resizeMapping[region]) {
@@ -122,11 +127,7 @@ export const useEditor = () => {
         );
         if (selectModeRef.current === 'area') {
             // TODO 영역이 버블 밖을 넘어가는지 확인 => 충돌 검사 하기
-            if (
-                selectedStartPosRef.current &&
-                (selectedStartPosRef.current.x != currentPosition.x ||
-                    selectedStartPosRef.current.y != currentPosition.y)
-            ) {
+            if (selectedStartPosRef.current) {
                 const { x, y } = selectedStartPosRef.current;
 
                 const currentRect: Rect = {
@@ -136,6 +137,19 @@ export const useEditor = () => {
                     width: Math.abs(currentPosition.x - x),
                 };
                 selectedRectRef.current = currentRect;
+                setDraggingRect(currentRect);
+                draggingRectRender(currentRect);
+            }
+        } else if (selectModeRef.current == 'move') {
+            if (selectedStartPosRef.current && moveRectOffsetRef.current) {
+                const { x, y } = subVector2D(currentPosition, moveRectOffsetRef.current);
+
+                const currentRect: Rect = {
+                    top: y,
+                    left: x,
+                    height: beforeResizeRectRef.current.height,
+                    width: beforeResizeRectRef.current.width,
+                };
                 setDraggingRect(currentRect);
                 draggingRectRender(currentRect);
             }
@@ -425,7 +439,8 @@ export const useEditor = () => {
                         3 * BUBBLE_BORDER_WIDTH,
                     ),
                 );
-                selectModeRef.current = 'move';
+                if (getSelectedCurve().length) selectModeRef.current = 'move';
+                else selectModeRef.current = 'none';
             } else {
                 // 영역 안에 버블이 존재하는지 확인
                 initEditing();
@@ -470,7 +485,28 @@ export const useEditor = () => {
             }
 
             if (rect) selectModeRef.current = 'move';
+        } else if (selectModeRef.current == 'move') {
+            const preRect = getDraggingRect();
+
+            if (moveRectOffsetRef.current && selectedBubbleRef.current && preRect) {
+                const bubbleView = descendant2child(selectedBubbleRef.current, cameraView.path);
+                const movementX = preRect.left - beforeResizeRectRef.current.left;
+                const movementY = preRect.top - beforeResizeRectRef.current.top;
+                console.log('movmmm', preRect);
+                getSelectedCurve().forEach((curve) => {
+                    curve.position = global2bubbleWithCurve(
+                        bubble2globalWithCurve(curve.position, bubbleView).map(({ x, y, isVisible }) => ({
+                            x: x + movementX,
+                            y: y + movementY,
+                            isVisible: isVisible,
+                        })),
+                        bubbleView,
+                    );
+                });
+                setEditingRect(preRect);
+            }
         } else if (selectModeRef.current !== 'none') {
+            // default case
             selectModeRef.current = 'move';
         }
     };

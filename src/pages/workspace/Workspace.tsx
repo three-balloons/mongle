@@ -26,8 +26,10 @@ type WorkspaceProps = {
 };
 export const Workspace = ({ workspaceId }: WorkspaceProps) => {
     const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth - 150, height: window.innerHeight - 100 });
+    const [isReadyToShow, setIsReadyToShow] = useState(false);
     const [isShowExplorer, setIsShowExplorer] = useState(true);
     const { isDemo, needTutorial } = useAuthStore();
+
     const setCurrentWorkspaceId = useLogStore((state) => state.setCurrentWorkspaceId);
     const addBubblesInNode = useBubbleStore((state) => state.addBubblesInNode);
     const { sendLogsToServer } = useLogSender();
@@ -56,6 +58,7 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
         if (bubbleQuery.isPending || bubbleQuery.isLoading) return;
         sendLogsToServer(true);
         addBubblesInNode(initBubbles);
+        setIsReadyToShow(true);
     }, [initBubbles]);
 
     useEffect(() => {
@@ -113,7 +116,7 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
                 <CurveProvider sensitivity={2}>
                     <CameraProvider width={canvasSize.width} height={canvasSize.height}>
                         <LogProvider>
-                            <RendererProvider theme={workspace.theme}>
+                            <RendererProvider theme={workspace.theme} isReadyToShow={isReadyToShow}>
                                 <div className={style.header}>
                                     <BackIcon
                                         className={style.icon}
