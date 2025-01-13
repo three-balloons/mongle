@@ -1,5 +1,17 @@
-// data 가공 형태 논의하기
-// child를 포함한 json형태? bubble list형태?
+import { OFF_SCREEN_HEIGHT, OFF_SCREEN_WIDTH } from '@/util/constant';
+
+const offCanvas = new OffscreenCanvas(OFF_SCREEN_WIDTH, OFF_SCREEN_HEIGHT);
+const imgElem = new Image();
+imgElem.src = 'https://studiomeal.com/wp-content/themes/studiomeal/images/dot/sunface.png';
+imgElem.addEventListener(
+    'load',
+    () => {
+        // off-screen 캔버스에 이미지를 그려둔다
+        const offContext = offCanvas.getContext('2d');
+        offContext?.drawImage(imgElem, 0, 0, OFF_SCREEN_WIDTH, OFF_SCREEN_HEIGHT);
+    },
+    { once: true },
+);
 
 export const mockedGetBubble = {
     code: 'OK',
@@ -25,6 +37,18 @@ export const mockedGetBubble = {
                         color: '#000000',
                         thickness: 5,
                     },
+                },
+            ],
+            pictures: [
+                {
+                    top: -50,
+                    left: -50,
+                    width: 50,
+                    height: 50,
+                    offScreen: offCanvas,
+                    image: imgElem,
+                    isFlippedX: false,
+                    isFlippedy: false,
                 },
             ],
         },
