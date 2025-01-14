@@ -7,12 +7,42 @@ import { ReactComponent as HandIcon } from '@/assets/icon/hand.svg';
 import { ReactComponent as EraserIcon } from '@/assets/icon/eraser.svg';
 import { ReactComponent as AddBubbleIcon } from '@/assets/icon/add-rectangle.svg';
 import { ReactComponent as SelectIcon } from '@/assets/icon/select.svg';
+import { ReactComponent as PictureIcon } from '@/assets/icon/picture.svg';
 import { EraserModal } from '@/components/select/toolSelect/EraserModal';
 import { useTutorial } from '@/components/tutorial/useTutorial';
+import { ChangeEvent, useRef } from 'react';
+import { OFF_SCREEN_HEIGHT, OFF_SCREEN_WIDTH } from '@/util/constant';
+import { usePicture } from '@/objects/picture/usePicture';
 
 export const ToolSelect = () => {
     const { setMode, mode } = useConfigStore((state) => state);
     const { addBubbleIconRef, penIconRef, eraserIconRef, handIconRef } = useTutorial();
+    const { setCreatingPicture } = usePicture();
+    const pictureInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePictureButtonClick = () => {
+        if (!pictureInputRef.current) return;
+        pictureInputRef.current.click();
+    };
+
+    const hanldeAddPicture = ({ target }: ChangeEvent<HTMLInputElement>) => {
+        const file = target?.files?.[0];
+        if (file === undefined) return;
+        const image = new Image();
+        const imageUrl = URL.createObjectURL(file);
+        image.src = imageUrl;
+        const offCanvas = new OffscreenCanvas(OFF_SCREEN_WIDTH, OFF_SCREEN_HEIGHT);
+        image.addEventListener(
+            'load',
+            () => {
+                const offContext = offCanvas.getContext('2d');
+                offContext?.drawImage(image, 0, 0, OFF_SCREEN_WIDTH, OFF_SCREEN_HEIGHT);
+            },
+            { once: true },
+        );
+        setCreatingPicture(image, offCanvas);
+    };
+
     return (
         <Select className={style.default} initialOpen disableClose>
             <Select.Content className={style.content}>
@@ -68,6 +98,24 @@ export const ToolSelect = () => {
                     }}
                 >
                     <SelectIcon className={style.icon} />
+                </Select.Option>
+                <Select.Option
+                    className={`${style.option} ${mode === 'picture' ? style.activeOption : ''}`}
+                    value="picture"
+                    onSelect={() => {
+                        handlePictureButtonClick();
+                        setMode('picture');
+                    }}
+                >
+                    <PictureIcon className={style.icon} />
+                    <input
+                        ref={pictureInputRef}
+                        type="file"
+                        id="file-input"
+                        style={{ display: 'none' }}
+                        accept="image/*"
+                        onChange={hanldeAddPicture}
+                    />
                 </Select.Option>
             </Select.Content>
         </Select>

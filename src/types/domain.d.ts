@@ -10,10 +10,10 @@ interface Curve {
 }
 
 interface Picture extends Rect {
-    offScreen: OffscreenCanvas | undefined;
+    offScreen: OffscreenCanvas;
     image: HTMLImageElement;
     isFlippedX: boolean;
-    isFlippedy: boolean;
+    isFlippedY: boolean;
 }
 
 interface Bubble extends Rect {
