@@ -1,6 +1,6 @@
 // return rectagle that surrounds the curve
-export const curve2Rect = (points: Curve2D, offset: number = 0): Rect => {
-    if (points.length == 0) return { top: 0, left: 0, height: 0, width: 0 };
+export const curve2Rect = (points: Curve2D, offset: number = 0): Rect | undefined => {
+    if (points.length == 0) return undefined;
     let top = points[0].y;
     let bottom = points[0].y;
     let left = points[0].x;

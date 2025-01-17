@@ -37,7 +37,7 @@ export const useCanvas = () => {
     const { startDrawing, draw, finishDrawing, cancelDrawing } = useDrawer();
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
-    const { startEditing, editCurve, finishEditing, initEditing } = useEditor();
+    const { startEditing, editing, finishEditing, initEditing } = useEditor();
     const { startCreateBubble, createBubble, finishCreateBubble /*,startMoveBubble, moveBubble, finishMoveBubble*/ } =
         useBubbleGun();
     const { startCreatePicture, createPicture, finishCreatePicture } = useCreatePicture();
@@ -119,7 +119,7 @@ export const useCanvas = () => {
                 if (rect) draggingRectRender(rect);
             }
         } else if (modeRef.current == 'edit') {
-            editCurve(getCameraView(), currentPosition);
+            editing(getCameraView(), currentPosition);
         } else if (modeRef.current == 'picture') {
             if (isCreatePictureRef.current) {
                 createPicture(getCameraView(), currentPosition);
