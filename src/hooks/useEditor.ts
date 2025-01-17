@@ -3,7 +3,12 @@ import { usePicture } from '@/objects/picture/usePicture';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { BUBBLE_BORDER_WIDTH } from '@/util/constant';
-import { bubble2globalWithCurve, global2bubbleWithCurve, view2Point } from '@/util/coordSys/conversion';
+import {
+    bubble2globalWithCurve,
+    bubble2globalWithRect,
+    global2bubbleWithCurve,
+    view2Point,
+} from '@/util/coordSys/conversion';
 import { isCollisionRectWithLine, isCollisionWithRect } from '@/util/shapes/collision';
 import { curve2Rect } from '@/util/shapes/conversion';
 import { getTouchRegion, ResizeMode } from '@/util/shapes/getTouchRegion';
@@ -444,32 +449,32 @@ export const useEditor = () => {
                         return false;
                     }),
                 ]);
-                // console.log(selectedPicture, rect, 'selectedPictureRef.current');
                 const bubbleView = descendant2child(selectedBubbleRef.current, cameraView.path);
                 let coveredRect = curve2Rect(
                     getSelectedCurve().flatMap((curve) => bubble2globalWithCurve(curve.position, bubbleView)),
-                    // 3 * BUBBLE_BORDER_WIDTH,
                 );
                 const selectedPictures = getSelectedPictures();
                 if (!coveredRect && selectedPictures.length > 0) coveredRect = selectedPictures[0] as Rect;
                 if (coveredRect) {
-                    for (const picutre of selectedPictures) {
-                        const newLeft = Math.min(coveredRect.left, picutre.left);
-                        const newTop = Math.min(coveredRect.top, picutre.top);
+                    for (const p of selectedPictures) {
+                        const picture = bubble2globalWithRect(p, bubbleView);
+
+                        const newLeft = Math.min(coveredRect.left, picture.left);
+                        const newTop = Math.min(coveredRect.top, picture.top);
                         coveredRect = {
                             left: newLeft,
                             top: newTop,
                             width:
-                                Math.max(coveredRect.left + coveredRect.width, picutre.left + picutre.width) - newLeft,
+                                Math.max(coveredRect.left + coveredRect.width, picture.left + picture.width) - newLeft,
                             height:
-                                Math.max(coveredRect.top + coveredRect.height, picutre.top + picutre.height) - newTop,
+                                Math.max(coveredRect.top + coveredRect.height, picture.top + picture.height) - newTop,
                         };
                     }
                     setEditingRect({
-                        top: coveredRect.top - BUBBLE_BORDER_WIDTH,
-                        left: coveredRect.left - BUBBLE_BORDER_WIDTH,
-                        width: coveredRect.width + 2 * BUBBLE_BORDER_WIDTH,
-                        height: coveredRect.height + 2 * BUBBLE_BORDER_WIDTH,
+                        top: coveredRect.top - 3 * BUBBLE_BORDER_WIDTH,
+                        left: coveredRect.left - 3 * BUBBLE_BORDER_WIDTH,
+                        width: coveredRect.width + 6 * BUBBLE_BORDER_WIDTH,
+                        height: coveredRect.height + 6 * BUBBLE_BORDER_WIDTH,
                     });
                 }
 
@@ -483,8 +488,6 @@ export const useEditor = () => {
             selectedRectRef.current = { top: 0, left: 0, width: 0, height: 0 };
             setDraggingRect(undefined);
         } else if (selectModeRef.current == 'resize') {
-            // TODO 뒤집히는것도 고려할 것
-
             const rect = getDraggingRect();
             if (rect && selectedBubbleRef.current && beforeResizeRectRef.current) {
                 const { left, top, width, height } = beforeResizeRectRef.current;
@@ -532,7 +535,6 @@ export const useEditor = () => {
                 const bubbleView = descendant2child(selectedBubbleRef.current, cameraView.path);
                 const movementX = preRect.left - beforeResizeRectRef.current.left;
                 const movementY = preRect.top - beforeResizeRectRef.current.top;
-                console.log('movmmm', preRect);
                 getSelectedCurve().forEach((curve) => {
                     curve.position = global2bubbleWithCurve(
                         bubble2globalWithCurve(curve.position, bubbleView).map(({ x, y, isVisible }) => ({

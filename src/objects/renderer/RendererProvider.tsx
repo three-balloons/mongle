@@ -388,12 +388,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, is
             });
             context.shadowBlur = 0;
             if (bubble.pictures) {
-                getSelectedPictures;
                 bubble.pictures.forEach((picture) => {
-                    console.log(
-                        getSelectedPictures().find((pic) => pic == picture),
-                        'test',
-                    );
                     if (getSelectedPictures().find((pic) => pic == picture)) context.shadowBlur = 5;
                     else context.shadowBlur = 0;
                     const position = rect2View(bubble2globalWithRect(picture as Rect, bubbleView), cameraView);
