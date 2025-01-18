@@ -10,6 +10,11 @@ type APIExceptionCode =
     | 'NOT_MATCH_PASSWORD'
     | 'SIGN_UP_NEEDED'
     | 'MEMBER_EXISTS'
-    | 'USER_NOT_FOUND';
+    | 'USER_NOT_FOUND'
+    | 'WORKSPACE_NOT_FOUND'
+    | 'NOT_SUPPORTED'
+    | 'FILE_TOO_LARGE'
+    | 'FILE_NOT_FOUND'
+    | 'FORBIDDEN';
 
 type Provider = 'KAKAO' | 'GOOGLE';

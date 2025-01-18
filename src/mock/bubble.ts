@@ -41,14 +41,15 @@ export const mockedGetBubble = {
             ],
             pictures: [
                 {
-                    top: -50,
-                    left: -50,
-                    width: 50,
+                    id: 'eb9d9vd9d-3b7d-4bad-3bdd-2b0d7d3dcb6d',
+                    left: 10,
+                    top: 20,
+                    width: 30,
                     height: 50,
-                    offScreen: offCanvas,
-                    image: imgElem,
-                    isFlippedX: false,
-                    isFlippedy: false,
+                    fid: '25s3g92-232dvcd-343434dfs',
+                    isFlippedX: true,
+                    isFlippedY: false,
+                    angle: 0,
                 },
             ],
         },
@@ -74,6 +75,7 @@ export const mockedGetBubble = {
                     },
                 },
             ],
+            // pictures: [],
         },
     ],
 };
@@ -97,6 +99,7 @@ export const mockedCreateBubble = {
         isVisible: true,
         isBubblized: true,
         curves: [],
+        pictures: [],
     },
 };
 
