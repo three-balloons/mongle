@@ -8,13 +8,15 @@ import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useEditor } from '@/hooks/useEditor';
 import { useHand } from '@/hooks/useHand';
 import { useBubbleStore } from '@/store/bubbleStore';
+import { useCreatePicture } from '@/hooks/useCreatePicture';
 
 /**
  * store canvas infromation and command functions
  */
 // control logic
 export const useCanvas = () => {
-    const { mode } = useConfigStore((state) => state);
+    const mode = useConfigStore((state) => state.mode);
+    const setMode = useConfigStore((state) => state.setMode);
 
     /* state variable */
     const modeRef = useRef<ControlMode>(mode);
@@ -22,6 +24,7 @@ export const useCanvas = () => {
     const isPaintingRef = useRef(false);
     const isMoveRef = useRef(false);
     const isCreateBubbleRef = useRef(false);
+    const isCreatePictureRef = useRef(false);
     // const isMoveBubbleRef = useRef(false);
     const isEditRef = useRef(false);
 
@@ -34,9 +37,10 @@ export const useCanvas = () => {
     const { startDrawing, draw, finishDrawing, cancelDrawing } = useDrawer();
     const { startErase, erase, endErase, eraseBubble } = useEraser();
     const { grab, drag, release } = useHand();
-    const { startEditing, editCurve, finishEditing, initEditing } = useEditor();
+    const { startEditing, editing, finishEditing, initEditing } = useEditor();
     const { startCreateBubble, createBubble, finishCreateBubble /*,startMoveBubble, moveBubble, finishMoveBubble*/ } =
         useBubbleGun();
+    const { startCreatePicture, createPicture, finishCreatePicture } = useCreatePicture();
 
     useEffect(() => {
         useConfigStore.subscribe(({ mode }) => {
@@ -63,7 +67,6 @@ export const useCanvas = () => {
             isEraseRef.current = true;
         } else if (modeRef.current == 'bubble') {
             const { region, bubble } = identifyTouchRegion(cameraView, currentPosition);
-
             if (isCreateBubbleRef.current == false) {
                 if (region === 'name') {
                     if (bubble) {
@@ -86,6 +89,10 @@ export const useCanvas = () => {
         } else if (modeRef.current == 'edit') {
             startEditing(cameraView, currentPosition);
             isEditRef.current = true;
+        } else if (modeRef.current == 'picture' && isCreatePictureRef.current == false) {
+            isCreatePictureRef.current = true;
+            const { bubble } = identifyTouchRegion(cameraView, currentPosition);
+            startCreatePicture(getCameraView(), currentPosition, bubble?.path ?? '/');
         }
     };
 
@@ -112,7 +119,14 @@ export const useCanvas = () => {
                 if (rect) draggingRectRender(rect);
             }
         } else if (modeRef.current == 'edit') {
-            editCurve(getCameraView(), currentPosition);
+            editing(getCameraView(), currentPosition);
+        } else if (modeRef.current == 'picture') {
+            if (isCreatePictureRef.current) {
+                createPicture(getCameraView(), currentPosition);
+                reRender();
+                const rect = getDraggingRect();
+                if (rect) draggingRectRender(rect);
+            }
         }
     };
 
@@ -144,6 +158,13 @@ export const useCanvas = () => {
             isEditRef.current = false;
             finishEditing(getCameraView());
             reRender();
+        } else if (modeRef.current == 'picture') {
+            if (isCreatePictureRef.current) {
+                isCreatePictureRef.current = false;
+                finishCreatePicture(getCameraView());
+                reRender();
+            }
+            setMode('edit');
         }
     };
 

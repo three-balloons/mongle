@@ -1,11 +1,18 @@
 import { useCamera } from '@/objects/camera/useCamera';
 import { useCurve } from '@/objects/curve/useCurve';
 import { useLog } from '@/objects/log/useLog';
+import { usePicture } from '@/objects/picture/usePicture';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { useConfigStore } from '@/store/configStore';
 import { useViewStore } from '@/store/viewStore';
-import { MINIMUN_RENDERED_BUBBLE_SIZE } from '@/util/constant';
-import { bubble2globalWithCurve, curve2View, getThicknessRatio, rect2View } from '@/util/coordSys/conversion';
+import { MINIMUN_RENDERED_BUBBLE_SIZE, OFF_SCREEN_HEIGHT, OFF_SCREEN_WIDTH } from '@/util/constant';
+import {
+    bubble2globalWithCurve,
+    bubble2globalWithRect,
+    curve2View,
+    getThicknessRatio,
+    rect2View,
+} from '@/util/coordSys/conversion';
 import { getThemeMainColor, getThemeSecondColor } from '@/util/getThemeStyle';
 import { catmullRom2Bezier } from '@/util/shapes/conversion';
 import { easeInOutCubic } from '@/util/transition/transtion';
@@ -71,6 +78,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, is
     const modeRef = useRef<ControlMode>('none');
 
     const { getNewCurvePath, removeCurve, applyPenConfig, setThicknessWithRatio, getSelectedCurve } = useCurve();
+    const { getSelectedPictures } = usePicture();
     const getFocusBubblePath = useBubbleStore((state) => state.getFocusBubblePath);
     const getBubbles = useBubbleStore((state) => state.getBubbles);
     const findBubble = useBubbleStore((state) => state.findBubble);
@@ -337,7 +345,9 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, is
                 const metricName = context.measureText('⊗ ' + bubble.name);
                 bubble.nameSizeInCanvas = metricName.width;
             }
-
+            context.shadowColor = getThemeMainColor(theme);
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
             bubble.curves.forEach((curve) => {
                 const c = bubble2globalWithCurve(curve.position, bubbleView);
 
@@ -345,10 +355,7 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, is
                 applyPenConfig(context, curve.config);
                 setThicknessWithRatio(context, getThicknessRatio(cameraView));
                 if (getSelectedCurve().find((cuv) => cuv === curve)) {
-                    context.shadowColor = getThemeMainColor(theme);
                     context.shadowBlur = 5;
-                    context.shadowOffsetX = 0;
-                    context.shadowOffsetY = 0;
                 } else {
                     context.shadowBlur = 0;
                 }
@@ -379,6 +386,20 @@ export const RendererProvider: React.FC<RendererProviderProps> = ({ children, is
                 }
                 context.stroke();
             });
+            context.shadowBlur = 0;
+            if (bubble.pictures) {
+                bubble.pictures.forEach((picture) => {
+                    if (getSelectedPictures().find((pic) => pic == picture)) context.shadowBlur = 5;
+                    else context.shadowBlur = 0;
+                    const position = rect2View(bubble2globalWithRect(picture as Rect, bubbleView), cameraView);
+                    const ctx = picture.offScreen?.getContext('2d');
+                    ctx?.drawImage(picture.image, 0, 0, OFF_SCREEN_WIDTH, OFF_SCREEN_HEIGHT);
+                    const imageBitmap = picture.offScreen?.transferToImageBitmap(); // for android webview
+                    if (imageBitmap)
+                        context.drawImage(imageBitmap, position.left, position.top, position.width, position.height);
+                });
+            }
+
             context.shadowBlur = 0;
         }
     };

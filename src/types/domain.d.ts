@@ -9,10 +9,18 @@ interface Curve {
     id: number;
 }
 
+interface Picture extends Rect {
+    offScreen: OffscreenCanvas;
+    image: HTMLImageElement;
+    isFlippedX: boolean;
+    isFlippedY: boolean;
+}
+
 interface Bubble extends Rect {
     path: string;
     name: string;
     curves: Array<Curve>;
+    pictures?: Array<Picture>;
     isBubblized: boolean;
     isVisible: boolean;
     nameSizeInCanvas: number; // 캔버스에서 나타나는 이름의 크기, 프론트에서만 사용

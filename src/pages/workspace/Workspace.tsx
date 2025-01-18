@@ -20,6 +20,7 @@ import { getBubbleAPI } from '@/api/bubble';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { useLogStore } from '@/store/useLogStore';
 import { useLogSender } from '@/hooks/useLogSender';
+import { PictureProvider } from '@/objects/picture/PictureProvider';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -114,32 +115,34 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
             <TutorialProvider>
                 {needTutorial && <Tutorial />}
                 <CurveProvider sensitivity={2}>
-                    <CameraProvider width={canvasSize.width} height={canvasSize.height}>
-                        <LogProvider>
-                            <RendererProvider theme={workspace.theme} isReadyToShow={isReadyToShow}>
-                                <div className={style.header}>
-                                    <BackIcon
-                                        className={style.icon}
-                                        onClick={() => {
-                                            if (isDemo) navigator('/login', { replace: true });
-                                            else navigator('/home', { replace: true });
-                                        }}
-                                    ></BackIcon>
-                                    <div className={style.title}>{workspace.name}</div>
-                                </div>
-                                <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
-                                <div className={cn(style.workspace)}>
-                                    {isShowExplorer && <Explorer />}
-                                    <Canvas
-                                        width={canvasSize.width}
-                                        height={canvasSize.height}
-                                        workspaceId={workspaceId}
-                                    />
-                                    {/* <NameInput /> */}
-                                </div>
-                            </RendererProvider>
-                        </LogProvider>
-                    </CameraProvider>
+                    <PictureProvider>
+                        <CameraProvider width={canvasSize.width} height={canvasSize.height}>
+                            <LogProvider>
+                                <RendererProvider theme={workspace.theme} isReadyToShow={isReadyToShow}>
+                                    <div className={style.header}>
+                                        <BackIcon
+                                            className={style.icon}
+                                            onClick={() => {
+                                                if (isDemo) navigator('/login', { replace: true });
+                                                else navigator('/home', { replace: true });
+                                            }}
+                                        ></BackIcon>
+                                        <div className={style.title}>{workspace.name}</div>
+                                    </div>
+                                    <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
+                                    <div className={cn(style.workspace)}>
+                                        {isShowExplorer && <Explorer />}
+                                        <Canvas
+                                            width={canvasSize.width}
+                                            height={canvasSize.height}
+                                            workspaceId={workspaceId}
+                                        />
+                                        {/* <NameInput /> */}
+                                    </div>
+                                </RendererProvider>
+                            </LogProvider>
+                        </CameraProvider>
+                    </PictureProvider>
                 </CurveProvider>
             </TutorialProvider>
         </div>

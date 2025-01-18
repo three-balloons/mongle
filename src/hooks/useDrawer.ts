@@ -94,6 +94,7 @@ export const useDrawer = () => {
             if (getNewCurvePath() === '/') {
                 // 버블 밖에 커브를 그린 경우
                 const rect = curve2Rect(getNewCurve(), 10);
+                if (!rect) return;
                 // TODO: useBubble로 id옮기고 bubble => mongle로 변경
                 const bubbleName = 'mongle ' + getBubbleLabel().toString();
                 const bubble: Bubble = {
