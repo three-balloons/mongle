@@ -1,4 +1,4 @@
-import { bubbleAPI } from '@/api/api';
+import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
 import { mockedAccessToken } from '@/mock/auth';
 const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
@@ -20,7 +20,7 @@ export const getAccessTokenAPI = async ({ provider, code, redirect_uri }: GetAcc
             const res = mockedAccessToken.data as GetAccessTokenRes;
             return res;
         } else {
-            const res = await bubbleAPI.post<
+            const res = await mongleApi.post<
                 GetAccessTokenReq,
                 GetAccessTokenRes,
                 'INAPPROPRIATE_PAYLOAD' | 'SIGN_UP_NEEDED' | 'NOT_MATCH_PASSWORD'
@@ -60,7 +60,7 @@ export const testLoginAPI = async ({ provider, oauth_id, name }: TestLoginReq) =
             const res = mockedAccessToken.data as TestLoginRes;
             return res;
         } else {
-            const res = await bubbleAPI.post<
+            const res = await mongleApi.post<
                 TestLoginReq,
                 TestLoginRes,
                 'INAPPROPRIATE_PAYLOAD' | 'SIGN_UP_NEEDED' | 'NOT_MATCH_PASSWORD'

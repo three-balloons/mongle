@@ -1,4 +1,4 @@
-import { bubbleAPI } from '@/api/api';
+import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
 import { mockedUser, mockedDeleteUser } from '@/mock/user';
 const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
@@ -18,7 +18,7 @@ export const getUserAPI = async () => {
             const res = mockedUser.data as GetUserRes;
             return res;
         } else {
-            const res = await bubbleAPI.get<GetUserRes, 'USER_NOT_FOUND'>(`/user`);
+            const res = await mongleApi.get<GetUserRes, 'USER_NOT_FOUND'>(`/user`);
             return res;
         }
     } catch (error: unknown) {
@@ -50,7 +50,7 @@ export const updateUserAPI = async ({ name, email }: UpdateUserReq) => {
             const res = mockedUser.data as UpdateUserRes;
             return res;
         } else {
-            const res = await bubbleAPI.put<UpdateUserReq, UpdateUserRes, 'USER_NOT_FOUND'>(`/user`, {
+            const res = await mongleApi.put<UpdateUserReq, UpdateUserRes, 'USER_NOT_FOUND'>(`/user`, {
                 name: name,
                 email: email,
             });
@@ -77,7 +77,7 @@ export const deleteUserAPI = async () => {
             const res = mockedDeleteUser.data as DeleteUserRes;
             return res;
         } else {
-            const res = await bubbleAPI.put<DeleteUserReq, DeleteUserRes, 'USER_NOT_FOUND'>(`/user`, {});
+            const res = await mongleApi.put<DeleteUserReq, DeleteUserRes, 'USER_NOT_FOUND'>(`/user`, {});
             return res;
         }
     } catch (error: unknown) {

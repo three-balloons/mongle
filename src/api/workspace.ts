@@ -1,4 +1,4 @@
-import { bubbleAPI } from '@/api/api';
+import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
 import {
     mockedGetWorkspaces,
@@ -24,7 +24,7 @@ export const getWorkspaceAPI = async ({ workspaceId }: WorkspacePrams) => {
             const res = mockedGetWorkspace.data as GetWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.get<GetWorkspaceRes, 'NOT_EXIST'>(`/workspace/${workspaceId}`);
+        const res = await mongleApi.get<GetWorkspaceRes, 'NOT_EXIST'>(`/workspace/${workspaceId}`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -43,7 +43,7 @@ export const getAllWorkspaceAPI = async () => {
             const res = mockedGetWorkspaces.data as GetAllWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.get<GetAllWorkspaceRes, 'NOT_EXIST'>(`/workspace`);
+        const res = await mongleApi.get<GetAllWorkspaceRes, 'NOT_EXIST'>(`/workspace`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -72,7 +72,7 @@ export const updateWorkspaceAPI = async ({ workspaceId, name, theme }: UpdateWor
             const res = mockedUpdateWorkspace.data as UpdateWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.put<UpdateWorkspaceReq, UpdateWorkspaceRes, 'ALREADY_EXIST'>(
+        const res = await mongleApi.put<UpdateWorkspaceReq, UpdateWorkspaceRes, 'ALREADY_EXIST'>(
             `/workspace/${workspaceId}`,
             {
                 name: name,
@@ -100,7 +100,7 @@ export const deleteWorkspaceAPI = async ({ workspaceId }: DeleteBubblePrams) => 
             const res = mockedDeleteWorkspace.data as DeleteWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.delete<DeleteWorkspaceRes, 'NOT_EXIST'>(`/workspace/${workspaceId}`);
+        const res = await mongleApi.delete<DeleteWorkspaceRes, 'NOT_EXIST'>(`/workspace/${workspaceId}`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -123,7 +123,7 @@ export const createWorkspaceAPI = async ({ name, theme }: CreateWorkspaceReq) =>
             const res = mockedCreateWorkspace.data as CreateWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.post<CreateWorkspaceReq, CreateWorkspaceRes, 'ALREADY_EXIST'>(`/workspace`, {
+        const res = await mongleApi.post<CreateWorkspaceReq, CreateWorkspaceRes, 'ALREADY_EXIST'>(`/workspace`, {
             name: name,
             theme: theme,
         });
@@ -145,7 +145,7 @@ export const getDeletedWorkspaceAPI = async () => {
             const res = mockedGetDeletedWorkspaces.data as GetDeletedWorkspaceRes;
             return res;
         }
-        const res = await bubbleAPI.get<GetDeletedWorkspaceRes, 'NOT_EXIST'>(`/workspace/deleted`);
+        const res = await mongleApi.get<GetDeletedWorkspaceRes, 'NOT_EXIST'>(`/workspace/deleted`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
