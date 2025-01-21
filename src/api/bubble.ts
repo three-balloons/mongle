@@ -1,9 +1,7 @@
 import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
-import { mockedCreateBubble, mockedGetBubble, mockedDeleteBubble, mockedUpdateBubble } from '@/mock/bubble';
 import { GetPictureRes } from '@/api/picture';
 import { pictureMapper } from '@/api/mapper/picture.mapper';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetBubbleRes = {
     top: number;
@@ -20,16 +18,6 @@ type GetBubbleRes = {
 
 export const getBubblesAPI = async (workspaceId: string, path: string, depth: number = -1): Promise<Array<Bubble>> => {
     try {
-        if (IS_MOCK) {
-            const res = mockedGetBubble.data as GetBubbleRes;
-            return res.map((bubble) => {
-                return {
-                    ...bubble,
-                    pictures: [...(bubble.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
-                    nameSizeInCanvas: 30,
-                };
-            });
-        }
         const res = await mongleApi.get<GetBubbleRes, 'INAPPROPRIATE_DEPTH'>(
             `/bubble/${workspaceId}?path=${path}&depth=${depth.toString()}`,
         );
@@ -58,10 +46,6 @@ interface DeleteBubblePrams {
 }
 export const deleteBubbleAPI = async ({ workspaceId, path, isCascade = true }: DeleteBubblePrams) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedDeleteBubble.data as DeleteBubbleRes;
-            return res;
-        }
         const res = await mongleApi.delete<DeleteBubbleRes, 'INAPPROPRIATE_DEPTH'>(
             `/bubble/${workspaceId}?path=${path}&isCascade=${isCascade}`,
         );
@@ -143,14 +127,6 @@ type CreateBubblePrams = {
 };
 export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams): Promise<Bubble> => {
     try {
-        if (IS_MOCK) {
-            const res = mockedCreateBubble.data as CreateBubbleRes;
-            return {
-                ...res,
-                pictures: [...(res.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
-                nameSizeInCanvas: 30,
-            };
-        }
         const res = await mongleApi.post<CreateBubbleReq, CreateBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
             `/bubble/${workspaceId}?path=${bubble.path}`,
             {
@@ -231,10 +207,6 @@ export const updateCurveAPI = async ({
     createCurves,
 }: updateCurvePrams) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedUpdateBubble.data as UpdateCurveRes;
-            return res;
-        }
         const res = await mongleApi.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
             `/bubble/${workspaceId}/curve?path=${bubblePath}`,
             {
@@ -300,14 +272,11 @@ type ChangeNameBubblePrams = {
     path: string;
     name: string;
 };
-export const changeBubbleNameAPI = async ({ workspaceId, path, name }: ChangeNameBubblePrams) => {
+
+export const changeBubbleInfoAPI = async ({ workspaceId, path, name }: ChangeNameBubblePrams) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedCreateBubble.data as ChangeNameBubbleRes;
-            return res;
-        }
         const res = await mongleApi.put<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
-            `/bubble/${workspaceId}?path=${path}`,
+            `/bubble/${workspaceId}/change_info?path=${path}`,
             {
                 name: name,
             },

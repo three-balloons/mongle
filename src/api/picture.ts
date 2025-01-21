@@ -10,6 +10,7 @@ export type GetPictureRes = {
     fid: string;
     isFlippedX: boolean;
     isFlippedY: boolean;
+    path: string;
     angle: number;
 };
 
@@ -31,7 +32,7 @@ type DeletePictureRes = {
     id: string;
 };
 
-export const deleteBubbleAPI = async (workspaceId: string, pictureId: string) => {
+export const deletePictureAPI = async (workspaceId: string, pictureId: string) => {
     try {
         const res = await mongleApi.delete<DeletePictureRes, 'WORKSPACE_NOT_FOUND'>(
             `/${workspaceId}/pictures/${pictureId}`,

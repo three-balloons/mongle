@@ -41,50 +41,30 @@ export const mockedGetWorkspaces = {
     ],
 };
 
-export const mockedGetDeletedWorkspaces = {
-    code: 'OK',
-    message: '',
-    data: [
-        {
-            name: '삭제띠',
-            id: '42094830',
-            theme: '하늘',
-        },
-    ],
-};
-
-export const mockedGetWorkspace = {
-    code: 'OK',
-    message: '',
-    data: {
-        id: '1',
-        name: '몽글이의 노트',
+export const mockedGetDeletedWorkspaces = [
+    {
+        name: '삭제띠',
+        id: '42094830',
         theme: '하늘',
     },
+];
+
+export const mockedGetWorkspace = {
+    id: '1',
+    name: '몽글이의 노트',
+    theme: '하늘',
 };
 
-export const mockedDeleteWorkspace = {
-    code: 'OK',
-    message: '',
-    data: {},
-};
+export const mockedDeleteWorkspace = {};
 
 export const mockedCreateWorkspace = {
-    code: 'OK',
-    message: '',
-    data: {
-        id: '1',
-        name: 'workspace1',
-        theme: '분홍',
-    },
+    id: '1',
+    name: 'workspace1',
+    theme: '분홍',
 };
 
 export const mockedUpdateWorkspace = {
-    code: 'OK',
-    message: '',
-    data: {
-        id: '1',
-        name: 'workspace1',
-        theme: '연두',
-    },
+    id: '1',
+    name: 'workspace1',
+    theme: '연두',
 };
