@@ -104,7 +104,7 @@ export const useDrawer = () => {
                     width: rect.width,
                     path: '/' + bubbleName,
                     name: bubbleName,
-                    curves: [],
+                    shapes: [],
                     isBubblized: false,
                     isVisible: true,
                     nameSizeInCanvas: 0,

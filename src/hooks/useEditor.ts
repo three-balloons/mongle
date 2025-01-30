@@ -413,8 +413,9 @@ export const useEditor = () => {
         if (selectModeRef.current == 'area') {
             // TODO 선택한 curve 고르기
             if (selectedBubbleRef.current) {
-                const curves = selectedBubbleRef.current?.curves ?? [];
-                const picutres = selectedBubbleRef.current?.pictures ?? [];
+                const curves = selectedBubbleRef.current?.shapes.filter((shape) => shape.type === 'curve') ?? [];
+                const picutres = selectedBubbleRef.current?.shapes.filter((shape) => shape.type === 'picture') ?? [];
+                // const picutres = selectedBubbleRef.current?.pictures ?? [];
 
                 const rect = view2BubbleWithRect(
                     {
@@ -427,7 +428,6 @@ export const useEditor = () => {
                     selectedBubbleRef.current.path,
                 );
                 setSelectedCurve([
-                    // TODO 선택된 버블 넣는 로직 추가
                     ...curves.filter((curve) => {
                         for (let i = 0; i < curve.position.length - 1; i++) {
                             if (
@@ -444,8 +444,8 @@ export const useEditor = () => {
                 ]);
 
                 setSelectedPictures([
-                    ...picutres.filter((picutre) => {
-                        if (isCollisionWithRect(picutre as Rect, rect)) return true;
+                    ...picutres.filter((picture) => {
+                        if (isCollisionWithRect(picture as Rect, rect)) return true;
                         return false;
                     }),
                 ]);

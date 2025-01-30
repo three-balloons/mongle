@@ -118,7 +118,7 @@ export const useBubbleGun = () => {
                     ? '/' + bubbleName
                     : createdBubblePathRef.current + '/' + bubbleName,
             name: bubbleName,
-            curves: [],
+            shapes: [],
             isBubblized: false,
             isVisible: true,
             nameSizeInCanvas: 0,

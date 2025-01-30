@@ -2,6 +2,7 @@ import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
 import { GetPictureRes } from '@/api/picture';
 import { pictureMapper } from '@/api/mapper/picture.mapper';
+import { curveMapper } from '@/api/mapper/curve.mpper';
 
 type GetBubbleRes = {
     top: number;
@@ -16,7 +17,7 @@ type GetBubbleRes = {
     isVisible: boolean;
 }[];
 
-export const getBubblesAPI = async (workspaceId: string, path: string, depth: number = -1): Promise<Array<Bubble>> => {
+export const getBubblesAPI = async (workspaceId: string, path: string, depth: number = -1): Promise<Bubble[]> => {
     try {
         const res = await mongleApi.get<GetBubbleRes, 'INAPPROPRIATE_DEPTH'>(
             `/bubble/${workspaceId}?path=${path}&depth=${depth.toString()}`,
@@ -24,9 +25,12 @@ export const getBubblesAPI = async (workspaceId: string, path: string, depth: nu
         return res.map((bubble) => {
             return {
                 ...bubble,
-                pictures: [...(bubble.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
+                shapes: [
+                    ...bubble.curves.map((curve) => curveMapper(curve)),
+                    ...(bubble.pictures?.map((picture) => pictureMapper(picture)) ?? []),
+                ],
                 nameSizeInCanvas: 30,
-            };
+            } as Bubble;
         });
     } catch (error: unknown) {
         if (error instanceof APIException) {
@@ -142,7 +146,7 @@ export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams
 
         return {
             ...res,
-            pictures: [...(res.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
+            shapes: [...res.curves, ...(res.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
             nameSizeInCanvas: 30,
         };
     } catch (error: unknown) {

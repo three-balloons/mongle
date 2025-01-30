@@ -4,23 +4,28 @@
 
 // TODO: penConfig 추가할 것
 interface Curve {
+    type: 'curve';
     position: Curve2D;
     config: PenConfig;
     id: number;
 }
 
 interface Picture extends Rect {
+    type: 'picture';
     offScreen: OffscreenCanvas;
     image: HTMLImageElement;
     isFlippedX: boolean;
     isFlippedY: boolean;
 }
 
+type Shape = Picture | Curve;
+
 interface Bubble extends Rect {
     path: string;
     name: string;
-    curves: Array<Curve>;
-    pictures?: Array<Picture>;
+    // curves: Array<Curve>;
+    // pictures?: Array<Picture>;
+    shapes: Array<Shape>; // TODO objects must be included
     isBubblized: boolean;
     isVisible: boolean;
     nameSizeInCanvas: number; // 캔버스에서 나타나는 이름의 크기, 프론트에서만 사용
