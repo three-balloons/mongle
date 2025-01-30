@@ -21,6 +21,7 @@ import { useBubbleStore } from '@/store/bubbleStore';
 import { useLogStore } from '@/store/useLogStore';
 import { useLogSender } from '@/hooks/useLogSender';
 import { PictureProvider } from '@/objects/picture/PictureProvider';
+import { EXPLORER_MAX_WIDTH, EXPLORER_MIN_WIDTH } from '@/util/constant';
 
 type WorkspaceProps = {
     workspaceId: string;
@@ -107,6 +108,33 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
             setIsShowExplorer(true);
         }
     };
+
+    const explorerResizeHandler = (e: React.MouseEvent<HTMLDivElement>) => {
+        // explorer element
+        const target = e.currentTarget.parentElement;
+        if (!target) return;
+
+        // TODO zustand로 빼서 크기
+        const resize: EventListener = (e) => {
+            const left = target.getBoundingClientRect().left;
+            const right = (e as MouseEvent).clientX;
+            const width = Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, right - left));
+            target.style.width = `${width}px`;
+        };
+        document.addEventListener('mousemove', resize);
+        document.addEventListener(
+            'mouseup',
+            (e) => {
+                const left = target.getBoundingClientRect().left;
+                const right = (e as MouseEvent).clientX;
+                const width = Math.min(EXPLORER_MAX_WIDTH, Math.max(EXPLORER_MIN_WIDTH, right - left));
+                setCanvasSize({ width: window.innerWidth - width, height: window.innerHeight - 100 });
+                document.removeEventListener('mousemove', resize);
+            },
+            { once: true },
+        );
+    };
+
     if (workspaceQuery.isPending || workspaceQuery.isLoading) return <>로딩중...</>;
     if (workspaceQuery.isError) return <>에러입니다 ㅠ.ㅠ</>;
     const workspace = workspaceQuery.data;
@@ -131,7 +159,7 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
                                     </div>
                                     <Menu workSpaceResizeHandler={WorkspaceResizeHandler} />
                                     <div className={cn(style.workspace)}>
-                                        {isShowExplorer && <Explorer />}
+                                        {isShowExplorer && <Explorer resizeHandler={explorerResizeHandler} />}
                                         <Canvas
                                             width={canvasSize.width}
                                             height={canvasSize.height}

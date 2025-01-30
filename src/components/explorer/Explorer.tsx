@@ -4,7 +4,10 @@ import { BubbleToggleList } from '@/components/explorer/bubbleToggleList/BubbleT
 import { useTutorial } from '@/components/tutorial/useTutorial';
 import { useBubbleStore } from '@/store/bubbleStore';
 
-export const Explorer = () => {
+type ExplorerProps = {
+    resizeHandler?: (e: React.MouseEvent<HTMLDivElement>) => void;
+};
+export const Explorer = ({ resizeHandler }: ExplorerProps) => {
     const bubbleTreeRoot = useBubbleStore((state) => state.bubbleTreeRoot);
     const { explorerRef } = useTutorial();
 
@@ -18,6 +21,7 @@ export const Explorer = () => {
                     path={''}
                 />
             }
+            <div className={style.edge} onMouseDown={resizeHandler} />
         </div>
     );
 };
