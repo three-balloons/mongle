@@ -86,7 +86,7 @@ export const useEraser = () => {
                     .map((curve) => {
                         const position = view2Point(currentPosition, cameraView);
                         const pos = view2BubbleWithVector2D(position, cameraView, descendant.path);
-                        const scale = (getRatioWithCamera(descendant, cameraView) ?? 1) * 2;
+                        const scale = (getRatioWithCamera(descendant, cameraView) ?? 1) * 4;
                         return {
                             path: descendant.path,
                             curve: curve,

@@ -3,6 +3,7 @@ import style from '@/components/canvas/canvas.module.css';
 import { useEffect } from 'react';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useTouch } from '@/hooks/useTouch';
+import { CanvasCursor } from '@/components/canvasCursor/CanvasCursor';
 
 type CanvasProps = {
     width: number;
@@ -16,7 +17,7 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
 
     useEffect(() => {
         reRender();
-    }, [width, height]);
+    }, [width, height, reRender]);
 
     useEffect(() => {
         if (!interfaceLayerRef.current) {
@@ -36,14 +37,16 @@ export const Canvas = ({ width, height /*, workspaceId*/ }: CanvasProps) => {
             canvas.removeEventListener('pointercancel', touchUp);
             canvas.removeEventListener('pointerout', touchUp);
         };
-    }, [touchDown, touch, touchUp]);
+    }, [touchDown, touch, touchUp, interfaceLayerRef]);
 
     return (
         <div>
-            <canvas ref={mainLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>
-            <canvas ref={movementLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
-            <canvas ref={creationLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
-            <canvas ref={interfaceLayerRef} className={cn(style.topLayer)} width={width} height={height}></canvas>
+            <CanvasCursor width={width} height={height}>
+                <canvas ref={mainLayerRef} className={cn(style.backgroundLayer)} width={width} height={height}></canvas>
+                <canvas ref={movementLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
+                <canvas ref={creationLayerRef} className={cn(style.subLayer)} width={width} height={height}></canvas>
+                <canvas ref={interfaceLayerRef} className={cn(style.topLayer)} width={width} height={height}></canvas>
+            </CanvasCursor>
         </div>
     );
 };

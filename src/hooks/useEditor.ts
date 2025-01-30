@@ -2,6 +2,7 @@ import { useCurve } from '@/objects/curve/useCurve';
 import { usePicture } from '@/objects/picture/usePicture';
 import { useRenderer } from '@/objects/renderer/useRenderer';
 import { useBubbleStore } from '@/store/bubbleStore';
+import { useCursorStore } from '@/store/cursorStore';
 import { BUBBLE_BORDER_WIDTH } from '@/util/constant';
 import {
     bubble2globalWithCurve,
@@ -33,6 +34,7 @@ export const useEditor = () => {
     const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
     const view2BubbleWithRect = useBubbleStore((state) => state.view2BubbleWithRect);
     const descendant2child = useBubbleStore((state) => state.descendant2child);
+    const setCursor = useCursorStore((state) => state.setCursor);
 
     const { setSelectedCurve, getSelectedCurve } = useCurve();
     const { setSelectedPictures, getSelectedPictures } = usePicture();
@@ -114,6 +116,7 @@ export const useEditor = () => {
                 selectedBubbleRef.current = undefined;
             }
             selectModeRef.current = 'area';
+            setCursor('none');
             if (pos) {
                 selectedStartPosRef.current = pos;
                 selectedRectRef.current = {
@@ -526,7 +529,6 @@ export const useEditor = () => {
 
                 setEditingRect(rect);
             }
-
             if (rect) selectModeRef.current = 'move';
         } else if (selectModeRef.current == 'move') {
             const preRect = getDraggingRect();
@@ -554,6 +556,12 @@ export const useEditor = () => {
         } else if (selectModeRef.current !== 'none') {
             // default case
             selectModeRef.current = 'move';
+        }
+
+        if (selectModeRef.current === 'none') {
+            setCursor('edit');
+        } else {
+            setCursor('none');
         }
     };
 
