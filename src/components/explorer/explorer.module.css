@@ -1,6 +1,6 @@
 .default {
+    position: relative;
     background-color: var(--color-primary-25);
-
     width: 150px;
     color: var(--color-text);
     text-align: left;
@@ -28,4 +28,13 @@
 .icon-closed {
     transform: rotate(-180deg);
     transition-duration: 100ms;
+}
+
+.edge {
+    position: absolute;
+    top: 0px;
+    left: calc(100% - 4px);
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
 }

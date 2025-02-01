@@ -1,7 +1,5 @@
-import { bubbleAPI } from '@/api/api';
+import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
-import { mockedUser, mockedDeleteUser } from '@/mock/user';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
 
 type GetUserRes = {
     oauth_id: string;
@@ -14,13 +12,8 @@ type GetUserRes = {
 
 export const getUserAPI = async () => {
     try {
-        if (IS_MOCK) {
-            const res = mockedUser.data as GetUserRes;
-            return res;
-        } else {
-            const res = await bubbleAPI.get<GetUserRes, 'USER_NOT_FOUND'>(`/user`);
-            return res;
-        }
+        const res = await mongleApi.get<GetUserRes, 'USER_NOT_FOUND'>(`/user`);
+        return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'USER_NOT_FOUND') {
@@ -46,16 +39,11 @@ type UpdateUserRes = {
 
 export const updateUserAPI = async ({ name, email }: UpdateUserReq) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedUser.data as UpdateUserRes;
-            return res;
-        } else {
-            const res = await bubbleAPI.put<UpdateUserReq, UpdateUserRes, 'USER_NOT_FOUND'>(`/user`, {
-                name: name,
-                email: email,
-            });
-            return res;
-        }
+        const res = await mongleApi.put<UpdateUserReq, UpdateUserRes, 'USER_NOT_FOUND'>(`/user`, {
+            name: name,
+            email: email,
+        });
+        return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'USER_NOT_FOUND') {
@@ -66,20 +54,14 @@ export const updateUserAPI = async ({ name, email }: UpdateUserReq) => {
     }
 };
 
-type DeleteUserReq = Record<string, never>;
 type DeleteUserRes = {
     status: string;
 };
 
 export const deleteUserAPI = async () => {
     try {
-        if (IS_MOCK) {
-            const res = mockedDeleteUser.data as DeleteUserRes;
-            return res;
-        } else {
-            const res = await bubbleAPI.put<DeleteUserReq, DeleteUserRes, 'USER_NOT_FOUND'>(`/user`, {});
-            return res;
-        }
+        const res = await mongleApi.delete<DeleteUserRes, 'USER_NOT_FOUND'>(`/user`);
+        return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'USER_NOT_FOUND') {

@@ -5,7 +5,7 @@ import { cn } from '@/util/cn';
 import { ReactComponent as PenIcon } from '@/assets/icon/pen.svg';
 import { ReactComponent as HandIcon } from '@/assets/icon/hand.svg';
 import { ReactComponent as EraserIcon } from '@/assets/icon/eraser.svg';
-import { ReactComponent as AddBubbleIcon } from '@/assets/icon/add-rectangle.svg';
+import { ReactComponent as AddBubbleIcon } from '@/assets/icon/plus.svg';
 import { ReactComponent as SelectIcon } from '@/assets/icon/select.svg';
 import { ReactComponent as PictureIcon } from '@/assets/icon/picture.svg';
 import { EraserModal } from '@/components/select/toolSelect/EraserModal';
@@ -13,9 +13,11 @@ import { useTutorial } from '@/components/tutorial/useTutorial';
 import { ChangeEvent, useRef } from 'react';
 import { OFF_SCREEN_HEIGHT, OFF_SCREEN_WIDTH } from '@/util/constant';
 import { usePicture } from '@/objects/picture/usePicture';
+import { useCursorStore } from '@/store/cursorStore';
 
 export const ToolSelect = () => {
     const { setMode, mode } = useConfigStore((state) => state);
+    const setCursor = useCursorStore((state) => state.setCursor);
     const { addBubbleIconRef, penIconRef, eraserIconRef, handIconRef } = useTutorial();
     const { setCreatingPicture } = usePicture();
     const pictureInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +54,7 @@ export const ToolSelect = () => {
                         value="move"
                         onSelect={() => {
                             setMode('move');
+                            setCursor('move');
                         }}
                     >
                         <HandIcon className={style.icon} />
@@ -63,6 +66,7 @@ export const ToolSelect = () => {
                         value="draw"
                         onSelect={() => {
                             setMode('draw');
+                            setCursor('pen');
                         }}
                     >
                         <PenIcon className={style.icon} />
@@ -74,6 +78,7 @@ export const ToolSelect = () => {
                         value="erase"
                         onSelect={() => {
                             setMode('erase');
+                            setCursor('eraser');
                         }}
                     >
                         {mode == 'erase' ? <EraserModal /> : <EraserIcon className={style.icon} />}
@@ -85,6 +90,7 @@ export const ToolSelect = () => {
                         value="bubble"
                         onSelect={() => {
                             setMode('bubble');
+                            setCursor('add');
                         }}
                     >
                         <AddBubbleIcon className={style.icon} />
@@ -95,6 +101,7 @@ export const ToolSelect = () => {
                     value="edit"
                     onSelect={() => {
                         setMode('edit');
+                        setCursor('edit');
                     }}
                 >
                     <SelectIcon className={style.icon} />
@@ -105,6 +112,7 @@ export const ToolSelect = () => {
                     onSelect={() => {
                         handlePictureButtonClick();
                         setMode('picture');
+                        setCursor('edit');
                     }}
                 >
                     <PictureIcon className={style.icon} />

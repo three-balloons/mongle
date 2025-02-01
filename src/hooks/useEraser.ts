@@ -49,9 +49,11 @@ export const useEraser = () => {
         if (earseModeRef.current == 'area') {
             const descendants = getDescendantBubbles(cameraView.path);
             earseAreaCurves.current = descendants.flatMap((descendant) =>
-                descendant.curves.map((curve) => {
-                    return { origin: { ...curve }, earsed: curve, isModified: false };
-                }),
+                descendant.shapes
+                    .filter((shape) => shape.type === 'curve')
+                    .map((curve) => {
+                        return { origin: { ...curve }, earsed: curve, isModified: false };
+                    }),
             );
         }
     }, []);
@@ -79,22 +81,24 @@ export const useEraser = () => {
         // 버블에 있는 커브마다 지우개 설정(local 좌표계로)
         const curveWithErasers = descendants.flatMap((descendant) => {
             return findIntersectCurves(
-                descendant.curves.map((curve) => {
-                    const position = view2Point(currentPosition, cameraView);
-                    const pos = view2BubbleWithVector2D(position, cameraView, descendant.path);
-                    const scale = (getRatioWithCamera(descendant, cameraView) ?? 1) * 2;
-                    return {
-                        path: descendant.path,
-                        curve: curve,
-                        eraser: {
-                            center: {
-                                x: pos.x,
-                                y: pos.y,
+                descendant.shapes
+                    .filter((shape) => shape.type === 'curve')
+                    .map((curve) => {
+                        const position = view2Point(currentPosition, cameraView);
+                        const pos = view2BubbleWithVector2D(position, cameraView, descendant.path);
+                        const scale = (getRatioWithCamera(descendant, cameraView) ?? 1) * 4;
+                        return {
+                            path: descendant.path,
+                            curve: curve,
+                            eraser: {
+                                center: {
+                                    x: pos.x,
+                                    y: pos.y,
+                                },
+                                radius: earseRadiusRef.current / scale,
                             },
-                            radius: earseRadiusRef.current / scale,
-                        },
-                    };
-                }),
+                        };
+                    }),
             );
         });
 
@@ -117,22 +121,24 @@ export const useEraser = () => {
         // 버블에 있는 커브마다 지우개 설정(local 좌표계로)
         const curveWithErasers = descendants.flatMap((descendant) => {
             return findIntersectCurves(
-                descendant.curves.map((curve) => {
-                    const position = view2Point(currentPosition, cameraView);
-                    const pos = view2BubbleWithVector2D(position, cameraView, descendant.path);
-                    const scale = (getRatioWithCamera(descendant, cameraView) ?? 1) * 2;
-                    return {
-                        path: descendant.path,
-                        curve: curve,
-                        eraser: {
-                            center: {
-                                x: pos.x,
-                                y: pos.y,
+                descendant.shapes
+                    .filter((shape) => shape.type === 'curve')
+                    .map((curve) => {
+                        const position = view2Point(currentPosition, cameraView);
+                        const pos = view2BubbleWithVector2D(position, cameraView, descendant.path);
+                        const scale = (getRatioWithCamera(descendant, cameraView) ?? 1) * 2;
+                        return {
+                            path: descendant.path,
+                            curve: curve,
+                            eraser: {
+                                center: {
+                                    x: pos.x,
+                                    y: pos.y,
+                                },
+                                radius: earseRadiusRef.current * scale,
                             },
-                            radius: earseRadiusRef.current * scale,
-                        },
-                    };
-                }),
+                        };
+                    }),
             );
         });
 
@@ -199,6 +205,7 @@ export const useEraser = () => {
             return point; // 조건에 맞지 않으면 기존 point 반환
         });
         return {
+            type: 'curve',
             config: config,
             position: updatedPoints,
             id: curve.id,

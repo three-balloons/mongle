@@ -1,21 +1,37 @@
-import { bubbleAPI } from '@/api/api';
+import { mongleApi } from '@/api/mongleApi';
 import { APIException } from '@/api/exceptions';
-import { mockedCreateBubble, mockedGetBubble, mockedDeleteBubble, mockedUpdateBubble } from '@/mock/bubble';
-import { mockedBubbleTree } from '@/mock/tree';
-const IS_MOCK = import.meta.env.VITE_IS_MOCK === 'true';
+import { GetPictureRes } from '@/api/picture';
+import { pictureMapper } from '@/api/mapper/picture.mapper';
+import { curveMapper } from '@/api/mapper/curve.mpper';
 
-type GetBubbleRes = Array<Bubble>;
+type GetBubbleRes = {
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+    path: string;
+    name: string;
+    curves: Array<Curve>;
+    pictures?: Array<GetPictureRes>;
+    isBubblized: boolean;
+    isVisible: boolean;
+}[];
 
-export const getBubbleAPI = async (workspaceId: string, path: string, depth: number = -1) => {
+export const getBubblesAPI = async (workspaceId: string, path: string, depth: number = -1): Promise<Bubble[]> => {
     try {
-        if (IS_MOCK) {
-            const res = mockedGetBubble.data as GetBubbleRes;
-            return res;
-        }
-        const res = await bubbleAPI.get<GetBubbleRes, 'INAPPROPRIATE_DEPTH'>(
+        const res = await mongleApi.get<GetBubbleRes, 'INAPPROPRIATE_DEPTH'>(
             `/bubble/${workspaceId}?path=${path}&depth=${depth.toString()}`,
         );
-        return res;
+        return res.map((bubble) => {
+            return {
+                ...bubble,
+                shapes: [
+                    ...bubble.curves.map((curve) => curveMapper(curve)),
+                    ...(bubble.pictures?.map((picture) => pictureMapper(picture)) ?? []),
+                ],
+                nameSizeInCanvas: 30,
+            } as Bubble;
+        });
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'INAPPROPRIATE_DEPTH') {
@@ -34,11 +50,7 @@ interface DeleteBubblePrams {
 }
 export const deleteBubbleAPI = async ({ workspaceId, path, isCascade = true }: DeleteBubblePrams) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedDeleteBubble.data as DeleteBubbleRes;
-            return res;
-        }
-        const res = await bubbleAPI.delete<DeleteBubbleRes, 'INAPPROPRIATE_DEPTH'>(
+        const res = await mongleApi.delete<DeleteBubbleRes, 'INAPPROPRIATE_DEPTH'>(
             `/bubble/${workspaceId}?path=${path}&isCascade=${isCascade}`,
         );
         return res;
@@ -52,47 +64,47 @@ export const deleteBubbleAPI = async ({ workspaceId, path, isCascade = true }: D
     }
 };
 
-type BubbleTreeNode = {
-    name: string;
-    children: Array<BubbleTreeNode>;
-};
-type GetBubbleTreeRes = {
-    paths: Array<{
-        name: string;
-        children: Array<BubbleTreeNode>;
-    }>;
-};
-type GetBubbleTreePrams = {
-    workspaceId: string;
-    path?: string;
-    depth?: string;
-};
+// type BubbleTreeNode = {
+//     name: string;
+//     children: Array<BubbleTreeNode>;
+// };
+// type GetBubbleTreeRes = {
+//     paths: Array<{
+//         name: string;
+//         children: Array<BubbleTreeNode>;
+//     }>;
+// };
+// type GetBubbleTreePrams = {
+//     workspaceId: string;
+//     path?: string;
+//     depth?: string;
+// };
 
-export const getBubbleTreeAPI = async ({ workspaceId, depth, path = '/' }: GetBubbleTreePrams) => {
-    try {
-        if (IS_MOCK) {
-            const res = mockedBubbleTree.data as GetBubbleTreeRes;
-            return res;
-        }
-        let res;
-        if (depth)
-            res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
-                `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
-            );
-        else
-            res = await bubbleAPI.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
-                `/bubble/tree/${workspaceId}?path=${path}`,
-            );
-        return res;
-    } catch (error: unknown) {
-        if (error instanceof APIException) {
-            if (error.code === 'INAPPROPRIATE_DEPTH') {
-                console.error('TODO error handling');
-            }
-        }
-        throw error;
-    }
-};
+// export const getBubbleTreeAPI = async ({ workspaceId, depth, path = '/' }: GetBubbleTreePrams) => {
+//     try {
+//         if (IS_MOCK) {
+//             const res = mockedBubbleTree.data as GetBubbleTreeRes;
+//             return res;
+//         }
+//         let res;
+//         if (depth)
+//             res = await mongleApi.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+//                 `/bubble/tree/${workspaceId}?path=${path}&${depth ? 'depth=' + depth.toString() : ''}`,
+//             );
+//         else
+//             res = await mongleApi.get<GetBubbleTreeRes, 'INAPPROPRIATE_DEPTH'>(
+//                 `/bubble/tree/${workspaceId}?path=${path}`,
+//             );
+//         return res;
+//     } catch (error: unknown) {
+//         if (error instanceof APIException) {
+//             if (error.code === 'INAPPROPRIATE_DEPTH') {
+//                 console.error('TODO error handling');
+//             }
+//         }
+//         throw error;
+//     }
+// };
 
 type CreateBubbleReq = {
     name: string;
@@ -103,10 +115,12 @@ type CreateBubbleReq = {
     isBubblized: boolean;
     isVisible: boolean;
 };
+
 interface CreateBubbleRes extends Rect {
     path: string;
     name: string;
     curves: Array<Curve>;
+    pictures?: Array<GetPictureRes>;
     isBubblized: boolean;
     isVisible: boolean;
 }
@@ -115,13 +129,9 @@ type CreateBubblePrams = {
     workspaceId: string;
     bubble: Bubble;
 };
-export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams) => {
+export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams): Promise<Bubble> => {
     try {
-        if (IS_MOCK) {
-            const res = mockedCreateBubble.data as CreateBubbleRes;
-            return res;
-        }
-        const res = await bubbleAPI.post<CreateBubbleReq, CreateBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
+        const res = await mongleApi.post<CreateBubbleReq, CreateBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
             `/bubble/${workspaceId}?path=${bubble.path}`,
             {
                 top: bubble.top,
@@ -133,7 +143,12 @@ export const createBubbleAPI = async ({ workspaceId, bubble }: CreateBubblePrams
                 isVisible: bubble.isVisible,
             },
         );
-        return res;
+
+        return {
+            ...res,
+            shapes: [...res.curves, ...(res.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
+            nameSizeInCanvas: 30,
+        };
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'NO_PARENT' || error.code === 'ALREADY_EXEIST') {
@@ -196,11 +211,7 @@ export const updateCurveAPI = async ({
     createCurves,
 }: updateCurvePrams) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedUpdateBubble.data as UpdateCurveRes;
-            return res;
-        }
-        const res = await bubbleAPI.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
+        const res = await mongleApi.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
             `/bubble/${workspaceId}/curve?path=${bubblePath}`,
             {
                 delete: deleteCurves ?? [],
@@ -265,14 +276,11 @@ type ChangeNameBubblePrams = {
     path: string;
     name: string;
 };
-export const changeBubbleNameAPI = async ({ workspaceId, path, name }: ChangeNameBubblePrams) => {
+
+export const changeBubbleInfoAPI = async ({ workspaceId, path, name }: ChangeNameBubblePrams) => {
     try {
-        if (IS_MOCK) {
-            const res = mockedCreateBubble.data as ChangeNameBubbleRes;
-            return res;
-        }
-        const res = await bubbleAPI.put<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
-            `/bubble/${workspaceId}?path=${path}`,
+        const res = await mongleApi.put<ChangeNameBubbleReq, ChangeNameBubbleRes, 'NO_PARENT' | 'ALREADY_EXEIST'>(
+            `/bubble/${workspaceId}/change_info?path=${path}`,
             {
                 name: name,
             },

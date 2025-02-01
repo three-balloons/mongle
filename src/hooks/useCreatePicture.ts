@@ -70,7 +70,7 @@ export const useCreatePicture = () => {
         const creatingPicture = getCreatingPicture();
         if (creatingPicture)
             addPictureInBubble(
-                { ...creatingPicture, ...rect, isFlippedX: false, isFlippedY: false },
+                { ...creatingPicture, ...rect, type: 'picture', isFlippedX: false, isFlippedY: false },
                 creatingPicturePathRef.current,
             );
 
@@ -80,7 +80,7 @@ export const useCreatePicture = () => {
     const addPictureInBubble = (picture: Picture, path: string) => {
         const bubble = findBubble(path);
         if (bubble) {
-            bubble.pictures = [...(bubble.pictures ?? []), picture];
+            bubble.shapes = [...bubble.shapes, picture];
         }
         // TODO logging
     };

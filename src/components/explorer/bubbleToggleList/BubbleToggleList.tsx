@@ -7,7 +7,7 @@ import { useConfigStore } from '@/store/configStore';
 import { useCamera } from '@/objects/camera/useCamera';
 import { useLog } from '@/objects/log/useLog';
 import { useEffect, useRef, useState } from 'react';
-import { changeBubbleNameAPI } from '@/api/bubble';
+import { changeBubbleInfoAPI } from '@/api/bubble';
 import { useParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/react-query/quertClient';
@@ -119,7 +119,7 @@ export const BubbleToggleList = ({ name, children, path, className }: BubbleTogg
 
     const { mutate: changeBubbleName } = useMutation({
         mutationFn: ({ workspaceId, path, name }: { workspaceId: string; path: string; name: string }) =>
-            changeBubbleNameAPI({
+            changeBubbleInfoAPI({
                 workspaceId: workspaceId,
                 path: path,
                 name: name,

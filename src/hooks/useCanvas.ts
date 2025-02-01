@@ -9,6 +9,7 @@ import { useEditor } from '@/hooks/useEditor';
 import { useHand } from '@/hooks/useHand';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { useCreatePicture } from '@/hooks/useCreatePicture';
+import { useCursorStore } from '@/store/cursorStore';
 
 /**
  * store canvas infromation and command functions
@@ -30,6 +31,7 @@ export const useCanvas = () => {
 
     const { getNewCurve } = useCurve();
     const identifyTouchRegion = useBubbleStore((state) => state.identifyTouchRegion);
+    const setCursor = useCursorStore((state) => state.setCursor);
 
     /* tools */
     const { getCameraView, reRender, curveRenderer, lineRenderer, eraseRender, draggingRectRender, getDraggingRect } =
@@ -61,10 +63,12 @@ export const useCanvas = () => {
             isPaintingRef.current = true;
         } else if (isMoveRef.current == false && modeRef.current == 'move') {
             grab(cameraView, currentPosition);
+            setCursor('grab');
             isMoveRef.current = true;
         } else if (isEraseRef.current == false && modeRef.current == 'erase') {
             startErase(cameraView);
             isEraseRef.current = true;
+            setCursor('none');
         } else if (modeRef.current == 'bubble') {
             const { region, bubble } = identifyTouchRegion(cameraView, currentPosition);
             if (isCreateBubbleRef.current == false) {
@@ -83,7 +87,7 @@ export const useCanvas = () => {
                     // } else {
                     isCreateBubbleRef.current = true;
                     startCreateBubble(getCameraView(), currentPosition, bubble?.path ?? '/');
-                    // }
+                    setCursor('none');
                 }
             }
         } else if (modeRef.current == 'edit') {
@@ -108,10 +112,6 @@ export const useCanvas = () => {
             reRender();
             eraseRender(currentPosition);
         } else if (modeRef.current == 'bubble') {
-            // if (isMoveBubbleRef.current) {
-            //     moveBubble(getCameraView(), currentPosition);
-            //     reRender();
-            // }
             if (isCreateBubbleRef.current) {
                 createBubble(getCameraView(), currentPosition);
                 reRender();
@@ -138,14 +138,17 @@ export const useCanvas = () => {
             reRender();
         } else if (isMoveRef.current && modeRef.current == 'move') {
             release();
+            setCursor('move');
             isMoveRef.current = false;
         } else if (isEraseRef.current && modeRef.current == 'erase') {
             endErase();
+            setCursor('eraser');
             isEraseRef.current = false;
             reRender();
         } else if (modeRef.current == 'bubble') {
             if (isCreateBubbleRef.current) {
                 isCreateBubbleRef.current = false;
+                setCursor('add');
                 finishCreateBubble(getCameraView());
                 reRender();
             }

@@ -113,4 +113,4 @@ export const createAPI = () => {
 
     return { get: _get, post: _post, put: _put, delete: _delete };
 };
-export const bubbleAPI = createAPI();
+export const mongleApi = createAPI();

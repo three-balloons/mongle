@@ -8,7 +8,7 @@
         "module": "ESNext",
         "skipLibCheck": true,
         "typeRoots": ["node_modules/@types", "src/types"],
-        "types": ["vite-plugin-svgr/client"],
+        "types": ["vite-plugin-svgr/client", "node"],
         /* Bundler mode */
         "moduleResolution": "bundler",
         "allowImportingTsExtensions": true,
