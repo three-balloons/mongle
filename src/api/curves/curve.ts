@@ -4,7 +4,7 @@ import {
     CreateCurveParams,
     CreateCurveReq,
     CreateCurveRes,
-    CurvesRes,
+    CurveRes,
     DeleteCurveReq,
     DeleteCurveRes,
     RestoreCurveReq,
@@ -96,7 +96,7 @@ export const deleteBubbleAPI = async ({ curveId, workspaceId }: DeleteCurveReq) 
 
 export const restoreCurveAPI = async ({ curveId, workspaceId }: RestoreCurveReq): Promise<Curve> => {
     try {
-        const res = await mongleApi.patch<RestoreCurveReq, CurvesRes, 'USER_NOT_FOUND'>(
+        const res = await mongleApi.patch<RestoreCurveReq, CurveRes, 'USER_NOT_FOUND'>(
             `/curves/${curveId}/restore`,
             undefined,
             {

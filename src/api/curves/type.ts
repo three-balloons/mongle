@@ -1,5 +1,5 @@
 /** common response */
-export type CurvesRes = {
+export type CurveRes = {
     id: number;
     position: string;
     bubbleId: number;
@@ -17,7 +17,7 @@ export type CreateCurveReq = {
     bubbleId: number;
     config: PenConfig;
 };
-export type CreateCurveRes = CurvesRes;
+export type CreateCurveRes = CurveRes;
 
 /** updateCurveAPI */
 export type UpdateCurveParams = {
@@ -30,7 +30,7 @@ export type UpdateCurveReq = {
     bubbleId: number;
     config: PenConfig;
 };
-export type UpdateCurveRes = CurvesRes;
+export type UpdateCurveRes = CurveRes;
 
 /** deleteCurveAPI */
 export type DeleteCurveReq = {
@@ -46,4 +46,4 @@ export type RestoreCurveReq = {
     curveId: number;
     workspaceId: string;
 };
-export type RestoreCurveRes = CurvesRes;
+export type RestoreCurveRes = CurveRes;
