@@ -45,7 +45,7 @@ export const createCurveAPI = async ({ curve, bubbleId, workspaceId }: CreateCur
     }
 };
 
-export const updateCurveAPI = async ({ curve, bubbleId, workspaceId }: UpdateCurveParams) => {
+export const updateCurveAPI = async ({ curve, bubbleId, workspaceId }: UpdateCurveParams): Promise<Curve> => {
     try {
         const res = await mongleApi.put<UpdateCurveReq, UpdateCurveRes, 'NO_EXEIST_BUBBLE' | 'FAIL_EXEIT'>(
             `/curves/${curve.id}`,
@@ -60,7 +60,12 @@ export const updateCurveAPI = async ({ curve, bubbleId, workspaceId }: UpdateCur
                 },
             },
         );
-        return res;
+        return {
+            type: 'curve',
+            id: res.id,
+            config: res.config,
+            position: curveDecoding(res.position),
+        };
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'NO_EXEIST_BUBBLE' || error.code === 'FAIL_EXEIT') {
@@ -89,7 +94,7 @@ export const deleteBubbleAPI = async ({ curveId, workspaceId }: DeleteCurveReq) 
     }
 };
 
-export const restoreCurveAPI = async ({ curveId, workspaceId }: RestoreCurveReq) => {
+export const restoreCurveAPI = async ({ curveId, workspaceId }: RestoreCurveReq): Promise<Curve> => {
     try {
         const res = await mongleApi.patch<RestoreCurveReq, CurvesRes, 'USER_NOT_FOUND'>(
             `/curves/${curveId}/restore`,
@@ -100,7 +105,12 @@ export const restoreCurveAPI = async ({ curveId, workspaceId }: RestoreCurveReq)
                 },
             },
         );
-        return res;
+        return {
+            type: 'curve',
+            id: res.id,
+            config: res.config,
+            position: curveDecoding(res.position),
+        };
     } catch (error: unknown) {
         if (error instanceof APIException) {
             if (error.code === 'USER_NOT_FOUND') {
