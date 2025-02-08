@@ -1,4 +1,4 @@
-import { getDeletedWorkspaceAPI } from '@/api/workspace';
+import { getDeletedWorkspaceAPI } from '@/api/workspaces/workspace';
 import style from '@/pages/home/trash/trash.module.css';
 import objectStyle from '@/style/common/object.module.css';
 import { cn } from '@/util/cn';

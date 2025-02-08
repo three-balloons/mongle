@@ -51,4 +51,7 @@ interface Workspace {
     id: string;
     name: string;
     theme: Theme;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
 }

@@ -1,5 +1,5 @@
 import { getUserAPI } from '@/api/user';
-import { getAllWorkspaceAPI } from '@/api/workspace';
+import { getAllWorkspaceAPI } from '@/api/workspaces/workspace';
 import { CreateWorkspaceModal } from '@/components/createWorkspaceModal/CreateWorkspaceModal';
 import { WorkspaceSettingModal } from '@/components/workspaceSettingModal/WorkspaceSettingModal';
 import style from '@/pages/home/grid-view.module.css';

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Select from '@/headless/select/Select';
 import { ReactComponent as ModifyIcon } from '@/assets/icon/modify.svg';
 import { ReactComponent as SettingIcon } from '@/assets/icon/setting.svg';
-import { deleteWorkspaceAPI, updateWorkspaceAPI } from '@/api/workspace';
+import { deleteWorkspaceAPI, updateWorkspaceAPI } from '@/api/workspaces/workspace';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/react-query/quertClient';
 

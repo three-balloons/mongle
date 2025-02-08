@@ -10,7 +10,7 @@ import { RendererProvider } from '@/objects/renderer/RendererProvider';
 import { LogProvider } from '@/objects/log/LogProvider';
 import { CameraProvider } from '@/objects/camera/CameraProvider';
 import { useQuery } from '@tanstack/react-query';
-import { getWorkspaceAPI } from '@/api/workspace';
+import { getWorkspaceAPI } from '@/api/workspaces/workspace';
 import { ReactComponent as BackIcon } from '@/assets/icon/arrow-left.svg';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
