@@ -54,9 +54,9 @@ export const deleteUserAPI = async () => {
     }
 };
 
-export const restoreUserAPI = async () => {
+export const restoreUserAPI = async ({ userId }: RestoreUserReq) => {
     try {
-        const res = await mongleApi.patch<RestoreUserReq, RestoreUserRes, 'USER_NOT_FOUND'>('/users');
+        const res = await mongleApi.patch<RestoreUserReq, RestoreUserRes, 'USER_NOT_FOUND'>(`/users/${userId}/restore`);
         return res;
     } catch (error: unknown) {
         if (error instanceof APIException) {

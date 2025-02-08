@@ -14,7 +14,7 @@ export type DeleteUserRes = {
 };
 
 /** restoreUserAPI */
-export type RestoreUserReq = Record<string, never>;
-export type RestoreUserRes = {
-    id: number;
+export type RestoreUserReq = {
+    userId: number;
 };
+export type RestoreUserRes = User;
