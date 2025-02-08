@@ -1,4 +1,4 @@
-import { getUserAPI } from '@/api/user';
+import { getUserAPI } from '@/api/users/user';
 import { getAllWorkspaceAPI } from '@/api/workspaces/workspace';
 import { CreateWorkspaceModal } from '@/components/createWorkspaceModal/CreateWorkspaceModal';
 import { WorkspaceSettingModal } from '@/components/workspaceSettingModal/WorkspaceSettingModal';
@@ -17,7 +17,7 @@ export const GridView = () => {
     });
 
     const getUserQuery = useQuery({
-        queryKey: ['user'],
+        queryKey: ['users'],
         queryFn: () => getUserAPI(),
     });
 

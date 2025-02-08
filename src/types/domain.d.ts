@@ -55,3 +55,13 @@ interface Workspace {
     updatedAt: string;
     deletedAt?: string;
 }
+
+interface User {
+    id: number;
+    provider: Provider;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string;
+    email?: string;
+}
