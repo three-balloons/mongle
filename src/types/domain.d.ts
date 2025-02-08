@@ -18,9 +18,18 @@ interface Picture extends Rect {
     isFlippedY: boolean;
 }
 
-type Shape = Picture | Curve;
+interface PDF extends Rect {
+    type: 'pdf';
+    offScreen: OffscreenCanvas;
+    image: HTMLImageElement;
+    isFlippedX: boolean;
+    isFlippedY: boolean;
+}
+
+type Shape = Picture | Curve | PDF;
 
 interface Bubble extends Rect {
+    id?: number;
     path: string;
     name: string;
     // curves: Array<Curve>;
