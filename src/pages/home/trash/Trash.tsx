@@ -44,8 +44,7 @@ export const Trash = () => {
                     return (
                         <div key={index} className={style.workspaceWrapper}>
                             <div className={style.deleteDate}>
-                                {WORKSPACE_RETENTION_PERIOD - differenceInDaysformat(workspace.deletedAt ?? new Date())}
-                                일 남음
+                                {WORKSPACE_RETENTION_PERIOD - differenceInDaysformat(workspace.deletedAt)}일 남음
                             </div>
                             <div className={cn(objectStyle.bubble, getThemeStyle(workspace.theme))}></div>
                             <div className={style.workspaceName}>{workspace.name}</div>
