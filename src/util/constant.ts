@@ -8,3 +8,4 @@ export const EXPLORER_MIN_WIDTH = 100;
 export const EXPLORER_MAX_WIDTH = 300;
 
 export const WORKSPACE_RETENTION_PERIOD = 15;
+export const WORKSPACE_INNER_SIZE = 2048; // workspace 내부 좌표계 domain [0, 2048)
