@@ -13,16 +13,12 @@ export const GridView = () => {
     const navigate = useNavigate();
     const workspacesQuery = useQuery({
         queryKey: ['workspaces'],
-        queryFn: () => {
-            return getAllWorkspaceAPI();
-        },
+        queryFn: () => getAllWorkspaceAPI(),
     });
 
     const getUserQuery = useQuery({
         queryKey: ['user'],
-        queryFn: () => {
-            return getUserAPI();
-        },
+        queryFn: () => getUserAPI(),
     });
 
     if (workspacesQuery.isLoading || workspacesQuery.isPending) return <>로딩중</>;

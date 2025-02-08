@@ -43,10 +43,7 @@ export const CreateWorkspaceModal = ({ className }: CreateWorkspaceModalProps) =
         createWorkspace(
             { name: name, theme: theme as string },
             {
-                onSuccess: () => {
-                    console.log('저장 성공');
-                    queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-                },
+                onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workspaces'] }),
             },
         );
         return;

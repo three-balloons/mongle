@@ -6,3 +6,5 @@ export const OFF_SCREEN_WIDTH = 100;
 export const OFF_SCREEN_HEIGHT = 100;
 export const EXPLORER_MIN_WIDTH = 100;
 export const EXPLORER_MAX_WIDTH = 300;
+
+export const WORKSPACE_RETENTION_PERIOD = 15;
