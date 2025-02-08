@@ -177,23 +177,6 @@ export const global2bubbleWithCurve = (curve: Curve2D, bubble: Bubble | undefine
         });
 };
 
-/**
- * bubble 안의 curves를 밖으로 뺌
- *
- * TODO: renaming
- */
-export const getCurvesPosInBubble = (bubble: Bubble): Array<Curve2D> => {
-    return bubble.curves.map((curve) => {
-        return curve.position.map((point) => {
-            return {
-                isVisible: point.isVisible,
-                x: (bubble.width * point.x) / 200 + bubble.left,
-                y: (bubble.height * point.y) / 200 + bubble.top,
-            };
-        });
-    });
-};
-
 export const getThicknessRatio = (cameraView: ViewCoord) => {
     return cameraView.size.x / cameraView.pos.width;
 };
