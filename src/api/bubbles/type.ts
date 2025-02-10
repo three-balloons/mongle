@@ -34,6 +34,7 @@ export type ShapeRes =
           angle: number;
       };
 export type BubbleRes = {
+    id: number;
     path: string;
     name: string;
     top: number;
@@ -90,22 +91,22 @@ export type CreateBubbleRes = BubbleRes;
 
 /** updateBubbleAPI */
 export type UpdateBubbleReq = {
-    newPath: string;
-    name: string;
-    top: number;
-    left: number;
-    height: number;
-    width: number;
+    newPath?: string;
+    name?: string;
+    top?: number;
+    left?: number;
+    height?: number;
+    width?: number;
 };
 export type UpdateBubblePrams = {
     workspaceId: string;
-    bubbleId: string;
-    newPath: string;
-    name: string;
-    top: number;
-    left: number;
-    height: number;
-    width: number;
+    bubbleId: number;
+    newPath?: string;
+    name?: string;
+    top?: number;
+    left?: number;
+    height?: number;
+    width?: number;
 };
 export type UpdateBubbleRes = BubbleRes;
 

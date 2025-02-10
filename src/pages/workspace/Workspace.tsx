@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Tutorial } from '@/components/tutorial/Tutorial';
 import { TutorialProvider } from '@/components/tutorial/TutorialProvider';
-import { getBubblesAPI } from '@/api/bubble';
+import { getAllBubblesAPI } from '@/api/bubbles/bubble';
 import { useBubbleStore } from '@/store/bubbleStore';
 import { useLogStore } from '@/store/useLogStore';
 import { useLogSender } from '@/hooks/useLogSender';
@@ -43,7 +43,7 @@ export const Workspace = ({ workspaceId }: WorkspaceProps) => {
         queryKey: ['bubbles', workspaceId],
         queryFn: () => {
             if (workspaceId === 'demo') return [] as Array<Bubble>;
-            else return getBubblesAPI(workspaceId, '/');
+            else return getAllBubblesAPI({ workspaceId });
         },
     });
 

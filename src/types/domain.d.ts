@@ -29,7 +29,7 @@ interface PDF extends Rect {
 type Shape = Picture | Curve | PDF;
 
 interface Bubble extends Rect {
-    id?: number;
+    id: number;
     path: string;
     name: string;
     // curves: Array<Curve>;

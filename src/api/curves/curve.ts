@@ -76,7 +76,7 @@ export const updateCurveAPI = async ({ curve, bubbleId, workspaceId }: UpdateCur
     }
 };
 
-export const deleteBubbleAPI = async ({ curveId, workspaceId }: DeleteCurveReq) => {
+export const deleteCurveAPI = async ({ curveId, workspaceId }: DeleteCurveReq) => {
     try {
         const res = await mongleApi.delete<DeleteCurveRes, 'INAPPROPRIATE_DEPTH'>(`/curves/${curveId}`, {
             headers: {
