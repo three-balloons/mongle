@@ -1,5 +1,4 @@
 import { mockedUploadFile } from '@/mocks/data/file';
-import { mockedPicture } from '@/mocks/data/picture';
 import { checkIsValidAccessToken } from '@/mocks/util';
 import { http, HttpResponse } from 'msw';
 
@@ -33,18 +32,5 @@ export const pictureHandlers = [
             { code: 'OK', message: 'OK', data: svgBlob },
             { headers: { 'Content-Type': 'image/svg+xml' }, status: 200 },
         );
-    }),
-    // createPictureAPI
-    http.post(`${API_URL}/:workspceId/pictures`, ({ request }) => {
-        const authorizationHeader = request.headers.get('Authorization');
-        const accessToken = checkIsValidAccessToken(authorizationHeader);
-        if (typeof accessToken !== 'string') return accessToken;
-        const data = mockedPicture;
-
-        return HttpResponse.json({
-            code: 'OK',
-            message: 'OK',
-            data: data,
-        });
     }),
 ];

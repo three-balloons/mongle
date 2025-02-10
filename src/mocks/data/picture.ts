@@ -1,4 +1,6 @@
-export const mockedPicture = {
+import { PictureRes } from '@/api/pictrues/type';
+
+export const mockedPicture: PictureRes = {
     id: 'eb9d9vd9d-3b7d-4bad-3bdd-2b0d7d3dcb6d',
     left: -30,
     top: -30,

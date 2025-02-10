@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const workspaceHandlers = [
     // getWorkspaceAPI
-    http.get(`${API_URL}/workspace/:workspaceId`, ({ request }) => {
+    http.get(`${API_URL}/workspaces/:workspaceId`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -26,7 +26,7 @@ export const workspaceHandlers = [
         });
     }),
     // getAllWorkspaceAPI
-    http.get(`${API_URL}/workspace`, ({ request }) => {
+    http.get(`${API_URL}/workspaces`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -39,7 +39,7 @@ export const workspaceHandlers = [
         });
     }),
     // updateWorkspaceAPI
-    http.put(`${API_URL}/workspace/:workspaceId`, ({ request }) => {
+    http.put(`${API_URL}/workspaces/:workspaceId`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -52,7 +52,7 @@ export const workspaceHandlers = [
         });
     }),
     // deleteWorkspaceAPI
-    http.delete(`${API_URL}/workspace/:workspaceId`, ({ request }) => {
+    http.delete(`${API_URL}/workspaces/:workspaceId`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -65,7 +65,7 @@ export const workspaceHandlers = [
         });
     }),
     // createWorkspaceAPI
-    http.post(`${API_URL}/workspace`, ({ request }) => {
+    http.post(`${API_URL}/workspaces`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -78,7 +78,7 @@ export const workspaceHandlers = [
         });
     }),
     // getDeletedWorkspaceAPI
-    http.get(`${API_URL}/workspace/deleted`, ({ request }) => {
+    http.get(`${API_URL}/workspaces/deleted`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;

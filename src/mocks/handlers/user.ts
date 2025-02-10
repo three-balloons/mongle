@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const userHandlers = [
     // getUserAPI
-    http.get(`${API_URL}/user`, ({ request }) => {
+    http.get(`${API_URL}/users`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -19,7 +19,7 @@ export const userHandlers = [
         });
     }),
     // updateUserAPI
-    http.put(`${API_URL}/user`, ({ request }) => {
+    http.put(`${API_URL}/users`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -32,12 +32,30 @@ export const userHandlers = [
         });
     }),
     // deleteUserAPI
-    http.delete(`${API_URL}/user`, ({ request }) => {
+    http.delete(`${API_URL}/users`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
         const data = mockedDeleteUser;
 
+        return HttpResponse.json({
+            code: 'OK',
+            message: 'OK',
+            data: data,
+        });
+    }),
+    http.patch(`${API_URL}/users/:userId/restore`, async ({ request }) => {
+        const authorizationHeader = request.headers.get('Authorization');
+        const accessToken = checkIsValidAccessToken(authorizationHeader);
+        if (typeof accessToken !== 'string') return accessToken;
+        if (!request.headers.get('workspaceId'))
+            return HttpResponse.json({
+                code: 'WORKSPACE_NOT_FOUND',
+                message: '작업공간이 존재하지 않습니다',
+                data: null,
+            });
+
+        const data = { id: 234 };
         return HttpResponse.json({
             code: 'OK',
             message: 'OK',

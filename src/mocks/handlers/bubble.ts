@@ -1,19 +1,25 @@
-import { pictureMapper } from '@/api/mapper/picture.mapper';
-import { mockedCreateBubble, mockedDeleteBubble, mockedGetBubble, mockedUpdateBubble } from '@/mocks/data/bubble';
+import { shapeMapper } from '@/api/bubbles/mapper';
+import {
+    mockedCreateBubble,
+    mockedDeleteBubble,
+    mockedGetAllBubbles,
+    mockedGetBubbles,
+    mockedUpdateBubble,
+} from '@/mocks/data/bubble';
 import { checkIsValidAccessToken } from '@/mocks/util';
 import { http, HttpResponse } from 'msw';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const bubbleHandlers = [
-    // getBubblesAPI
-    http.get(`${API_URL}/bubble/:workspaceId`, ({ request }) => {
+    // getAllBubblesAPI
+    http.get(`${API_URL}/bubbles`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
         // const url = new URL(request.url.toString());
         // const workspaceId = url.searchParams.get('workspaceId');
-        const data = mockedGetBubble;
+        const data = mockedGetAllBubbles;
 
         return HttpResponse.json({
             code: 'OK',
@@ -21,14 +27,35 @@ export const bubbleHandlers = [
             data: data.map((bubble) => {
                 return {
                     ...bubble,
-                    pictures: [...(bubble.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
+                    shapes: [...(bubble.shapes?.map((shape) => shapeMapper(shape)) ?? [])],
+                    nameSizeInCanvas: 30,
+                };
+            }),
+        });
+    }),
+    // getBubblesAPI
+    http.get(`${API_URL}/bubbles/:bubbleId`, ({ request }) => {
+        const authorizationHeader = request.headers.get('Authorization');
+        const accessToken = checkIsValidAccessToken(authorizationHeader);
+        if (typeof accessToken !== 'string') return accessToken;
+        // const url = new URL(request.url.toString());
+        // const workspaceId = url.searchParams.get('workspaceId');
+        const data = mockedGetBubbles;
+
+        return HttpResponse.json({
+            code: 'OK',
+            message: 'OK',
+            data: data.map((bubble) => {
+                return {
+                    ...bubble,
+                    shapes: [...(bubble.shapes?.map((shape) => shapeMapper(shape)) ?? [])],
                     nameSizeInCanvas: 30,
                 };
             }),
         });
     }),
     // deleteBubbleAPI
-    http.delete(`${API_URL}/bubble/:workspaceId`, ({ request }) => {
+    http.delete(`${API_URL}/bubbles/:bubbleId`, ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
         if (typeof accessToken !== 'string') return accessToken;
@@ -42,23 +69,11 @@ export const bubbleHandlers = [
             data: data,
         });
     }),
-    http.post(`${API_URL}/bubble/:workspaceId`, async ({ request }) => {
+    http.post(`${API_URL}/bubbles`, async ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
 
         if (typeof accessToken !== 'string') return accessToken;
-        // type RequestBodyDTO = {
-        //     name: string;
-        //     top: number;
-        //     left: number;
-        //     height: number;
-        //     width: number;
-        //     isBubblized: boolean;
-        //     isVisible: boolean;
-        // };
-        // const body = (await request.json()) as RequestBodyDTO;
-        // const url = new URL(request.url.toString());
-        // const workspaceId = url.searchParams.get('workspaceId');
         const data = mockedCreateBubble;
 
         return HttpResponse.json({
@@ -66,19 +81,17 @@ export const bubbleHandlers = [
             message: 'OK',
             data: {
                 ...data,
-                pictures: [...(data.pictures?.map((picture) => pictureMapper(picture)) ?? [])],
+                shapes: [...(data.shapes?.map((shape) => shapeMapper(shape)) ?? [])],
                 nameSizeInCanvas: 30,
             },
         });
     }),
-    http.put(`${API_URL}/bubble/:workspaceId/curve`, async ({ request }) => {
+    http.put(`${API_URL}/bubbles/:bubbleId`, async ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
 
         if (typeof accessToken !== 'string') return accessToken;
 
-        // const url = new URL(request.url.toString());
-        // const workspaceId = url.searchParams.get('workspaceId');
         const data = mockedUpdateBubble;
 
         return HttpResponse.json({
@@ -87,7 +100,7 @@ export const bubbleHandlers = [
             data: data,
         });
     }),
-    http.put(`${API_URL}/bubble/:workspaceId/change_info`, async ({ request }) => {
+    http.patch(`${API_URL}/bubbles/:bubbleId/restore`, async ({ request }) => {
         const authorizationHeader = request.headers.get('Authorization');
         const accessToken = checkIsValidAccessToken(authorizationHeader);
 
@@ -95,7 +108,7 @@ export const bubbleHandlers = [
 
         // const url = new URL(request.url.toString());
         // const workspaceId = url.searchParams.get('workspaceId');
-        const data = mockedCreateBubble;
+        const data = { id: 'dfjhsgkd-sdjfwlkfjgdlfjlg-ejhwkjh' };
 
         return HttpResponse.json({
             code: 'OK',
