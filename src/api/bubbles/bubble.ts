@@ -32,7 +32,7 @@ export const getAllBubblesAPI = async ({ workspaceId, depth }: GetAllBubbleReq):
         return res.map((bubble) => {
             return {
                 ...bubble,
-                shapes: [...bubble.shape.map((shpae) => shapeMapper(shpae))],
+                shapes: [...bubble.shapes.map((shpae) => shapeMapper(shpae))],
                 nameSizeInCanvas: NAME_SIZE_IN_CANVAS,
             } as Bubble;
         });
@@ -59,7 +59,7 @@ export const getBubblesAPI = async ({ workspaceId, bubbleId, depth }: GetBubbleR
         return res.map((bubble) => {
             return {
                 ...bubble,
-                shapes: [...bubble.shape.map((shpae) => shapeMapper(shpae))],
+                shapes: [...bubble.shapes.map((shpae) => shapeMapper(shpae))],
                 nameSizeInCanvas: NAME_SIZE_IN_CANVAS,
             } as Bubble;
         });
@@ -119,7 +119,7 @@ export const createBubbleAPI = async ({
         );
         return {
             ...res,
-            shapes: [...res.shape.map((shpae) => shapeMapper(shpae))],
+            shapes: [...res.shapes.map((shpae) => shapeMapper(shpae))],
             nameSizeInCanvas: NAME_SIZE_IN_CANVAS,
         };
     } catch (error: unknown) {

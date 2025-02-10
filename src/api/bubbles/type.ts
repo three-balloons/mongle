@@ -4,7 +4,6 @@ export type ShapeRes =
           type: 'curve';
           id: number;
           position: string;
-          bubbleId: number;
           config: PenConfig;
       }
     | {
@@ -41,7 +40,7 @@ export type BubbleRes = {
     left: number;
     width: number;
     height: number;
-    shape: ShapeRes[];
+    shapes: ShapeRes[];
 };
 
 /** getBubblesAPI */
